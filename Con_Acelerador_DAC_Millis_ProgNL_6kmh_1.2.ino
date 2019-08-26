@@ -1,7 +1,7 @@
 /* 
-                    Version Con Acelerador y DAC					
+                    Version Con Acelerador y DAC
 ------------------------------------------------------------------------
-PRINCIPALES NOVEDADES:					
+PRINCIPALES NOVEDADES:
  * Deteccion de pulsos con Millis()
  * Progresivos y Auto Progresivos no lineales
  * Posibilidadad de asistir a 6km/h desde parado
@@ -30,7 +30,7 @@ LEGALIZACION ACELERADOR:
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
  * 
- *                      http://t.me/FiidoD1Spain						
+ *                      http://t.me/FiidoD1Spain			
  * 
  * Grupo Telegram de desarrollo privado, si vas a montar el circuito y
  * necesitas ayuda o colaborar pide acceso en el general de arriba.
@@ -60,17 +60,13 @@ const boolean modo_crucero = true;
 // (True) si se desea anular la velocidad de crucero al frenar
 const boolean freno_anula_crucero = false;
 
-// Nivel al que se desea iniciar el progresivo
-// Aumentar si se desea salir con mas tiron, >> NO PASAR DE 2.00 <<                                                                          
-float nivel_inicial_progresivo = 1.5;
-
 // Retardo para inciar progresivo tras parar pedales
 // Freno anula el tiempo
 int retardo_inicio_progresivo = 10;
 
 // Suavidad de los progresivos, varia entre 1-10
-// Al crecer se hacen más bruscos
-float suavidad_progresivos = 5;
+// Al crecer se hacen más bruscos (Se sale con mas tiron)
+float suavidad_progresivos = 6;
 
 // Suavidad de los autoprogresivos, varia entre 1-10
 // al crecer se hacen más brucos
@@ -145,7 +141,7 @@ float v_acelerador; // Valor recogido del acelerador
 float v_crucero_ac; // Valor de crucero del acelerador
 float v_crucero = 0.85; // Velocidad de crucero
 // Los voltios que se mandan a la controladora
-float nivel_aceleracion = nivel_inicial_progresivo;
+float nivel_aceleracion = voltaje_minimo;
 
 // Contador de pulsos del pedal
 int pulsos = 0;
@@ -180,25 +176,15 @@ void lee_acelerador() {
 }
 
 void manda_acelerador() {
-	// Anula crucero por debajo del nivel inicial del progresivo
-	if (v_crucero < nivel_inicial_progresivo) {
-		v_crucero = voltaje_minimo;
-	}
-
-	// Evita salidas demasiado bruscas 
-	if (nivel_inicial_progresivo > 2) {
-		nivel_inicial_progresivo = 2;
-	}
-
 	if (modo_crucero == true) {
 		// Progresivo no lineal		
-		fac_n = nivel_inicial_progresivo;
-		fac_m = (v_crucero - nivel_inicial_progresivo)
+		fac_n = voltaje_minimo;
+		fac_m = (v_crucero - voltaje_minimo)
 		/ pow(retardo_aceleracion,fac_p);
 		nivel_aceleracion = fac_n + fac_m *
 		pow(contador_retardo_aceleracion,fac_p);
 
-		if (nivel_aceleracion == nivel_inicial_progresivo) {
+		if (nivel_aceleracion < voltaje_minimo) {
 			nivel_aceleracion = voltaje_minimo;
 		}
 
@@ -382,4 +368,4 @@ void loop() {
 	delta = false;
 }
 
-// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.2 - 26/08/2019
+// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.3
