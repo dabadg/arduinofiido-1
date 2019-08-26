@@ -22,7 +22,7 @@ VERSION CRUCERO:
  * Se puede configurar que el freno anule el crucero.
 ------------------------------------------------------------------------
 LEGALIZACION ACELERADOR:
- * Basicamente lo que hace es detectar pulsos mediante una 
+ * Basicamente lo que hace es detectar pulsos mediante una
  * interrupcion en el pin (pin_pedal).
  * Si los pulsos obtenidos son menores que la cadencia espera
  * que se cumpla el retardo establecido y no funciona el acelerador.
@@ -30,7 +30,7 @@ LEGALIZACION ACELERADOR:
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
  * 
- *                      http://t.me/FiidoD1Spain		
+ *                      http://t.me/FiidoD1Spain
  * 
  * Grupo Telegram de desarrollo privado, si vas a montar el circuito y
  * necesitas ayuda o colaborar pide acceso en el general de arriba.
