@@ -17,8 +17,7 @@ CHANGELOG 1.0 --> 1.1:
  * Por defecto retardo_paro_motor = 0.50.
  * desactivado temporalmente desacelera_al_parar_pedal.
  
+ 
 Ayuda, sugerencias, preguntas, etc. en el grupo Fiido telegram: http://t.me/FiidoD1Spain
-
 Grupo telegram de desarrollo privado, si vas a montar el circuito y necesitas ayuda o colaborar pide acceso en el general de arriba.
-
 Canal con montaje, enlaces, programas, etc. http://t.me/fiidolegal
