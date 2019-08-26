@@ -7,18 +7,6 @@ PRINCIPALES NOVEDADES:
  * Posibilidadad de asistir a 6km/h desde parado
  * Posibilidadad de cortar crucero al frenar
 ------------------------------------------------------------------------
-CHANGELOG 1.1 --> 1.2: 
- * Activado de nuevo desacelera_al_parar_pedal por defecto y corregido
- * su comportamiento.
- * Pequeña modificacion en calculo del autoprogresivo.
-------------------------------------------------------------------------
-CHANGELOG 1.0 --> 1.1: 
- * Añadida posibilidad de activar ayuda de 6km/h desde parado mientras
- * se usa el acelerador, accionando el freno al arrancar.
- * Corregido temporizador del retardo_paro_motor.
- * Por defecto retardo_paro_motor = 0.50.
- * desactivado temporalmente desacelera_al_parar_pedal.
-------------------------------------------------------------------------
 VERSION CRUCERO: 
  * Se trata de guardar el ultimo valor del acelerador
  * para no tener que estar sujetando el acelerador.
@@ -27,8 +15,8 @@ VERSION CRUCERO:
  * Al parar y volver a pedalear, se va incrementando voltaje
  * gradualmente hasta llegar al valor de crucero.
  * Si se vuelve a mover el acelerador se toma este como nuevo crucero.
- * Usamos un pin analogico de entrada conectado al 
- * acelerador, por otra parte mandaremos a la placa DAC mediante 
+ * Usamos un pin analogico de entrada conectado al
+ * acelerador, por otra parte mandaremos a la placa DAC mediante
  * comunicacion i2c el valor de salida hacia la controladora.
  * El acelerador da un voltaje variable entre 0.85 y 3.9
  * Se puede configurar que el freno anule el crucero.
@@ -36,7 +24,7 @@ VERSION CRUCERO:
 LEGALIZACION ACELERADOR:
  * Basicamente lo que hace es detectar pulsos mediante una 
  * interrupcion en el pin (pin_pedal).
- * Si los pulsos obtenidos son menores que la cadencia espera  
+ * Si los pulsos obtenidos son menores que la cadencia espera
  * que se cumpla el retardo establecido y no funciona el acelerador.
 ------------------------------------------------------------------------
 LINKS:
