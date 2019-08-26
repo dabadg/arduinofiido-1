@@ -1,5 +1,5 @@
 /* 
-					Version Con Acelerador y DAC					
+                    Version Con Acelerador y DAC					
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:					
  * Deteccion de pulsos con Millis()
@@ -42,14 +42,14 @@ LEGALIZACION ACELERADOR:
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
  * 
- * 						http://t.me/FiidoD1Spain						
+ *                      http://t.me/FiidoD1Spain						
  * 
  * Grupo Telegram de desarrollo privado, si vas a montar el circuito y
  * necesitas ayuda o colaborar pide acceso en el general de arriba.
  *  
  * Canal con montaje, enlaces, programas, etc.
  * 
- * 						http://t.me/fiidolegal
+ *                      http://t.me/fiidolegal
  */
 
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
