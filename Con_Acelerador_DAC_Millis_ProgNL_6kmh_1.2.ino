@@ -66,7 +66,7 @@ int retardo_inicio_progresivo = 10;
 
 // Suavidad de los progresivos, varia entre 1-10
 // Al crecer se hacen más bruscos (Se sale con mas tiron)
-float suavidad_progresivos = 6;
+float suavidad_progresivos = 5;
 
 // Suavidad de los autoprogresivos, varia entre 1-10
 // al crecer se hacen más brucos
@@ -82,7 +82,7 @@ const boolean desacelera_al_parar_pedal = true;
 // potencia, bajar si para el motor a tope o se producen ruidos raros
 const float v_max_acelerador = 3.9;
 
-// Voltaje mínimo de acelerador en reposo.
+// Voltaje mínimo de acelerador en reposo
 const float voltaje_minimo = 0.85;
 
 // Valor minimo del acelerador para evitar fallos por picos                       
