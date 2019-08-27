@@ -227,8 +227,8 @@ void ayuda_arranque() {
 		manda_acelerador();
 	}
 
-	// Mantiene ultimo crucero fijado previamente a la ayuda
-	v_crucero = v_crucero_ac;
+	// Cortamos crucero fijado al soltar el acelerador
+	v_crucero = voltaje_minimo;
 }
 
 void setup() {
@@ -374,4 +374,4 @@ void loop() {
 	delta = false;
 }
 
-// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.4
+// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.5
