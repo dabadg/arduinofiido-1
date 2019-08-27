@@ -1,21 +1,23 @@
-Programa para Arduino en las bicicletas Fiido.
+#Programa para Arduino en las bicicletas Fiido.
 
 - Version con acelerador y DAC.
 - La deteccion de pulsos se hace con Millis()
-- Progresivos y autoprogresivos no lineales
-- Posibilidad de usar asistencia a 6 km/h desde parado
+- Progresivos y autoprogresivos no lineales.
+- Posibilidad de usar asistencia a 6 km/h desde parado.
+
+CHANGELOG 1.2 --> 1.3: 
+- Eliminado nivel inicial del progresivo.
+- Actualizados comentarios.
 
 CHANGELOG 1.1 --> 1.2: 
- * Activado de nuevo desacelera_al_parar_pedal por defecto y corregido
- * su comportamiento.
- * Pequeña modificacion en calculo del autoprogresivo.
+-  Activado de nuevo desacelera_al_parar_pedal por defecto y corregido su comportamiento.
+- Pequeña modificacion en calculo del autoprogresivo.
 
 CHANGELOG 1.0 --> 1.1: 
- * Añadida posibilidad de activar ayuda de 6km/h desde parado mientras
- * se usa el acelerador, accionando el freno al arrancar.
- * Corregido temporizador del retardo_paro_motor.
- * Por defecto retardo_paro_motor = 0.50.
- * desactivado temporalmente desacelera_al_parar_pedal.
+- Añadida posibilidad de activar ayuda de 6km/h desde parado mientras se usa el acelerador, accionando el freno al arrancar.
+- Corregido temporizador del retardo_paro_motor.
+- Por defecto retardo_paro_motor = 0.50.
+- Desactivado temporalmente desacelera_al_parar_pedal.
 
 
 
