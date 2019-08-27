@@ -293,12 +293,17 @@ void loop() {
 		pulsos = p_pulsos;
 		tcadencia1 = millis();
 		p_pulsos = 0;
-		v_acelerador = 0;
-		lee_acelerador();
 		delta = true;
 	}
 
-	establece_crucero();
+	v_acelerador = 0;
+	lee_acelerador();
+
+	// Si lo leemos y establecemos continuamente, no lo fija
+	// Lo controlamos con el delta
+	if (delta) {
+		establece_crucero();
+	}
 
 	if (pulsos < cadencia) {
 		if (delta) {
@@ -365,7 +370,8 @@ void loop() {
 	}
 
 	manda_acelerador();
+
 	delta = false;
 }
 
-// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.3
+// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.4
