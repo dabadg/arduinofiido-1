@@ -111,8 +111,11 @@ const int pin_acelerador = A0; // Pin acelerador
 
 // Tiempo en milisegundos para contar pulsos
 const int tiempo_cadencia = 250;
+
+// Variables para Millis()
 unsigned long tcadencia1;
 unsigned long tcadencia2;
+unsigned long tcrucero;
 boolean delta = false;
 
 // Backup voltaje
@@ -284,6 +287,8 @@ void setup() {
 	dac.setVoltage(810,false);
 	// Arrancar tiempo inicio para comprobar cadencia
 	tcadencia1 = millis();
+	// Arrancar tiempo inicio para establecer crucero
+	tcrucero = millis();
 }
 
 void loop() {
@@ -296,12 +301,14 @@ void loop() {
 		delta = true;
 	}
 
+	// Filtro de picos en acelerador
 	v_acelerador = 0;
+
 	lee_acelerador();
 
 	// Si lo leemos y establecemos continuamente, no lo fija
-	// Lo controlamos con el delta
-	if (delta) {
+	if (tcadencia2 > tcrucero+100) { // Si ha pasado 100 ms 
+		tcrucero = millis(); // Actualiza tiempo actual
 		establece_crucero();
 	}
 
@@ -374,4 +381,4 @@ void loop() {
 	delta = false;
 }
 
-// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.5
+// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.6
