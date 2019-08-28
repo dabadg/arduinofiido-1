@@ -1,16 +1,19 @@
 Programa para Arduino en las bicicletas Fiido.
 
 - Version con acelerador y DAC.
-- La deteccion de pulsos se hace con Millis()
+- La deteccion de pulsos se hace con millis().
 - Progresivos y autoprogresivos no lineales.
 - Posibilidad de usar asistencia a 6 km/h desde parado.
 
+CHANGELOG 1.5 --> 1.6:
+- Mejorada respuesta en fijacion del crucero.
+
 CHANGELOG 1.4 --> 1.5:
-- Corta crucero al dejar de usar la asistencia a 6 km/h
+- Corta crucero al dejar de usar la asistencia a 6 km/h.
 
 CHANGELOG 1.3 --> 1.4:
-- Lectura del acelerador sin afectacion del tiempo de cadencia
-- Establece crucero controlado por Millis()
+- Lectura del acelerador sin afectacion del tiempo de cadencia.
+- Establece crucero controlado por millis().
 
 CHANGELOG 1.2 --> 1.3:
 - Eliminado nivel inicial del progresivo.
