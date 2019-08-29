@@ -7,8 +7,9 @@ Programa para Arduino en las bicicletas Fiido.
 
 CHANGELOG 1.6 --> 1.7:
 - Modificada asistencia a 6 km/h desde parado.
-  - Si existia un crucero anterior fijado, lo recuerda.
-  - Si no habia crucero anterior fijado, tambien (corta crucero).
+  - Se sale de la asistencia a 6kmh soltando acelerador o pedaleando.
+    - Soltando acelerador (pedales parados) "no borra" crucero, si lo hubiera.
+    - Pedalenado (sin soltar acelerador), prevalece el acelerador. 
 
 CHANGELOG 1.5 --> 1.6:
 - Mejorada respuesta en fijacion del crucero.
