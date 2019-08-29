@@ -222,16 +222,19 @@ void freno() {
 }
 
 void ayuda_arranque() {
-	// Mientras aceleramos
-	while (analogRead(pin_acelerador) > 220) { // De 190 a 897
+	// Guardamos velocidad de crucero si estaba fijado
+	float vcruceroprev = v_crucero;
+
+	// Mientras aceleramos y no pedaleamos
+	while (analogRead(pin_acelerador) > 220 && p_pulsos == 0) { // De 190 a 897
 		// Fijamos crucero a 6 km/h
 		v_crucero = 2.10;
 		contador_retardo_aceleracion++;
 		manda_acelerador();
 	}
 
-	// Cortamos crucero fijado al soltar el acelerador
-	v_crucero = voltaje_minimo;
+	// Recuperamos velocidad de crucero anterior a la asistencia
+	v_crucero = vcruceroprev;
 }
 
 void setup() {
@@ -370,9 +373,9 @@ void loop() {
 		}
 	}
 
-	// Salida desde parado a 6 km/h con acelerador
-	if (nivel_aceleracion == voltaje_minimo
-	&& contador_retardo_aceleracion == 0 && ayuda_salida) {
+	if (pulsos == 0 && contador_retardo_aceleracion == 0
+	&& contador_retardo_paro_motor >= retardo_paro_motor
+	&& ayuda_salida) {
 		ayuda_arranque();
 	}
 
@@ -381,4 +384,4 @@ void loop() {
 	delta = false;
 }
 
-// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.6
+// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.7
