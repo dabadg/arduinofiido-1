@@ -5,6 +5,11 @@ Programa para Arduino en las bicicletas Fiido.
 - Progresivos y autoprogresivos no lineales.
 - Posibilidad de usar asistencia a 6 km/h desde parado.
 
+CHANGELOG 1.6 --> 1.7:
+- Modificada asistencia a 6 km/h desde parado.
+  - Si existia un crucero anterior fijado, lo recuerda.
+  - Si no habia crucero anterior fijado, tambien (corta crucero).
+
 CHANGELOG 1.5 --> 1.6:
 - Mejorada respuesta en fijacion del crucero.
 
