@@ -222,8 +222,7 @@ void freno() {
 }
 
 void ayuda_arranque() {
-	// Guardamos velocidad de crucero anterior a la asistencia
-	// Puede ser que no hubiera crucero (0.85)
+	// Guardamos velocidad de crucero si estaba fijado
 	float vcruceroprev = v_crucero;
 
 	// Mientras aceleramos y no pedaleamos
@@ -235,13 +234,7 @@ void ayuda_arranque() {
 	}
 
 	// Recuperamos velocidad de crucero anterior a la asistencia
-	// Puede ser que no hubiera crucero (0.85)
 	v_crucero = vcruceroprev;
-
-	// Hemos salido del bucle sin pedalear, solo soltando acelerador
-	if (p_pulsos == 0) {
-		para_motor();
-	}
 }
 
 void setup() {
