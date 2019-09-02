@@ -78,16 +78,6 @@ const int dir_dac = 0x60;
 // (True) si se desea desacelerar motor al dejar de pedalear
 const boolean desacelera_al_parar_pedal = true;
 
-// Voltios maximos que da el acelerador, subir si se nota falta de 
-// potencia, bajar si para el motor a tope o se producen ruidos raros
-const float v_max_acelerador = 3.9;
-
-// Voltaje mínimo de acelerador en reposo
-const float voltaje_minimo = 0.85;
-
-// Valor minimo del acelerador para evitar fallos por picos                       
-const float minimo_acelerador = 1.15;
-
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado
 const boolean frenopulsado = false;
@@ -112,10 +102,21 @@ const int pin_acelerador = A0; // Pin acelerador
 // Tiempo en milisegundos para contar pulsos
 const int tiempo_cadencia = 250;
 
+// Voltios maximos que da el acelerador, subir si se nota falta de 
+// potencia, bajar si para el motor a tope o se producen ruidos raros
+// No pasar de 4.20
+const float v_max_acelerador = 3.9;
+
+// Voltaje mínimo de acelerador en reposo
+const float voltaje_minimo = 0.85;
+
+// Valor minimo del acelerador para evitar fallos por picos                       
+const float minimo_acelerador = 1.15;
+
 // Variables para Millis()
-unsigned long tcadencia1;
-unsigned long tcadencia2;
+unsigned long tcadencia;
 unsigned long tcrucero;
+unsigned long tiempo;
 boolean delta = false;
 
 // Backup voltaje
@@ -159,7 +160,7 @@ void pedal() {
 	p_pulsos++;
 }
 
-void establece_crucero() {
+void estableceCrucero() {
 	// Pasa a escala de 0-5 voltios
 	v_acelerador = (v_acelerador * 5 / 1023);
 
@@ -169,8 +170,11 @@ void establece_crucero() {
 	}
 }
 
-void lee_acelerador() {
-	for (int f=1; f <= 30 ; f++) {
+void leeAcelerador() {
+	// Filtro
+	v_acelerador = 0;
+
+	for (int f=1; f <= 30; f++) {
 		// Lee valor
 		v_acelerador = v_acelerador + analogRead(pin_acelerador); 
 	}
@@ -178,7 +182,7 @@ void lee_acelerador() {
 	v_acelerador = v_acelerador / 30;
 }
 
-void manda_acelerador() {
+void mandaAcelerador() {
 	if (modo_crucero == true) {
 		// Progresivo no lineal		
 		fac_n = voltaje_minimo;
@@ -207,21 +211,21 @@ void manda_acelerador() {
 	}  
 }
 
-void para_motor() {
+void paraMotor() {
 	contador_retardo_aceleracion = 0;
 }
 
 void freno() {
 	contador_retardo_inicio_progresivo = retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
-	para_motor();
+	paraMotor();
 
 	if (freno_anula_crucero == true) {
 		v_crucero = voltaje_minimo;
 	}
 }
 
-void ayuda_arranque() {
+void ayudaArranque() {
 	// Guardamos valor de velocidad de crucero anterior a la asistencia
 	// Puede ser que no hubiera crucero (0.85)
 	float vcruceroprev = v_crucero;
@@ -231,7 +235,7 @@ void ayuda_arranque() {
 		// Fijamos crucero a 6 km/h
 		v_crucero = 2.10;
 		contador_retardo_aceleracion++;
-		manda_acelerador();
+		mandaAcelerador();
 		// Corrige duracion del bucle de 30 sg
 		delay(50);
 	}
@@ -293,30 +297,27 @@ void setup() {
 	// Fija voltaje inicial en Dac (0.85v)
 	dac.setVoltage(810,false);
 	// Arrancar tiempo inicio para comprobar cadencia
-	tcadencia1 = millis();
+	tcadencia = millis();
 	// Arrancar tiempo inicio para establecer crucero
 	tcrucero = millis();
 }
 
 void loop() {
-	tcadencia2 = millis();
+	tiempo = millis();
 
-	if (tcadencia2 > tcadencia1+(unsigned long)tiempo_cadencia) {
+	if (tiempo > tcadencia + (unsigned long)tiempo_cadencia) {
 		pulsos = p_pulsos;
-		tcadencia1 = millis();
+		tcadencia = millis();
 		p_pulsos = 0;
 		delta = true;
 	}
 
-	// Filtro de picos en acelerador
-	v_acelerador = 0;
-
-	lee_acelerador();
+	leeAcelerador();
 
 	// Si lo leemos y establecemos continuamente, no lo fija
-	if (tcadencia2 > tcrucero+100) { // Si ha pasado 100 ms 
+	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms 
 		tcrucero = millis(); // Actualiza tiempo actual
-		establece_crucero();
+		estableceCrucero();
 	}
 
 	if (pulsos < cadencia) {
@@ -334,7 +335,7 @@ void loop() {
 				bkp_contador_retardo_aceleracion =
 				contador_retardo_aceleracion;
 			}
-        	para_motor();
+        	paraMotor();
 		}
 	}
 
@@ -380,12 +381,12 @@ void loop() {
 	if (pulsos == 0 && contador_retardo_aceleracion == 0
 	&& contador_retardo_paro_motor >= retardo_paro_motor
 	&& ayuda_salida) {
-		ayuda_arranque();
+		ayudaArranque();
 	}
 
-	manda_acelerador();
+	mandaAcelerador();
 
 	delta = false;
 }
 
-// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.7.1
+// Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.7.1 Develop
