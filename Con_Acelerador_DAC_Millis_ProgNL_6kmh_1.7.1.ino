@@ -49,7 +49,7 @@ int cadencia = 1;
 // Retardo en segundos para parar el motor una vez se deja de pedalear
 // Usar multiplos de 0.25
 // No se recomienda subir mas de 1.00 segundo
-float retardo_paro_motor = 0.50; // 0.25 = 1/4 de segundo
+float retardo_paro_motor = 0.75; // 0.25 = 1/4 de segundo
 
 // Retardo en segundos para ponerse a velocidad maxima o crucero
 int retardo_aceleracion = 5;
@@ -76,7 +76,7 @@ float suavidad_autoprogresivos = 5;
 const int dir_dac = 0x60;
 
 // (True) si se desea desacelerar motor al dejar de pedalear
-const boolean desacelera_al_parar_pedal = true;
+const boolean desacelera_al_parar_pedal = false;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado
@@ -171,7 +171,6 @@ void estableceCrucero() {
 }
 
 void leeAcelerador() {
-	// Filtro
 	v_acelerador = 0;
 
 	for (int f=1; f <= 30; f++) {
@@ -186,10 +185,8 @@ void mandaAcelerador() {
 	if (modo_crucero == true) {
 		// Progresivo no lineal		
 		fac_n = voltaje_minimo;
-		fac_m = (v_crucero - voltaje_minimo)
-		/ pow(retardo_aceleracion,fac_p);
-		nivel_aceleracion = fac_n + fac_m *
-		pow(contador_retardo_aceleracion,fac_p);
+		fac_m = (v_crucero - voltaje_minimo) / pow(retardo_aceleracion,fac_p);
+		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion,fac_p);
 
 		if (nivel_aceleracion < voltaje_minimo) {
 			nivel_aceleracion = voltaje_minimo;
@@ -226,22 +223,18 @@ void freno() {
 }
 
 void ayudaArranque() {
-	// Guardamos valor de velocidad de crucero anterior a la asistencia
-	// Puede ser que no hubiera crucero (0.85)
+	// Guardamos valor de velocidad de crucero
 	float vcruceroprev = v_crucero;
 
 	// Mientras aceleramos y no pedaleamos
 	while (analogRead(pin_acelerador) > 220 && p_pulsos == 0) { // De 190 a 897
-		// Fijamos crucero a 6 km/h
-		v_crucero = 2.10;
+		v_crucero = 2.10; // Fijamos crucero a 6 km/h
 		contador_retardo_aceleracion++;
 		mandaAcelerador();
-		// Corrige duracion del bucle de 30 sg
-		delay(50);
+		delay(50); // Corrige duracion del bucle de 30 sg si no se pone retardo
 	}
 
-	// Recuperamos valor de velocidad de crucero anterior a la asistencia
-	// Puede ser que no hubiera crucero (0.85)
+	// Recuperamos valor de velocidad de crucero
 	v_crucero = vcruceroprev;
 }
 
@@ -268,27 +261,20 @@ void setup() {
 
 	// Ajusta configuracion 
 	retardo_paro_motor = retardo_paro_motor * (1000 / tiempo_cadencia);
-	retardo_aceleracion = retardo_aceleracion
-	* (1000 / tiempo_cadencia);
-	retardo_inicio_progresivo = retardo_inicio_progresivo
-	* (1000 / tiempo_cadencia);
-	// Anulamos el retardo por seguridad para que empiece progresivo
-	// al encender la bici
+	retardo_aceleracion = retardo_aceleracion * (1000 / tiempo_cadencia);
+	retardo_inicio_progresivo = retardo_inicio_progresivo * (1000 / tiempo_cadencia);
+	// Anulamos el retardo por seguridad para que empiece progresivo al encender la bici
 	contador_retardo_inicio_progresivo = retardo_inicio_progresivo;
 
 	// Calculo de factores para autoprogresivo
 	if (retardo_inicio_progresivo > 0) {
 		fac_s = retardo_paro_motor * 2.0;
-		fac_t = (retardo_aceleracion * 1.0)
-		/((retardo_aceleracion-fac_s)* 1.0);
-		fac_b = (1.0/(retardo_aceleracion-fac_s)-fac_t)
-		/(pow((retardo_inicio_progresivo-1.0),fac_c) - pow(1.0,fac_c));
-		fac_a = fac_t-pow(1.0,fac_c) * fac_b;
+		fac_t = (retardo_aceleracion * 1.0) / ((retardo_aceleracion-fac_s) * 1.0);
+		fac_b = (1.0 / (retardo_aceleracion - fac_s) - fac_t) / (pow((retardo_inicio_progresivo - 1.0),fac_c) - pow(1.0,fac_c));
+		fac_a = fac_t - pow(1.0,fac_c) * fac_b;
 		if (!desacelera_al_parar_pedal) {
-			fac_b = (1.0/retardo_aceleracion-1.0)
-			/(pow((retardo_inicio_progresivo-1.0),fac_c)
-			- pow(1.0,fac_c));
-			fac_a = 1.0-pow(1.0,fac_c) * fac_b;
+			fac_b = (1.0 / retardo_aceleracion - 1.0) / (pow((retardo_inicio_progresivo - 1.0),fac_c) - pow(1.0,fac_c));
+			fac_a = 1.0 - pow(1.0,fac_c) * fac_b;
 		}
 	}
 
@@ -304,89 +290,68 @@ void setup() {
 
 void loop() {
 	tiempo = millis();
-
-	if (tiempo > tcadencia + (unsigned long)tiempo_cadencia) {
-		pulsos = p_pulsos;
-		tcadencia = millis();
-		p_pulsos = 0;
-		delta = true;
-	}
+	pulsos = p_pulsos;
 
 	leeAcelerador();
 
-	// Si lo leemos y establecemos continuamente, no lo fija
-	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms 
+	// Establecemos un retardo para detectar la caída de voltaje en el crucero
+	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms
 		tcrucero = millis(); // Actualiza tiempo actual
 		estableceCrucero();
 	}
 
-	if (pulsos < cadencia) {
-		if (delta) {
+	if (tiempo > tcadencia + (unsigned long)tiempo_cadencia) {
+		tcadencia = millis();
+		p_pulsos = 0;
+
+		if (pulsos < cadencia) { // Si se pedalea despacio o se paran los pedales
 			contador_retardo_paro_motor++;
-		}
 
-		if (contador_retardo_paro_motor > retardo_paro_motor) {
-			if (delta) {
+			if (contador_retardo_paro_motor >= retardo_paro_motor) {
 				contador_retardo_inicio_progresivo++;
+				auto_progresivo = true;
+
+				if (contador_retardo_aceleracion > 4) {
+					bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
+				}
+				paraMotor();
 			}
-			auto_progresivo = true;
-
-    		if (contador_retardo_aceleracion > 4) {
-				bkp_contador_retardo_aceleracion =
-				contador_retardo_aceleracion;
-			}
-        	paraMotor();
-		}
-	}
-
-	if (pulsos >= cadencia) {
-		if (contador_retardo_inicio_progresivo <
-		retardo_inicio_progresivo && auto_progresivo) {
-
-			if (bkp_contador_retardo_aceleracion >
-			retardo_aceleracion - fac_s) {
-				bkp_contador_retardo_aceleracion =
-				retardo_aceleracion - fac_s;
+		} else if (pulsos >= cadencia) { // Si se pedalea normal (por encima de la cadencia)
+			if (contador_retardo_inicio_progresivo < retardo_inicio_progresivo && auto_progresivo) {
+				if (bkp_contador_retardo_aceleracion > retardo_aceleracion - fac_s) {
+					bkp_contador_retardo_aceleracion = retardo_aceleracion - fac_s;
+				}
+				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a+fac_b * pow(contador_retardo_inicio_progresivo,fac_c)) * v_crucero/v_max_acelerador;
+				auto_progresivo = false;
+			} else {
+				auto_progresivo = false;
 			}
 
-			contador_retardo_aceleracion =
-			bkp_contador_retardo_aceleracion *
-			(fac_a+fac_b*pow(contador_retardo_inicio_progresivo,fac_c))
-			* v_crucero/v_max_acelerador;
-		}
+			contador_retardo_inicio_progresivo = 0;
+			contador_retardo_paro_motor = 0;
 
-		auto_progresivo = false;
-
-		contador_retardo_inicio_progresivo = 0;
-		contador_retardo_paro_motor = 0;
-
-		if (delta && contador_retardo_aceleracion <
-		retardo_aceleracion) {
-			contador_retardo_aceleracion++;
-		}
-	}
-
-	// Desacelera motor si se dejan de mover los pedales
-	// Si se pedalea mas flojo no desacelera      
-	if (delta && pulsos == 0 && desacelera_al_parar_pedal == true) {
-		if (contador_retardo_aceleracion > 0) {
-			contador_retardo_aceleracion =
-			contador_retardo_aceleracion - 2;
-			if (contador_retardo_aceleracion < 0) {
-				contador_retardo_aceleracion = 0;
+			if (contador_retardo_aceleracion < retardo_aceleracion) {
+				contador_retardo_aceleracion++;
 			}
-		}
-	}
+		} else if (pulsos == 0) { // Si estan los pedales parados
+			// Desacelera al parar los pedales
+			if (contador_retardo_aceleracion > 0 && desacelera_al_parar_pedal == true) {
+				contador_retardo_aceleracion = contador_retardo_aceleracion - 2;
+				if (contador_retardo_aceleracion < 0) {
+					contador_retardo_aceleracion = 0;
+				}
+			}
 
-	if (pulsos == 0 && contador_retardo_aceleracion == 0
-	&& contador_retardo_paro_motor >= retardo_paro_motor
-	&& ayuda_salida) {
-		ayudaArranque();
+		}
+
+		// Asistencia desde parado a 6 km/h mientras se use el acelerador
+		if (pulsos == 0 && analogRead(pin_acelerador) > 220 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
+			ayudaArranque();
+		}
 	}
 
 	mandaAcelerador();
-
-	delta = false;
 }
 
 // Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.7.1 Develop
+
