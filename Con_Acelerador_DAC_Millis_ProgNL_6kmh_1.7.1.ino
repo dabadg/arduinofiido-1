@@ -2,7 +2,7 @@
                     Version Con Acelerador y DAC
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
- * Deteccion de pulsos con Millis()
+ * Deteccion de pulsos con millis()
  * Progresivos y Auto Progresivos no lineales
  * Posibilidadad de asistir a 6km/h desde parado
  * Posibilidadad de cortar crucero al frenar
@@ -121,6 +121,7 @@ const float voltaje_minimo = 0.85;
 // Valor minimo del acelerador para evitar fallos por picos
 const float minimo_acelerador = 1.15;
 
+// 6 km/h en el acelerador
 const float sixkmh_acelerador = 2.19;
 
 // Valores minimos y maximos del acelerador leidos por el pin A0
@@ -129,7 +130,7 @@ const float a0_6km_value = 450.0;
 const float a0_med_value = 550.0;
 const float a0_max_value = 847.0;
 
-// Variables para Millis()
+// Variables para millis()
 unsigned long tcadencia;
 unsigned long tcrucero;
 unsigned long tiempo;
@@ -303,7 +304,7 @@ void ayudaArranque() {
 	float vcruceroprev = v_crucero;
 
 	// Mientras aceleramos y no pedaleamos
-	while (analogRead(pin_acelerador) > a0_min_value +10 && p_pulsos == 0) { // De 190 a 897
+	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) { // De 190 a 897
 		v_crucero = sixkmh_acelerador; // Fijamos crucero a 6 km/h
 		contador_retardo_aceleracion++;
 		mandaAcelerador();
@@ -446,7 +447,7 @@ void loop() {
 		}
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador
-		if (pulsos == 0 && analogRead(pin_acelerador) > a0_min_value +10 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
+		if (pulsos == 0 && analogRead(pin_acelerador) > a0_min_value + 10 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
 			ayudaArranque();
 		}
 		
