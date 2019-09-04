@@ -303,7 +303,7 @@ void ayudaArranque() {
 	float vcruceroprev = v_crucero;
 
 	// Mientras aceleramos y no pedaleamos
-	while (analogRead(pin_acelerador) > a0_min_value && p_pulsos == 0) { // De 190 a 897
+	while (analogRead(pin_acelerador) > a0_min_value +10 && p_pulsos == 0) { // De 190 a 897
 		v_crucero = sixkmh_acelerador; // Fijamos crucero a 6 km/h
 		contador_retardo_aceleracion++;
 		mandaAcelerador();
@@ -446,7 +446,7 @@ void loop() {
 		}
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador
-		if (pulsos == 0 && analogRead(pin_acelerador) > a0_min_value && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
+		if (pulsos == 0 && analogRead(pin_acelerador) > a0_min_value +10 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
 			ayudaArranque();
 		}
 		
