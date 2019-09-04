@@ -44,11 +44,11 @@ LINKS:
 
 // Numero de pulsos para que se considere que se esta pedaleando
 // Configurar segun sensor y gustos
-int cadencia = 1;
+int cadencia1 = 1;
 
 // Numero de pulsos para que se considere que se esta pedaleando cuando
 // arrancamos con freno pulsado si la variable frenopulsado esta a True
-int cadenciaconayudasalida = 2;
+int cadencia2 = 2;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado
@@ -98,6 +98,9 @@ const int pin_acelerador = A0; // Pin acelerador
 // Resto de pines 9,10,11
 
 //======= VARIABLES PARA CALCULOS ======================================
+
+// Numero de pulsos para que se considere que se esta pedaleando
+int cadencia = cadencia1;
 
 // Tiempo en milisegundos para contar pulsos
 const int tiempo_cadencia = 250;
@@ -259,7 +262,7 @@ void setup() {
 			// Activamos la ayuda desde parado a 6kmh
 			ayuda_salida = true;
 			// Cadencia para este modo
-			cadencia = cadenciaconayudasalida;
+			cadencia = cadencia2;
 		}
 	}
 
