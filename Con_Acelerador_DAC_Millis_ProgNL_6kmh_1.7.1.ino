@@ -306,7 +306,6 @@ void loop() {
 
 	if (tiempo > tcadencia + (unsigned long)tiempo_cadencia) {
 		tcadencia = millis();
-		p_pulsos = 0;
 
 		if (pulsos < cadencia) { // Si se pedalea despacio o se paran los pedales
 			contador_retardo_paro_motor++;
@@ -352,6 +351,8 @@ void loop() {
 		if (pulsos == 0 && analogRead(pin_acelerador) > 220 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
 			ayudaArranque();
 		}
+		
+		p_pulsos = 0;
 	}
 
 	mandaAcelerador();
