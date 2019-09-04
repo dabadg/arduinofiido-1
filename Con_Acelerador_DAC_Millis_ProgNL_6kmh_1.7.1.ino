@@ -46,6 +46,14 @@ LINKS:
 // Configurar segun sensor y gustos
 int cadencia = 1;
 
+// Numero de pulsos para que se considere que se esta pedaleando cuando
+// arrancamos con freno pulsado si la variable frenopulsado esta a True
+int cadenciaconayudasalida = 2;
+
+// (True) si se desea activar la posibilidad de acelerar desde parado a
+// 6 km/h arrancando con el freno pulsado
+const boolean frenopulsado = false;
+
 // Retardo en segundos para parar el motor una vez se deja de pedalear
 // Usar multiplos de 0.25
 // No se recomienda subir mas de 1.00 segundo
@@ -77,14 +85,6 @@ const int dir_dac = 0x60;
 
 // (True) si se desea desacelerar motor al dejar de pedalear
 const boolean desacelera_al_parar_pedal = false;
-
-// (True) si se desea activar la posibilidad de acelerar desde parado a
-// 6 km/h arrancando con el freno pulsado
-const boolean frenopulsado = false;
-
-// Permite usar el acelerador desde parado a 6 km/h
-// Si frenopulsado esta en True, esta se debe dejar en False
-boolean ayuda_salida = false;
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
@@ -148,6 +148,9 @@ float nivel_aceleracion = voltaje_minimo;
 
 // Contador de pulsos del pedal
 int pulsos = 0;
+
+// Permite usar el acelerador desde parado a 6 km/h
+boolean ayuda_salida = false;
 
 //======= Variables interrupcion =======================================
 // Variable donde se suman los pulsos del sensor PAS
@@ -255,6 +258,8 @@ void setup() {
 		if (digitalRead(pin_freno) == LOW) {
 			// Activamos la ayuda desde parado a 6kmh
 			ayuda_salida = true;
+			// Cadencia para este modo
+			cadencia = cadenciaconayudasalida;
 		}
 	}
 
