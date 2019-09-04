@@ -45,15 +45,15 @@ LINKS:
 
 // Numero de pulsos para que se considere que se esta pedaleando
 // Configurar segun sensor y gustos
-int cadencia1 = 1;
+const int cadencia1 = 1;
 
 // Numero de pulsos para que se considere que se esta pedaleando cuando
 // arrancamos con freno pulsado si la variable frenopulsado esta a True
-int cadencia2 = 2;
+const int cadencia2 = 2;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado
-const boolean frenopulsado = true;
+const boolean frenopulsado = false;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear
 // Usar multiplos de 0.25
@@ -87,7 +87,7 @@ const int dir_dac = 0x60;
 // (True) si se desea desacelerar motor al dejar de pedalear
 const boolean desacelera_al_parar_pedal = false;
 
-// Constante que habilita los tonos de inicialización del sistema.
+// Constante que habilita los tonos de inicializacion del sistema
 const boolean tono_inicial = true;
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
@@ -99,7 +99,8 @@ Adafruit_MCP4725 dac;
 const int pin_acelerador = A0; // Pin acelerador
 const int pin_pedal = 2; // Pin sensor pas, en Nano/Uno usar solo 2 o 3
 const int pin_freno = 3; // Pin de activacion del freno
-const int pin_piezo = 11; // Pin donde se ha conectado el zumbador (9,10,11)
+const int pin_piezo = 11; // Pin donde se ha conectado el zumbador
+// Resto de pines 9,10
 
 //======= VARIABLES PARA CALCULOS ======================================
 
@@ -122,7 +123,7 @@ const float minimo_acelerador = 1.15;
 
 const float sixkmh_acelerador = 2.19;
 
-// Valores mínimos y máximos del acelerador leidos por el pin A0
+// Valores minimos y maximos del acelerador leidos por el pin A0
 float a0_min_value = 190.0; // Valor por defecto, al inicializar, lee el valor real del acelerador.
 const float a0_6km_value = 450.0;
 const float a0_med_value = 550.0;
@@ -188,34 +189,34 @@ int a[5]={220,440,880,1760,3520};       // La
 int as[5]={233,466,932,1866,3729};      // La#
 int b[5]={247,494,988,1976,3951};       // Si
 
-void nota(int frec, int ttime){
-    tone(pin_piezo,frec);
-    delay(ttime);
-    noTone(pin_piezo);
+void nota(int frec, int ttime) {
+	tone(pin_piezo,frec);
+	delay(ttime);
+	noTone(pin_piezo);
 }
 
-void SOS_TONE(){
-  nota(b[3],150);delay(40);
-  nota(b[3],150);delay(40);
-  nota(b[3],150);delay(70);
-  nota(b[3],100);delay(40);
-  nota(b[3],100);delay(40);
-  nota(b[3],100);delay(70);
-  nota(b[3],150);delay(40);
-  nota(b[3],150);delay(40);
-  nota(b[3],150);delay(100);
+void SOS_TONE() {
+	nota(b[3],150);delay(40);
+	nota(b[3],150);delay(40);
+	nota(b[3],150);delay(70);
+	nota(b[3],100);delay(40);
+	nota(b[3],100);delay(40);
+	nota(b[3],100);delay(70);
+	nota(b[3],150);delay(40);
+	nota(b[3],150);delay(40);
+	nota(b[3],150);delay(100);
 }
 
-void repeatTones(boolean trigger, int steps, int frequency, int duration, int delayTime){
-  if(trigger){
-    int cont=steps;
-    while(cont-- > 0){
-      tone( pin_piezo, frequency, duration);
-      if(delayTime>0)
-        delay(delayTime);    
-      //noTone(pin_piezo); 
-    }
-  }
+void repeatTones(boolean trigger, int steps, int frequency, int duration, int delayTime) {
+	if (trigger) {
+		int cont=steps;
+		while(cont-- > 0) {
+			tone( pin_piezo, frequency, duration);
+			if (delayTime>0)
+				delay(delayTime);
+			//noTone(pin_piezo); 
+		}
+	}
 }
 
 //======= FUNCIONES ====================================================
@@ -235,24 +236,26 @@ void estableceCrucero() {
 }
 
 float leeAcelerador() {
-  float cl_acelerador = 0;
-  // Leemos nivel de acelerador
-  for (int f=1; f <= 30; f++) {
-    cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
-  }
-  cl_acelerador = cl_acelerador / 30;
-  return nivelaAcelerador(cl_acelerador);
+	float cl_acelerador = 0;
+
+	// Leemos nivel de acelerador
+	for (int f=1; f <= 30; f++) {
+		cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
+	}
+
+	cl_acelerador = cl_acelerador / 30;
+	return nivelaAcelerador(cl_acelerador);
 }
   
-  float nivelaAcelerador(float &n_acelerador){
-    // nivelamos los valores para que no salgan del rango de máximo/mínimo.
-    if (n_acelerador <= a0_min_value) {
-      n_acelerador = a0_min_value;
-    } else if (n_acelerador >= a0_max_value) {
-      n_acelerador = a0_max_value;
-    }
-    return n_acelerador;
-  }
+float nivelaAcelerador(float &n_acelerador) {
+	// Nivelamos los valores para que no salgan del rango de maximo/minimo.
+	if (n_acelerador <= a0_min_value) {
+		n_acelerador = a0_min_value;
+	} else if (n_acelerador >= a0_max_value) {
+		n_acelerador = a0_max_value;
+	}
+	return n_acelerador;
+}
 
 void mandaAcelerador() {
 	if (modo_crucero == true) {
@@ -311,51 +314,52 @@ void ayudaArranque() {
 	v_crucero = vcruceroprev;
 }
 
-void validaMinAcelerador(){
-  // Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador, en caso de no tener acelerador, mantenemos valor por defecto.
-  // Esto es útil para controlar el corecto funcionamiento del acelerador , si este está presente.
-  float min_acelerador;
-  for (int f=1; f <= 30 ; f++){
-    min_acelerador = min_acelerador + analogRead(pin_acelerador); // Tomamos 30 medidas para calcular la media.   
-  }
-  min_acelerador = min_acelerador / 30;
-  
-  // Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
-  if ((min_acelerador < a0_min_value - 50) || (min_acelerador > a0_min_value + 50)){
-      SOS_TONE();
-  } else {
-    a0_min_value = min_acelerador;
-  }
-  delay(100);
+void validaMinAcelerador() {
+	// Inicializamos el valor minimo del acelerador, calculando la media de las medidas si tiene acelerador, en caso de no tener acelerador, mantenemos valor por defecto.
+	// Esto es util para controlar el corecto funcionamiento del acelerador , si este esta presente.
+	float min_acelerador;
+
+	for (int f=1; f <= 30; f++) {
+		min_acelerador = min_acelerador + analogRead(pin_acelerador); // Tomamos 30 medidas para calcular la media.   
+	}
+
+	min_acelerador = min_acelerador / 30;
+
+	// Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
+	if ((min_acelerador < a0_min_value - 50) || (min_acelerador > a0_min_value + 50)) {
+		SOS_TONE();
+	} else {
+		a0_min_value = min_acelerador;
+	}
+
+	delay(100);
 }
 
 void setup() {
-
-  dac.begin(dir_dac); // Configura DAC
-  dac.setVoltage(810,false); // Fija voltaje inicial en Dac (0.85v)
-
+	dac.begin(dir_dac); // Configura DAC
+	dac.setVoltage(810,false); // Fija voltaje inicial en Dac (0.85v)
 
 	// Configura pines y prepara las interrupciones
-  pinMode(pin_piezo, OUTPUT);
+	pinMode(pin_piezo,OUTPUT);
 	pinMode(pin_freno,OUTPUT);
 	digitalWrite(pin_freno,HIGH);
 	pinMode(pin_pedal,INPUT_PULLUP);
 	pinMode(pin_acelerador,INPUT);
-	attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE); // Interrupcion pedal
-	attachInterrupt(digitalPinToInterrupt(pin_freno), freno, FALLING); // Interrupcion freno
+	attachInterrupt(digitalPinToInterrupt(pin_pedal),pedal,CHANGE); // Interrupcion pedal
+	attachInterrupt(digitalPinToInterrupt(pin_freno),freno,FALLING); // Interrupcion freno
 
-  validaMinAcelerador();
+	validaMinAcelerador();
 
-  repeatTones(tono_inicial, 1, 3000, 90, 190); // Tono aviso de inicio a la espera de frenadas (al encender bici)
+	repeatTones(tono_inicial, 1, 3000, 90, 190); // Tono aviso de inicio a la espera de frenadas (al encender bici)
 
 	// Si arrancamos con el freno pulsado
 	if (frenopulsado == true) {	
 		if (digitalRead(pin_freno) == LOW) {			
 			ayuda_salida = true; // Activamos la ayuda desde parado a 6kmh
 			cadencia = cadencia2; // Cadencia para este modo
-      delay(200);
-      repeatTones(tono_inicial, 3, 2900, 90, 200); // Tono aviso de inicio a la espera de frenadas (al encender bici)
-      delay(200);
+			delay(200);
+			repeatTones(tono_inicial, 3, 2900, 90, 200); // Tono aviso de inicio a la espera de frenadas (al encender bici)
+			delay(200);
 		}
 	}
 
