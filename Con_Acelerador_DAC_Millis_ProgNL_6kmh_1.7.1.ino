@@ -110,14 +110,13 @@ const float v_max_acelerador = 3.9;
 // Voltaje mínimo de acelerador en reposo
 const float voltaje_minimo = 0.85;
 
-// Valor minimo del acelerador para evitar fallos por picos                       
+// Valor minimo del acelerador para evitar fallos por picos
 const float minimo_acelerador = 1.15;
 
 // Variables para Millis()
 unsigned long tcadencia;
 unsigned long tcrucero;
 unsigned long tiempo;
-boolean delta = false;
 
 // Backup voltaje
 float bkp_voltaje = voltaje_minimo;
@@ -175,7 +174,7 @@ void leeAcelerador() {
 
 	for (int f=1; f <= 30; f++) {
 		// Lee valor
-		v_acelerador = v_acelerador + analogRead(pin_acelerador); 
+		v_acelerador = v_acelerador + analogRead(pin_acelerador);
 	}
 
 	v_acelerador = v_acelerador / 30;
@@ -183,7 +182,7 @@ void leeAcelerador() {
 
 void mandaAcelerador() {
 	if (modo_crucero == true) {
-		// Progresivo no lineal		
+		// Progresivo no lineal
 		fac_n = voltaje_minimo;
 		fac_m = (v_crucero - voltaje_minimo) / pow(retardo_aceleracion,fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion,fac_p);
