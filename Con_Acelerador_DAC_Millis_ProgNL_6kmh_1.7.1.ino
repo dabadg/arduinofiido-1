@@ -6,6 +6,7 @@ PRINCIPALES NOVEDADES:
  * Progresivos y Auto Progresivos no lineales
  * Posibilidadad de asistir a 6km/h desde parado
  * Posibilidadad de cortar crucero al frenar
+ * Añadido buzzer para emitir avisos en la inicialización.
 ------------------------------------------------------------------------
 VERSION CRUCERO: 
  * Se trata de guardar el ultimo valor del acelerador
@@ -44,15 +45,15 @@ LINKS:
 
 // Numero de pulsos para que se considere que se esta pedaleando
 // Configurar segun sensor y gustos
-const int cadencia1 = 1;
+int cadencia1 = 1;
 
 // Numero de pulsos para que se considere que se esta pedaleando cuando
 // arrancamos con freno pulsado si la variable frenopulsado esta a True
-const int cadencia2 = 2;
+int cadencia2 = 2;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado
-const boolean frenopulsado = false;
+const boolean frenopulsado = true;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear
 // Usar multiplos de 0.25
@@ -86,16 +87,19 @@ const int dir_dac = 0x60;
 // (True) si se desea desacelerar motor al dejar de pedalear
 const boolean desacelera_al_parar_pedal = false;
 
+// Constante que habilita los tonos de inicialización del sistema.
+const boolean tono_inicial = true;
+
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
 #include <Adafruit_MCP4725.h>
 Adafruit_MCP4725 dac;
 
 //======= PINES ========================================================
+const int pin_acelerador = A0; // Pin acelerador
 const int pin_pedal = 2; // Pin sensor pas, en Nano/Uno usar solo 2 o 3
 const int pin_freno = 3; // Pin de activacion del freno
-const int pin_acelerador = A0; // Pin acelerador
-// Resto de pines 9,10,11
+const int pin_piezo = 11; // Pin donde se ha conectado el zumbador (9,10,11)
 
 //======= VARIABLES PARA CALCULOS ======================================
 
@@ -108,13 +112,21 @@ const int tiempo_cadencia = 250;
 // Voltios maximos que da el acelerador, subir si se nota falta de 
 // potencia, bajar si para el motor a tope o se producen ruidos raros
 // No pasar de 4.20
-const float v_max_acelerador = 3.9;
+const float v_max_acelerador = 3.90;
 
 // Voltaje mínimo de acelerador en reposo
 const float voltaje_minimo = 0.85;
 
 // Valor minimo del acelerador para evitar fallos por picos
 const float minimo_acelerador = 1.15;
+
+const float sixkmh_acelerador = 2.19;
+
+// Valores mínimos y máximos del acelerador leidos por el pin A0
+float a0_min_value = 190.0; // Valor por defecto, al inicializar, lee el valor real del acelerador.
+const float a0_6km_value = 450.0;
+const float a0_med_value = 550.0;
+const float a0_max_value = 847.0;
 
 // Variables para Millis()
 unsigned long tcadencia;
@@ -159,6 +171,53 @@ boolean ayuda_salida = false;
 // Variable donde se suman los pulsos del sensor PAS
 volatile int p_pulsos = 0;
 
+//======= FUNCIONES DE TONOS ====================================================
+
+//================== TONES ==================
+// Frecuencias 4 octavas de
+int c[5]={131,262,523,1046,2093};       // Do
+int cs[5]={139,277,554,1108,2217};      // Do#
+int d[5]={147,294,587,1175,2349};       // Re
+int ds[5]={156,311,622,1244,2489};      // Re#
+int e[5]={165,330,659,1319,2637};       // Mi
+int f[5]={175,349,698,1397,2794};       // Fa
+int fs[5]={185,370,740,1480,2960};      // Fa#
+int g[5]={196,392,784,1568,3136};       // Sol
+int gs[5]={208,415,831,1661,3322};      // Sol#
+int a[5]={220,440,880,1760,3520};       // La
+int as[5]={233,466,932,1866,3729};      // La#
+int b[5]={247,494,988,1976,3951};       // Si
+
+void nota(int frec, int ttime){
+    tone(pin_piezo,frec);
+    delay(ttime);
+    noTone(pin_piezo);
+}
+
+void SOS_TONE(){
+  nota(b[3],150);delay(40);
+  nota(b[3],150);delay(40);
+  nota(b[3],150);delay(70);
+  nota(b[3],100);delay(40);
+  nota(b[3],100);delay(40);
+  nota(b[3],100);delay(70);
+  nota(b[3],150);delay(40);
+  nota(b[3],150);delay(40);
+  nota(b[3],150);delay(100);
+}
+
+void repeatTones(boolean trigger, int steps, int frequency, int duration, int delayTime){
+  if(trigger){
+    int cont=steps;
+    while(cont-- > 0){
+      tone( pin_piezo, frequency, duration);
+      if(delayTime>0)
+        delay(delayTime);    
+      //noTone(pin_piezo); 
+    }
+  }
+}
+
 //======= FUNCIONES ====================================================
 
 void pedal() {
@@ -175,16 +234,25 @@ void estableceCrucero() {
 	}
 }
 
-void leeAcelerador() {
-	v_acelerador = 0;
-
-	for (int f=1; f <= 30; f++) {
-		// Lee valor
-		v_acelerador = v_acelerador + analogRead(pin_acelerador);
-	}
-
-	v_acelerador = v_acelerador / 30;
+float leeAcelerador() {
+  float cl_acelerador = 0;
+  // Leemos nivel de acelerador
+  for (int f=1; f <= 30; f++) {
+    cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
+  }
+  cl_acelerador = cl_acelerador / 30;
+  return nivelaAcelerador(cl_acelerador);
 }
+  
+  float nivelaAcelerador(float &n_acelerador){
+    // nivelamos los valores para que no salgan del rango de máximo/mínimo.
+    if (n_acelerador <= a0_min_value) {
+      n_acelerador = a0_min_value;
+    } else if (n_acelerador >= a0_max_value) {
+      n_acelerador = a0_max_value;
+    }
+    return n_acelerador;
+  }
 
 void mandaAcelerador() {
 	if (modo_crucero == true) {
@@ -232,8 +300,8 @@ void ayudaArranque() {
 	float vcruceroprev = v_crucero;
 
 	// Mientras aceleramos y no pedaleamos
-	while (analogRead(pin_acelerador) > 220 && p_pulsos == 0) { // De 190 a 897
-		v_crucero = 2.10; // Fijamos crucero a 6 km/h
+	while (analogRead(pin_acelerador) > a0_min_value && p_pulsos == 0) { // De 190 a 897
+		v_crucero = sixkmh_acelerador; // Fijamos crucero a 6 km/h
 		contador_retardo_aceleracion++;
 		mandaAcelerador();
 		delay(50); // Corrige duracion del bucle de 30 sg si no se pone retardo
@@ -243,26 +311,51 @@ void ayudaArranque() {
 	v_crucero = vcruceroprev;
 }
 
+void validaMinAcelerador(){
+  // Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador, en caso de no tener acelerador, mantenemos valor por defecto.
+  // Esto es útil para controlar el corecto funcionamiento del acelerador , si este está presente.
+  float min_acelerador;
+  for (int f=1; f <= 30 ; f++){
+    min_acelerador = min_acelerador + analogRead(pin_acelerador); // Tomamos 30 medidas para calcular la media.   
+  }
+  min_acelerador = min_acelerador / 30;
+  
+  // Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
+  if ((min_acelerador < a0_min_value - 50) || (min_acelerador > a0_min_value + 50)){
+      SOS_TONE();
+  } else {
+    a0_min_value = min_acelerador;
+  }
+  delay(100);
+}
+
 void setup() {
-	// Configura pines
+
+  dac.begin(dir_dac); // Configura DAC
+  dac.setVoltage(810,false); // Fija voltaje inicial en Dac (0.85v)
+
+
+	// Configura pines y prepara las interrupciones
+  pinMode(pin_piezo, OUTPUT);
 	pinMode(pin_freno,OUTPUT);
 	digitalWrite(pin_freno,HIGH);
 	pinMode(pin_pedal,INPUT_PULLUP);
 	pinMode(pin_acelerador,INPUT);
+	attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE); // Interrupcion pedal
+	attachInterrupt(digitalPinToInterrupt(pin_freno), freno, FALLING); // Interrupcion freno
 
-	// Prepara las interrupciones
-	// Interrupcion pedal
-	attachInterrupt(digitalPinToInterrupt(pin_pedal),pedal,CHANGE);
-	// Interrupcion freno
-	attachInterrupt(digitalPinToInterrupt(pin_freno),freno,FALLING);
+  validaMinAcelerador();
+
+  repeatTones(tono_inicial, 1, 3000, 90, 190); // Tono aviso de inicio a la espera de frenadas (al encender bici)
 
 	// Si arrancamos con el freno pulsado
 	if (frenopulsado == true) {	
-		if (digitalRead(pin_freno) == LOW) {
-			// Activamos la ayuda desde parado a 6kmh
-			ayuda_salida = true;
-			// Cadencia para este modo
-			cadencia = cadencia2;
+		if (digitalRead(pin_freno) == LOW) {			
+			ayuda_salida = true; // Activamos la ayuda desde parado a 6kmh
+			cadencia = cadencia2; // Cadencia para este modo
+      delay(200);
+      repeatTones(tono_inicial, 3, 2900, 90, 200); // Tono aviso de inicio a la espera de frenadas (al encender bici)
+      delay(200);
 		}
 	}
 
@@ -284,22 +377,20 @@ void setup() {
 			fac_a = 1.0 - pow(1.0,fac_c) * fac_b;
 		}
 	}
-
-	// Configura DAC
-	dac.begin(dir_dac);
-	// Fija voltaje inicial en Dac (0.85v)
-	dac.setVoltage(810,false);
-	// Arrancar tiempo inicio para comprobar cadencia
-	tcadencia = millis();
-	// Arrancar tiempo inicio para establecer crucero
-	tcrucero = millis();
+	
+  repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalización de setup.
+  delay(100);
+  repeatTones(tono_inicial, 1, 2500, 90, 150); // Tono verificacion inicialización de modo x.
+	
+	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia
+	tcrucero = millis(); // Arrancar tiempo inicio para establecer crucero
 }
 
 void loop() {
 	tiempo = millis();
 	pulsos = p_pulsos;
 
-	leeAcelerador();
+	v_acelerador = leeAcelerador();
 
 	// Establecemos un retardo para detectar la caída de voltaje en el crucero
 	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms
@@ -307,7 +398,7 @@ void loop() {
 		estableceCrucero();
 	}
 
-	if (tiempo > tcadencia + (unsigned long)tiempo_cadencia) {
+	if (tiempo > tcadencia + (unsigned long) tiempo_cadencia) {
 		tcadencia = millis();
 
 		if (pulsos < cadencia) { // Si se pedalea despacio o se paran los pedales
@@ -351,7 +442,7 @@ void loop() {
 		}
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador
-		if (pulsos == 0 && analogRead(pin_acelerador) > 220 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
+		if (pulsos == 0 && analogRead(pin_acelerador) > a0_min_value && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
 			ayudaArranque();
 		}
 		
@@ -362,4 +453,3 @@ void loop() {
 }
 
 // Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.7.1 Develop
-
