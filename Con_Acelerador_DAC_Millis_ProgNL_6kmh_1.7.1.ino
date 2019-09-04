@@ -44,11 +44,11 @@ LINKS:
 
 // Numero de pulsos para que se considere que se esta pedaleando
 // Configurar segun sensor y gustos
-int cadencia1 = 1;
+const int cadencia1 = 1;
 
 // Numero de pulsos para que se considere que se esta pedaleando cuando
 // arrancamos con freno pulsado si la variable frenopulsado esta a True
-int cadencia2 = 2;
+const int cadencia2 = 2;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado
