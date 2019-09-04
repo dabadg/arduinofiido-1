@@ -6,7 +6,7 @@ PRINCIPALES NOVEDADES:
  * Progresivos y Auto Progresivos no lineales
  * Posibilidadad de asistir a 6km/h desde parado
  * Posibilidadad de cortar crucero al frenar
- * Añadido buzzer para emitir avisos en la inicialización.
+ * Añadido buzzer para emitir avisos en la inicializacion.
 ------------------------------------------------------------------------
 VERSION CRUCERO: 
  * Se trata de guardar el ultimo valor del acelerador
@@ -382,9 +382,9 @@ void setup() {
 		}
 	}
 	
-  repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalización de setup.
-  delay(100);
-  repeatTones(tono_inicial, 1, 2500, 90, 150); // Tono verificacion inicialización de modo x.
+	repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalizacion de setup
+	delay(100);
+	repeatTones(tono_inicial, 1, 2500, 90, 150); // Tono verificacion inicializacion de modo x
 	
 	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia
 	tcrucero = millis(); // Arrancar tiempo inicio para establecer crucero
@@ -396,7 +396,7 @@ void loop() {
 
 	v_acelerador = leeAcelerador();
 
-	// Establecemos un retardo para detectar la caída de voltaje en el crucero
+	// Establecemos un retardo para detectar la caida de voltaje en el crucero
 	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms
 		tcrucero = millis(); // Actualiza tiempo actual
 		estableceCrucero();
