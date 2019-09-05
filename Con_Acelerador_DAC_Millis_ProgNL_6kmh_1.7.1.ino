@@ -210,10 +210,10 @@ void SOS_TONE() {
 
 void repeatTones(boolean trigger, int steps, int frequency, int duration, int delayTime) {
 	if (trigger) {
-		int cont=steps;
+		int cont = steps;
 		while(cont-- > 0) {
 			tone(pin_piezo,frequency,duration);
-			if (delayTime>0)
+			if (delayTime > 0)
 				delay(delayTime);
 			//noTone(pin_piezo); 
 		}
@@ -359,7 +359,7 @@ void setup() {
 			ayuda_salida = true; // Activamos la ayuda desde parado a 6kmh
 			cadencia = cadencia2; // Cadencia para este modo
 			delay(200);
-			repeatTones(tono_inicial, 3, 2900, 90, 200); // Tono aviso de inicio a la espera de frenadas (al encender bici)
+			repeatTones(tono_inicial,3,2900,90,200); // Tono aviso de modo con asistencia desde parado
 			delay(200);
 		}
 	}
@@ -383,9 +383,9 @@ void setup() {
 		}
 	}
 	
-	repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalizacion de setup
-	delay(100);
-	repeatTones(tono_inicial, 1, 2500, 90, 150); // Tono verificacion inicializacion de modo x
+	repeatTones(tono_inicial,3,3000,90,90); // Tono de finalizacion de setup
+	//delay(100);
+	//repeatTones(tono_inicial,1,2500,90,150); // Tono verificacion inicializacion de modo x
 	
 	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia
 	tcrucero = millis(); // Arrancar tiempo inicio para establecer crucero
