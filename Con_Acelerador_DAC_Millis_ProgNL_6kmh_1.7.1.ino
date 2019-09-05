@@ -23,10 +23,18 @@ VERSIÓN CRUCERO:
  * Se puede configurar que el freno anule el crucero.
 ------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
- * Basicamente lo que hace es detectar pulsos mediante una
+ * Básicamente lo que hace es detectar pulsos mediante una
  * interrupción en el pin (pin_pedal).
  * Si los pulsos obtenidos son menores que la cadencia espera
  * que se cumpla el retardo establecido y no funciona el acelerador.
+------------------------------------------------------------------------
+AUTOPROGRESIVOS:
+ * Si se deja de pedalear, el motor se para como de costumbre, pero si
+ * continuamos pedaleando antes de transcurridos 10 segundos no inciará
+ * el progresivo desde 0 si no que el motor continuará a una velocidad
+ * ligeramente inferior a la que íbamos.
+ * Si se frena antes de los 10 segundos se anula la función y comenzará
+ * progresivo desde cero.
 ------------------------------------------------------------------------
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
@@ -36,9 +44,7 @@ LINKS:
  * Grupo Telegram de desarrollo privado. Si vas a montar el circuito y
  * necesitas ayuda o colaborar pide acceso en el general de arriba.
  *  
- * Canal con montaje, enlaces, programas, etc.
- * 
- *                      http://t.me/fiidolegal
+ * Canal con montaje, enlaces, programas, etc. http://t.me/fiidolegal
  */
 
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
