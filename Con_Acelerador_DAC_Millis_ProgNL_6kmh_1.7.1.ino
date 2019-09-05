@@ -173,7 +173,7 @@ boolean ayuda_salida = false;
 // Variable donde se suman los pulsos del sensor PAS
 volatile int p_pulsos = 0;
 
-//======= FUNCIONES DE TONOS ====================================================
+//======= FUNCIONES DE TONOS ===========================================
 
 //================== TONES ==================
 // Frecuencias 4 octavas de
@@ -212,7 +212,7 @@ void repeatTones(boolean trigger, int steps, int frequency, int duration, int de
 	if (trigger) {
 		int cont=steps;
 		while(cont-- > 0) {
-			tone( pin_piezo, frequency, duration);
+			tone(pin_piezo,frequency,duration);
 			if (delayTime>0)
 				delay(delayTime);
 			//noTone(pin_piezo); 
@@ -236,6 +236,16 @@ void estableceCrucero() {
 	}
 }
 
+float nivelaAcelerador(float &n_acelerador) {
+	// Nivelamos los valores para que no salgan del rango de maximo/minimo.
+	if (n_acelerador <= a0_min_value) {
+		n_acelerador = a0_min_value;
+	} else if (n_acelerador >= a0_max_value) {
+		n_acelerador = a0_max_value;
+	}
+	return n_acelerador;
+}
+
 float leeAcelerador() {
 	float cl_acelerador = 0;
 
@@ -246,16 +256,6 @@ float leeAcelerador() {
 
 	cl_acelerador = cl_acelerador / 30;
 	return nivelaAcelerador(cl_acelerador);
-}
-  
-float nivelaAcelerador(float &n_acelerador) {
-	// Nivelamos los valores para que no salgan del rango de maximo/minimo.
-	if (n_acelerador <= a0_min_value) {
-		n_acelerador = a0_min_value;
-	} else if (n_acelerador >= a0_max_value) {
-		n_acelerador = a0_max_value;
-	}
-	return n_acelerador;
 }
 
 void mandaAcelerador() {
@@ -317,7 +317,7 @@ void ayudaArranque() {
 
 void validaMinAcelerador() {
 	// Inicializamos el valor minimo del acelerador, calculando la media de las medidas si tiene acelerador, en caso de no tener acelerador, mantenemos valor por defecto.
-	// Esto es util para controlar el corecto funcionamiento del acelerador , si este esta presente.
+	// Esto es util para controlar el corecto funcionamiento del acelerador, si este esta presente.
 	float min_acelerador;
 
 	for (int f=1; f <= 30; f++) {
