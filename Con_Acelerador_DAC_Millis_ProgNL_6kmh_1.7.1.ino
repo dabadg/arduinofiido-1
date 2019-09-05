@@ -24,7 +24,7 @@ VERSIÓN CRUCERO:
 ------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
  * Basicamente lo que hace es detectar pulsos mediante una
- * interrupcin en el pin (pin_pedal).
+ * interrupción en el pin (pin_pedal).
  * Si los pulsos obtenidos son menores que la cadencia espera
  * que se cumpla el retardo establecido y no funciona el acelerador.
 ------------------------------------------------------------------------
