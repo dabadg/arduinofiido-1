@@ -104,7 +104,7 @@ Adafruit_MCP4725 dac;
 
 //======= PINES ========================================================
 const int pin_acelerador = A0; // Pin acelerador
-const int pin_pedal = 2; // Pin sensor pas, en Nano/Uno usar solo 2 o 3
+const int pin_pedal = 2; // Pin sensor pas, en Nano/Uno usar 2 ó 3
 const int pin_freno = 3; // Pin de activación del freno
 const int pin_piezo = 11; // Pin del zumbador
 // Resto de pines 9,10
