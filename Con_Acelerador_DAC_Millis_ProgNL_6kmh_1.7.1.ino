@@ -420,7 +420,7 @@ void loop() {
 	v_acelerador = leeAcelerador();
 
 	// Establecemos un retardo para detectar la caída de voltaje en el crucero
-	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms
+	if (tiempo > tcrucero + 125) { // Si ha pasado 125 ms
 		tcrucero = millis(); // Actualiza tiempo actual
 		estableceCrucero();
 	}
