@@ -48,7 +48,7 @@ LINKS:
  *
 ------------------------------------------------------------------------
 DEVELOPERS:
- * dabadg, d0s1s, chusquete, cirberus y fulano.
+ * dabadg, d0s1s, chusquete, ciberus y fulano.
 ------------------------------------------------------------------------
 AGRADECIMIENTOS:
  * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
