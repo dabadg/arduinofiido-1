@@ -65,7 +65,7 @@ const boolean frenopulsado = false;
 // Usar múltiplos de 0.25
 // No se recomienda subir mas de 1.00 segundo
 // 0.25 = 1/4 de segundo
-float retardo_paro_motor = 0.75;
+float retardo_paro_motor = 0.50;
 
 // Retardo en segundos para ponerse a velocidad máxima o crucero
 int retardo_aceleracion = 5;
@@ -97,7 +97,7 @@ float suavidad_autoprogresivos = 5;
 const int dir_dac = 0x60;
 
 // (True) si se desea desacelerar motor al dejar de pedalear
-const boolean desacelera_al_parar_pedal = false;
+const boolean desacelera_al_parar_pedal = true;
 
 // Constante que habilita los tonos de inicialización del sistema
 const boolean tono_inicial = true;
