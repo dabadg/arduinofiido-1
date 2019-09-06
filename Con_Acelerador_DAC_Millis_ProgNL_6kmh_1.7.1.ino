@@ -76,6 +76,11 @@ const boolean modo_crucero = true;
 // (True) si se desea anular la velocidad de crucero al frenar
 const boolean freno_anula_crucero = false;
 
+// Nivel al que se desea iniciar el progresivo	
+// Aumentar si se desea salir con mas tirón
+// >> NO PASAR DE 2.00, NI BAJAR DE 0.85 <<                                                                          	
+float nivel_inicial_progresivo = 1.5;
+
 // Retardo para inciar progresivo tras parar pedales
 // Freno anula el tiempo
 int retardo_inicio_progresivo = 10;
@@ -168,7 +173,7 @@ float v_acelerador; // Valor recogido del acelerador
 float v_crucero_ac; // Valor de crucero del acelerador
 float v_crucero = 0.85; // Velocidad de crucero
 // Los voltios que se mandan a la controladora
-float nivel_aceleracion = voltaje_minimo;
+float nivel_aceleracion = nivel_inicial_progresivo;
 
 // Contador de pulsos del pedal
 int pulsos = 0;
@@ -266,13 +271,23 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
+	// Anula crucero por debajo del nivel inicial del progresivo	
+	if (v_crucero < nivel_inicial_progresivo) {	
+		v_crucero = voltaje_minimo;	
+	}	
+
+	// Evita salidas demasiado bruscas 	
+	if (nivel_inicial_progresivo > 2) {	
+		nivel_inicial_progresivo = 2;	
+	}
+
 	if (modo_crucero == true) {
 		// Progresivo no lineal
-		fac_n = voltaje_minimo;
-		fac_m = (v_crucero - voltaje_minimo) / pow(retardo_aceleracion,fac_p);
+		fac_n = nivel_inicial_progresivo;
+		fac_m = (v_crucero - nivel_inicial_progresivo) / pow(retardo_aceleracion,fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion,fac_p);
 
-		if (nivel_aceleracion < voltaje_minimo) {
+		if (nivel_aceleracion == nivel_inicial_progresivo || nivel_aceleracion < voltaje_minimo) {
 			nivel_aceleracion = voltaje_minimo;
 		}
 
