@@ -63,7 +63,7 @@ const boolean frenopulsado = false;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear
 // Usar múltiplos de 0.25
-// No se recomienda subir mas de 1.00 segundo
+// No se recomienda subir más de 1.00 segundo
 // 0.25 = 1/4 de segundo
 float retardo_paro_motor = 0.50;
 
@@ -150,7 +150,7 @@ unsigned long tiempo;
 // Backup voltaje
 float bkp_voltaje = voltaje_minimo;
 
-// Contadores de paro, aceleración y auto_progresivo
+// Contadores de paro, aceleración y autoprogresivo
 unsigned contador_retardo_paro_motor = 0;
 int contador_retardo_aceleracion = 0;
 unsigned contador_retardo_inicio_progresivo = 0;
