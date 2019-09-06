@@ -45,6 +45,14 @@ LINKS:
  * necesitas ayuda o colaborar pide acceso en el general de arriba.
  *  
  * Canal con montaje, enlaces, programas, etc. http://t.me/fiidolegal
+ *
+------------------------------------------------------------------------
+DEVELOPERS:
+ * dabadg, d0s1s, chusquete, cirberus y fulano.
+------------------------------------------------------------------------
+AGRADECIMIENTOS:
+ * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
+ * ideas, etc.
  */
 
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
