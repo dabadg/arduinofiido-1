@@ -45,6 +45,14 @@ LINKS:
  * necesitas ayuda o colaborar pide acceso en el general de arriba.
  *  
  * Canal con montaje, enlaces, programas, etc. http://t.me/fiidolegal
+ *
+------------------------------------------------------------------------
+DEVELOPERS:
+ * dabadg, d0s1s, chusquete, ciberus y fulano.
+------------------------------------------------------------------------
+AGRADECIMIENTOS:
+ * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
+ * ideas, etc.
  */
 
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
@@ -63,9 +71,9 @@ const boolean frenopulsado = false;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear
 // Usar múltiplos de 0.25
-// No se recomienda subir mas de 1.00 segundo
+// No se recomienda subir más de 1.00 segundo
 // 0.25 = 1/4 de segundo
-float retardo_paro_motor = 0.75;
+float retardo_paro_motor = 0.50;
 
 // Retardo en segundos para ponerse a velocidad máxima o crucero
 int retardo_aceleracion = 5;
@@ -75,6 +83,11 @@ const boolean modo_crucero = true;
 
 // (True) si se desea anular la velocidad de crucero al frenar
 const boolean freno_anula_crucero = false;
+
+// Nivel al que se desea iniciar el progresivo	
+// Aumentar si se desea salir con mas tirón
+// >> NO PASAR DE 2.00, NI BAJAR DE 0.85 <<                                                                          	
+float nivel_inicial_progresivo = 1.5;
 
 // Retardo para inciar progresivo tras parar pedales
 // Freno anula el tiempo
@@ -92,7 +105,7 @@ float suavidad_autoprogresivos = 5;
 const int dir_dac = 0x60;
 
 // (True) si se desea desacelerar motor al dejar de pedalear
-const boolean desacelera_al_parar_pedal = false;
+const boolean desacelera_al_parar_pedal = true;
 
 // Constante que habilita los tonos de inicialización del sistema
 const boolean tono_inicial = true;
@@ -145,7 +158,7 @@ unsigned long tiempo;
 // Backup voltaje
 float bkp_voltaje = voltaje_minimo;
 
-// Contadores de paro, aceleración y auto_progresivo
+// Contadores de paro, aceleración y autoprogresivo
 unsigned contador_retardo_paro_motor = 0;
 int contador_retardo_aceleracion = 0;
 unsigned contador_retardo_inicio_progresivo = 0;
@@ -168,7 +181,7 @@ float v_acelerador; // Valor recogido del acelerador
 float v_crucero_ac; // Valor de crucero del acelerador
 float v_crucero = 0.85; // Velocidad de crucero
 // Los voltios que se mandan a la controladora
-float nivel_aceleracion = voltaje_minimo;
+float nivel_aceleracion = nivel_inicial_progresivo;
 
 // Contador de pulsos del pedal
 int pulsos = 0;
@@ -266,13 +279,23 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
+	// Anula crucero por debajo del nivel inicial del progresivo	
+	if (v_crucero < nivel_inicial_progresivo) {	
+		v_crucero = voltaje_minimo;	
+	}	
+
+	// Evita salidas demasiado bruscas 	
+	if (nivel_inicial_progresivo > 2) {	
+		nivel_inicial_progresivo = 2;	
+	}
+
 	if (modo_crucero == true) {
 		// Progresivo no lineal
-		fac_n = voltaje_minimo;
-		fac_m = (v_crucero - voltaje_minimo) / pow(retardo_aceleracion,fac_p);
+		fac_n = nivel_inicial_progresivo;
+		fac_m = (v_crucero - nivel_inicial_progresivo) / pow(retardo_aceleracion,fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion,fac_p);
 
-		if (nivel_aceleracion < voltaje_minimo) {
+		if (nivel_aceleracion == nivel_inicial_progresivo || nivel_aceleracion < voltaje_minimo) {
 			nivel_aceleracion = voltaje_minimo;
 		}
 
@@ -413,7 +436,7 @@ void loop() {
 	v_acelerador = leeAcelerador();
 
 	// Establecemos un retardo para detectar la caída de voltaje en el crucero
-	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms
+	if (tiempo > tcrucero + 125) { // Si ha pasado 125 ms
 		tcrucero = millis(); // Actualiza tiempo actual
 		estableceCrucero();
 	}
