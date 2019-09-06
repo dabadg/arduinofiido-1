@@ -15,6 +15,10 @@ CHANGELOG 1.7.1 --> 1.8:
   - Establece crucero cada 125 ms.
 - Añadido buzzer para emitir avisos y refactorización de funciones por dabadg (https://github.com/dabadg)
 - Correcciones menores.
+- Añadido en comentarios nuevas secciones:
+  - Autoprogresivos.
+  - Developers.
+  - Agradecimientos.
 
 CHANGELOG 1.7 --> 1.7.1:
 - Corregida duración de 30 sg del bucle de la asistencia a 6km/h.
