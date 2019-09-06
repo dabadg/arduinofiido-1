@@ -350,7 +350,7 @@ float aceleradorEnVoltios(float throttle){
 }
 
 float aceleradorEnDac(float throttle){
-  return (4096/5) * getVoltByThrottle(throttle);
+  return (4096/5) * aceleradorEnVoltios(throttle);
 }
 
 void validaMinAcelerador() {
