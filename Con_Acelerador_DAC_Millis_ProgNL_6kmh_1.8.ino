@@ -70,9 +70,8 @@ const int cadencia2 = 2;
 const boolean frenopulsado = false;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear
-// Usar múltiplos de 0.25
+// Usar múltiplos de 0.25 --> 0.25 = 1/4 de segundo
 // No se recomienda subir más de 1.00 segundo
-// 0.25 = 1/4 de segundo
 float retardo_paro_motor = 0.50;
 
 // Retardo en segundos para ponerse a velocidad máxima o crucero
@@ -345,11 +344,14 @@ void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos
 	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) {
 		v_crucero = sixkmh_acelerador; // Fijamos crucero a 6 km/h
+		cadencia = 3; // Subimos cadencia para evitar falsos positivos por pedaleo
 		contador_retardo_aceleracion++;
 		mandaAcelerador();
 		//delay(50); // Corrige duración del bucle de 30 sg si no se pone retardo
 	}
 
+	// Recuperamos cadencia definida en variable de usuario
+	cadencia = cadencia2;
 	// Recuperamos valor de velocidad de crucero
 	v_crucero = vcruceroprev;
 }
