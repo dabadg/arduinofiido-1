@@ -351,6 +351,7 @@ void ayudaArranque() {
 	}
 
 	// Recuperamos cadencia definida en variable de usuario
+	delay(50);
 	cadencia = cadencia2;
 	// Recuperamos valor de velocidad de crucero
 	v_crucero = vcruceroprev;
