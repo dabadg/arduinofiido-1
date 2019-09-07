@@ -345,24 +345,17 @@ void freno() {
 }
 
 void ayudaArranque() {
-	// Guardamos valor de velocidad de crucero
-	float vcruceroprev = v_crucero;
-
 	// Mientras aceleramos y no pedaleamos
 	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) {
-		v_crucero = sixkmh_acelerador; // Fijamos crucero a 6 km/h
-		cadencia = 3; // Subimos cadencia para evitar falsos positivos por pedaleo
+		cadencia = 3;
 		contador_retardo_aceleracion++;
 		auto_progresivo = true;
-		mandaAcelerador();
-		//delay(50); // Corrige duración del bucle de 30 sg si no se pone retardo
+		dac.setVoltage(aceleradorEnDac(sixkmh_acelerador),false);
 	}
 
-	// Recuperamos cadencia definida en variable de usuario
-	delay(50);
+	dac.setVoltage(aceleradorEnDac(0.85),false);
 	cadencia = cadencia2;
-	// Recuperamos valor de velocidad de crucero
-	v_crucero = vcruceroprev;
+	v_crucero = voltaje_minimo;
 }
 
 void validaMinAcelerador() {
@@ -516,3 +509,4 @@ void loop() {
 }
 
 // Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.8 Develop
+
