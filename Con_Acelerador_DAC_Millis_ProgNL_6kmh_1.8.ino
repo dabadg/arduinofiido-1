@@ -346,6 +346,13 @@ void ayudaArranque() {
 	}
 
 	dac.setVoltage(aceleradorEnDac(0.85),false);
+	
+	// Posibilidad de fijar crucero en este modo
+	if (aceleradorEnVoltios(v_acelerador) > minimo_acelerador) {
+		v_crucero = v_crucero_ac;
+	} else {
+		v_crucero = voltaje_minimo;
+	}
 }
 
 void validaMinAcelerador() {
