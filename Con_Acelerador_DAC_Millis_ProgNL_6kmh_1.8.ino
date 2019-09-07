@@ -353,6 +353,7 @@ void ayudaArranque() {
 		v_crucero = sixkmh_acelerador; // Fijamos crucero a 6 km/h
 		cadencia = 3; // Subimos cadencia para evitar falsos positivos por pedaleo
 		contador_retardo_aceleracion++;
+		auto_progresivo = true;
 		mandaAcelerador();
 		//delay(50); // Corrige duración del bucle de 30 sg si no se pone retardo
 	}
