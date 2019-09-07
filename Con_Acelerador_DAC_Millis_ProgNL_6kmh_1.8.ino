@@ -246,6 +246,15 @@ void pedal() {
 	p_pulsos++;
 }
 
+
+float aceleradorEnVoltios(float throttle) {
+	return throttle * 5 / 1023;
+}
+
+float aceleradorEnDac(float throttle) {
+	return (4096 / 5) * aceleradorEnVoltios(throttle);
+}
+
 void estableceCrucero() {
 	// Pasa a escala de 0-5 voltios
 	v_acelerador = aceleradorEnVoltios(v_acelerador);
@@ -343,14 +352,6 @@ void ayudaArranque() {
 
 	// Recuperamos valor de velocidad de crucero
 	v_crucero = vcruceroprev;
-}
-
-float aceleradorEnVoltios(float throttle){
-  return throttle * 5 / 1023
-}
-
-float aceleradorEnDac(float throttle){
-  return (4096/5) * aceleradorEnVoltios(throttle);
 }
 
 void validaMinAcelerador() {
