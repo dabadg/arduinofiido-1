@@ -432,7 +432,6 @@ void setup() {
 
 void loop() {
 	tiempo = millis();
-	pulsos = p_pulsos;
 
 	v_acelerador = leeAcelerador();
 
@@ -444,6 +443,7 @@ void loop() {
 
 	if (tiempo > tcadencia + (unsigned long) tiempo_cadencia) {
 		tcadencia = millis();
+		pulsos = p_pulsos;
 
 		if (pulsos < cadencia) { // Si se pedalea despacio o se paran los pedales
 			contador_retardo_paro_motor++;
