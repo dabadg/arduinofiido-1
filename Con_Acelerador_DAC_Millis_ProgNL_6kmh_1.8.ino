@@ -252,7 +252,7 @@ float aceleradorEnVoltios(float throttle) {
 }
 
 float aceleradorEnDac(float throttle) {
-	return (4096 / 5) * aceleradorEnVoltios(throttle);
+	return (4096 / 5) * throttle);
 }
 
 void estableceCrucero() {
