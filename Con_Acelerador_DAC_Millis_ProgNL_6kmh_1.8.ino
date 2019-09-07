@@ -248,7 +248,7 @@ void pedal() {
 
 void estableceCrucero() {
 	// Pasa a escala de 0-5 voltios
-	v_acelerador = (v_acelerador * 5 / 1023);
+	v_acelerador = aceleradorEnVoltios(v_acelerador);
 
 	if (v_acelerador > minimo_acelerador) {
 		v_crucero_ac = v_acelerador;
@@ -309,7 +309,7 @@ void mandaAcelerador() {
 	if (nivel_aceleracion != bkp_voltaje) {
 		bkp_voltaje = nivel_aceleracion;
 		// Ajusta el voltaje a valor entre 0-4096 (Resolución del DAC)
-		uint32_t valor = (4096/5) * nivel_aceleracion;
+		uint32_t valor = aceleradorEnDac(nivel_aceleracion);
 		// Fija voltaje en DAC
 		dac.setVoltage(valor,false);
 	}  
@@ -343,6 +343,14 @@ void ayudaArranque() {
 
 	// Recuperamos valor de velocidad de crucero
 	v_crucero = vcruceroprev;
+}
+
+float aceleradorEnVoltios(float throttle){
+  return throttle * 5 / 1023
+}
+
+float aceleradorEnDac(float throttle){
+  return (4096/5) * aceleradorEnVoltios(throttle);
 }
 
 void validaMinAcelerador() {
@@ -389,7 +397,7 @@ void setup() {
 			ayuda_salida = true; // Activamos la ayuda desde parado a 6kmh
 			cadencia = cadencia2; // Cadencia para este modo
 			delay(200);
-			repeatTones(tono_inicial,3,2900,90,200); // Tono aviso de modo con asistencia desde parado
+			repeatTones(tono_inicial,2,2900,90,200); // Tono aviso de modo con asistencia desde parado
 			delay(200);
 		}
 	}
