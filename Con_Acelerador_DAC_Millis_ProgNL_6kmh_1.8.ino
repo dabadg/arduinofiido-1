@@ -347,7 +347,7 @@ void ayudaArranque() {
 		v_crucero = sixkmh_acelerador; // Fijamos crucero a 6 km/h
 		contador_retardo_aceleracion++;
 		mandaAcelerador();
-		delay(50); // Corrige duración del bucle de 30 sg si no se pone retardo
+		//delay(50); // Corrige duración del bucle de 30 sg si no se pone retardo
 	}
 
 	// Recuperamos valor de velocidad de crucero
