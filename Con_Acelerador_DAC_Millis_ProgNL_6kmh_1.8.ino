@@ -341,18 +341,14 @@ void freno() {
 void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos
 	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) {
-		//contador_retardo_aceleracion++;
+		contador_retardo_aceleracion++;
 		dac.setVoltage(aceleradorEnDac(sixkmh_acelerador),false);
 	}
 
 	dac.setVoltage(aceleradorEnDac(0.85),false);
 	
-	// Posibilidad de fijar crucero en este modo
-	if (aceleradorEnVoltios(v_acelerador) > minimo_acelerador) {
-		v_crucero = v_crucero_ac;
-	} else {
-		v_crucero = voltaje_minimo;
-	}
+	// Cortamos crucero
+	v_crucero = voltaje_minimo;
 }
 
 void validaMinAcelerador() {
