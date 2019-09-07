@@ -330,6 +330,13 @@ void paraMotor() {
 void freno() {
 	contador_retardo_inicio_progresivo = retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
+
+	if (frenopulsado == true) {
+		cadencia = cadencia2;
+	} else {
+		cadencia = cadencia1;
+	}
+
 	paraMotor();
 
 	if (freno_anula_crucero == true) {
@@ -457,6 +464,7 @@ void loop() {
 
 				if (contador_retardo_aceleracion > 4) {
 					bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
+					cadencia = 3;
 				}
 				paraMotor();
 			}
@@ -465,8 +473,15 @@ void loop() {
 				if (bkp_contador_retardo_aceleracion > retardo_aceleracion - fac_s) {
 					bkp_contador_retardo_aceleracion = retardo_aceleracion - fac_s;
 				}
+
 				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a+fac_b * pow(contador_retardo_inicio_progresivo,fac_c)) * v_crucero/v_max_acelerador;
 				auto_progresivo = false;
+				
+				if (frenopulsado == true) {
+					cadencia = cadencia2;
+				} else {
+					cadencia = cadencia1;
+				}
 			} else {
 				auto_progresivo = false;
 			}
