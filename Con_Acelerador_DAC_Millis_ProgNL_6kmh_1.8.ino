@@ -83,9 +83,9 @@ const boolean modo_crucero = true;
 // (True) si se desea anular la velocidad de crucero al frenar
 const boolean freno_anula_crucero = false;
 
-// Nivel al que se desea iniciar el progresivo	
+// Nivel al que se desea iniciar el progresivo
 // Aumentar si se desea salir con mas tirón
-// >> NO PASAR DE 2.00, NI BAJAR DE 0.85 <<                                                                          	
+// >> NO PASAR DE 2.00, NI BAJAR DE 0.85 <<
 float nivel_inicial_progresivo = 1.5;
 
 // Retardo para inciar progresivo tras parar pedales
@@ -99,6 +99,10 @@ float suavidad_progresivos = 5;
 // Suavidad de los autoprogresivos, varía entre 1-10
 // Al crecer se hacen más brucos
 float suavidad_autoprogresivos = 5;
+
+// Ideado para evitar posibles falsos positivos de pedal,
+// puede dificultar encontrar la cadencia en cuestas empinadas.
+const boolean cadencia_dinamica_ap = false;
 
 // Dirección del bus I2C [DAC] (0x60) si está soldado, si no (0x62)
 const int dir_dac = 0x60;
@@ -331,10 +335,12 @@ void freno() {
 	contador_retardo_inicio_progresivo = retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
 
-	if (frenopulsado == true) {
-		cadencia = cadencia2;
-	} else {
-		cadencia = cadencia1;
+	if (cadencia_dinamica_ap == true) {
+		if (frenopulsado == true) {
+			cadencia = cadencia2;
+		} else {
+			cadencia = cadencia1;
+		}
 	}
 
 	paraMotor();
@@ -347,14 +353,18 @@ void freno() {
 void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos
 	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) {
-		cadencia = 3;
+		// cadencia = 3;
 		contador_retardo_aceleracion++;
+		// No queremos iniciar un progresivo
 		auto_progresivo = true;
+		// Mandamos al DAC 6 km/h
 		dac.setVoltage(aceleradorEnDac(sixkmh_acelerador),false);
 	}
 
-	dac.setVoltage(aceleradorEnDac(0.85),false);
-	cadencia = cadencia2;
+	//cadencia = cadencia2;
+	// Dejamos de asistir en el DAC
+	dac.setVoltage(aceleradorEnDac(voltaje_minimo),false);
+	// Cortamos crucero
 	v_crucero = voltaje_minimo;
 }
 
@@ -458,7 +468,10 @@ void loop() {
 
 				if (contador_retardo_aceleracion > 4) {
 					bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
-					cadencia = 3;
+					
+					if (cadencia_dinamica_ap == true) {
+						cadencia = 3;
+					}
 				}
 				paraMotor();
 			}
@@ -470,11 +483,13 @@ void loop() {
 
 				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a+fac_b * pow(contador_retardo_inicio_progresivo,fac_c)) * v_crucero/v_max_acelerador;
 				auto_progresivo = false;
-				
-				if (frenopulsado == true) {
-					cadencia = cadencia2;
-				} else {
-					cadencia = cadencia1;
+
+				if (cadencia_dinamica_ap == true) {
+					if (frenopulsado == true) {
+						cadencia = cadencia2;
+					} else {
+						cadencia = cadencia1;
+					}
 				}
 			} else {
 				auto_progresivo = false;
@@ -509,4 +524,3 @@ void loop() {
 }
 
 // Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.8 Develop
-
