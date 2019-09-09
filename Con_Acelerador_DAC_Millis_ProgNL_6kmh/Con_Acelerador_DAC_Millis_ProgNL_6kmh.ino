@@ -146,9 +146,10 @@ const float sixkmh_acelerador = 2.19;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_min_value = 190.0; // Valor por defecto, al inicializar, lee el valor real del acelerador.
-const float a0_6km_value = 450.0;
-const float a0_med_value = 550.0;
-const float a0_max_value = 847.0;
+const float a0_low_value = 235.0;  // 1.15
+const float a0_6km_value = 450.0;  // 2.19
+const float a0_med_value = 550.0;  // 2.68
+const float a0_high_value = 847.0; // 4.13
 
 // Variables para millis().
 unsigned long tcadencia;
@@ -282,8 +283,8 @@ float nivelaAcelerador(float n_acelerador) {
   // Nivelamos los valores para que no salgan del rango de máximo/mínimo.
   if (n_acelerador <= a0_min_value) {
     return a0_min_value;
-  } else if (n_acelerador >= a0_max_value) {
-    return a0_max_value;
+  } else if (n_acelerador >= a0_high_value) {
+    return ;
   }
   return n_acelerador;
 }
