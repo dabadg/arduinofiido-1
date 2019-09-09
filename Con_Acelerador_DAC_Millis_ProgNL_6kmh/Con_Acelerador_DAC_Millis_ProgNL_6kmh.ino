@@ -83,7 +83,9 @@ const boolean freno_anula_crucero = false;
 // Nivel al que se desea iniciar el progresivo.
 // Aumentar si se desea salir con mas tirón.
 // >> NO PASAR DE 2.00, NI BAJAR DE 0.85 <<.
-float nivel_inicial_progresivo = 1.5;
+float nivel_inicial_progresivo = 1.5; // TODO eliminar valor en voltios y utilizar a0_forward_init_value
+// >> NO PASAR DE 410, NI BAJAR DE 190 <<.
+float a0_forward_init_value = 306; // 1.5 (190 -> 410)
 
 // Retardo para inciar progresivo tras parar pedales.
 // Freno anula el tiempo.
@@ -133,16 +135,16 @@ const int tiempo_cadencia = 250;
 // Voltios máximos que da el acelerador, subir si se nota falta de 
 // potencia, bajar si para el motor a tope o se producen ruidos raros.
 // No pasar de 4.20.
-const float v_max_acelerador = 3.90;
+const float v_max_acelerador = 3.90; // TODO eliminar valor en voltios y utilizar a0_high_value
 
 // Voltaje mínimo de acelerador en reposo.
-const float voltaje_minimo = 0.85;
+const float voltaje_minimo = 0.85; // TODO eliminar valor en voltios y utilizar a0_min_value
 
 // Valor mínimo del acelerador para evitar fallos por picos.
-const float minimo_acelerador = 1.15;
+const float minimo_acelerador = 1.15; // TODO eliminar valor en voltios y utilizar a0_low_value
 
 // 6 km/h en el acelerador.
-const float sixkmh_acelerador = 2.19;
+const float sixkmh_acelerador = 2.19; // TODO eliminar valor en voltios y utilizar a0_6km_value
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_min_value = 190.0; // Valor por defecto, al inicializar, lee el valor real del acelerador.
