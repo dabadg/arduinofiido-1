@@ -140,9 +140,6 @@ const float v_max_acelerador = 3.90; // TODO eliminar valor en voltios y utiliza
 // Voltaje mínimo de acelerador en reposo.
 const float voltaje_minimo = 0.85; // TODO eliminar valor en voltios y utilizar a0_min_value
 
-// Valor mínimo del acelerador para evitar fallos por picos.
-const float minimo_acelerador = 1.15; // TODO eliminar valor en voltios y utilizar a0_low_value
-
 // 6 km/h en el acelerador.
 // -------------- const float sixkmh_acelerador = 2.19; // TODO eliminar valor en voltios y utilizar a0_6km_value
 
@@ -266,13 +263,11 @@ float voltiosEnDac(float volts) {
 	return (4096 / 5) * volts;
 }
 
-void estableceCrucero() {
-	// Pasa a escala de 0-5 voltios.
-	v_acelerador = aceleradorEnVoltios(v_acelerador);
+void estableceCrucero(float throtle) {
 
-	if (v_acelerador > minimo_acelerador) {
-		v_crucero_ac = v_acelerador;
-		v_crucero = v_crucero_ac;
+	if (throtle > a0_low_value) {
+		v_crucero_ac = aceleradorEnVoltios(throtle);
+		v_crucero = aceleradorEnVoltios(throtle);
 	}
 }
 
@@ -359,7 +354,7 @@ void ayudaArranque() {
 	}
 
 	// Dejamos de asistir en el DAC.
-	dac.setVoltage(voltiosEnDac(voltaje_minimo),false);
+	dac.setVoltage(aceleradorEnDac(a0_min_value),false);
 	// Cortamos crucero.
 	v_crucero = voltaje_minimo;
 }
@@ -447,7 +442,7 @@ void loop() {
 	// Establecemos un retardo para detectar la caída de voltaje en el crucero.
 	if (tiempo > tcrucero + 125) { // Si ha pasado 125 ms.
 		tcrucero = millis(); // Actualiza tiempo actual.
-		estableceCrucero();
+		estableceCrucero(v_acelerador);
 	}
 
 	if (tiempo > tcadencia + (unsigned long) tiempo_cadencia) {
