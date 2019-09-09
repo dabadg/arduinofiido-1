@@ -249,12 +249,19 @@ void pedal() {
 }
 
 
+// Pasamos de escala acelerador -> Voltios
 float aceleradorEnVoltios(float throttle) {
 	return throttle * 5 / 1023;
 }
 
+// Pasamos de escala acelerador -> DAC
 float aceleradorEnDac(float throttle) {
-	return (4096 / 5) * throttle;
+  return throttle * 4096 / 1023;
+}
+
+// Pasamos de escala voltios -> DAC
+float voltiosEnDac(float volts) {
+	return (4096 / 5) * volts;
 }
 
 void estableceCrucero() {
@@ -317,7 +324,7 @@ void mandaAcelerador() {
 	if (nivel_aceleracion != bkp_voltaje) {
 		bkp_voltaje = nivel_aceleracion;
 		// Ajusta el voltaje a valor entre 0-4096 (Resolución del DAC).
-		uint32_t valor = aceleradorEnDac(nivel_aceleracion);
+		uint32_t valor = voltiosEnDac(nivel_aceleracion);
 		// Fija voltaje en DAC.
 		dac.setVoltage(valor,false);
 	}  
@@ -349,11 +356,11 @@ void ayudaArranque() {
 		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
 		contador_retardo_inicio_progresivo++;
 		// Mandamos al DAC 6 km/h.
-		dac.setVoltage(aceleradorEnDac(sixkmh_acelerador),false);
+		dac.setVoltage(voltiosEnDac(sixkmh_acelerador),false);
 	}
 
 	// Dejamos de asistir en el DAC.
-	dac.setVoltage(aceleradorEnDac(voltaje_minimo),false);
+	dac.setVoltage(voltiosEnDac(voltaje_minimo),false);
 	// Cortamos crucero.
 	v_crucero = voltaje_minimo;
 }
