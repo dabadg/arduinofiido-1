@@ -291,14 +291,14 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
-	// Anula crucero por debajo del nivel inicial del progresivo	
+	// Anula crucero por debajo del nivel inicial del progresivo
 	if (v_crucero < nivel_inicial_progresivo) {	
 		v_crucero = voltaje_minimo;	
 	}	
 
-	// Evita salidas demasiado bruscas 	
+	// Evita salidas demasiado bruscas
 	if (nivel_inicial_progresivo > 2) {	
-		nivel_inicial_progresivo = 2;	
+		nivel_inicial_progresivo = 2.00;
 	}
 
 	if (modo_crucero == true) {
@@ -353,15 +353,13 @@ void freno() {
 void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos
 	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) {
-		// cadencia = 3;
 		contador_retardo_aceleracion++;
-		// No queremos iniciar un progresivo
+		// No queremos iniciar un progresivo si pedaleamos con el acelerador accionado
 		auto_progresivo = true;
 		// Mandamos al DAC 6 km/h
 		dac.setVoltage(aceleradorEnDac(sixkmh_acelerador),false);
 	}
 
-	//cadencia = cadencia2;
 	// Dejamos de asistir en el DAC
 	dac.setVoltage(aceleradorEnDac(voltaje_minimo),false);
 	// Cortamos crucero
@@ -370,11 +368,11 @@ void ayudaArranque() {
 
 void validaMinAcelerador() {
 	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador, en caso de no tener acelerador, mantenemos valor por defecto.
-	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
+	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente
 	float min_acelerador;
 
 	for (int f=1; f <= 30; f++) {
-		min_acelerador = min_acelerador + analogRead(pin_acelerador); // Tomamos 30 medidas para calcular la media.   
+		min_acelerador = min_acelerador + analogRead(pin_acelerador); // Tomamos 30 medidas para calcular la media
 	}
 
 	min_acelerador = min_acelerador / 30;
