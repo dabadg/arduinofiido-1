@@ -281,10 +281,10 @@ float leeAcelerador() {
 
 float nivelaAcelerador(float n_acelerador) {
   // Nivelamos los valores para que no salgan del rango de máximo/mínimo.
-  if (n_acelerador <= a0_min_value) {
+  if (n_acelerador < a0_min_value) {
     return a0_min_value;
-  } else if (n_acelerador >= a0_high_value) {
-    return ;
+  } else if (n_acelerador > a0_high_value) {
+    return a0_high_value;
   }
   return n_acelerador;
 }
