@@ -265,16 +265,6 @@ void estableceCrucero() {
 	}
 }
 
-float nivelaAcelerador(float &n_acelerador) {
-	// Nivelamos los valores para que no salgan del rango de máximo/mínimo.
-	if (n_acelerador <= a0_min_value) {
-		n_acelerador = a0_min_value;
-	} else if (n_acelerador >= a0_max_value) {
-		n_acelerador = a0_max_value;
-	}
-	return n_acelerador;
-}
-
 float leeAcelerador() {
 	float cl_acelerador = 0;
 
@@ -285,6 +275,17 @@ float leeAcelerador() {
 
 	cl_acelerador = cl_acelerador / 30;
 	return nivelaAcelerador(cl_acelerador);
+}
+
+
+float nivelaAcelerador(float n_acelerador) {
+  // Nivelamos los valores para que no salgan del rango de máximo/mínimo.
+  if (n_acelerador <= a0_min_value) {
+    return a0_min_value;
+  } else if (n_acelerador >= a0_max_value) {
+    return a0_max_value;
+  }
+  return n_acelerador;
 }
 
 void mandaAcelerador() {
