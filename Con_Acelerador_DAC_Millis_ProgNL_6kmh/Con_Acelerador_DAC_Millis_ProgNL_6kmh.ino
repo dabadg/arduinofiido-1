@@ -64,7 +64,7 @@ const int cadencia1 = 1;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
-const boolean frenopulsado = false;
+const boolean frenopulsado = true;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear.
 // Usar múltiplos de 0.25 --> 0.25 = 1/4 de segundo.
@@ -99,7 +99,7 @@ float suavidad_autoprogresivos = 5;
 
 // Ideado para evitar posibles falsos positivos de pedal,
 // puede dificultar encontrar la cadencia en cuestas empinadas.
-const boolean cadencia_dinamica_ap = false;
+const boolean cadencia_dinamica_ap = true;
 
 // Dirección del bus I2C [DAC] (0x60) si está soldado, si no (0x62).
 const int dir_dac = 0x60;
