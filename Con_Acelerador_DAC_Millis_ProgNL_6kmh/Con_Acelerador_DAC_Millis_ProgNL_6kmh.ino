@@ -144,7 +144,7 @@ const float voltaje_minimo = 0.85; // TODO eliminar valor en voltios y utilizar 
 const float minimo_acelerador = 1.15; // TODO eliminar valor en voltios y utilizar a0_low_value
 
 // 6 km/h en el acelerador.
-const float sixkmh_acelerador = 2.19; // TODO eliminar valor en voltios y utilizar a0_6km_value
+// -------------- const float sixkmh_acelerador = 2.19; // TODO eliminar valor en voltios y utilizar a0_6km_value
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_min_value = 190.0; // Valor por defecto, al inicializar, lee el valor real del acelerador.
@@ -325,10 +325,7 @@ void mandaAcelerador() {
 
 	if (nivel_aceleracion != bkp_voltaje) {
 		bkp_voltaje = nivel_aceleracion;
-		// Ajusta el voltaje a valor entre 0-4096 (Resolución del DAC).
-		uint32_t valor = voltiosEnDac(nivel_aceleracion);
-		// Fija voltaje en DAC.
-		dac.setVoltage(valor,false);
+		dac.setVoltage(voltiosEnDac(nivel_aceleracion),false);
 	}  
 }
 
@@ -358,7 +355,7 @@ void ayudaArranque() {
 		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
 		contador_retardo_inicio_progresivo++;
 		// Mandamos al DAC 6 km/h.
-		dac.setVoltage(voltiosEnDac(sixkmh_acelerador),false);
+		dac.setVoltage(aceleradorEnDac(a0_6km_value),false);
 	}
 
 	// Dejamos de asistir en el DAC.
@@ -390,7 +387,7 @@ void validaMinAcelerador() {
 
 void setup() {
 	dac.begin(dir_dac); // Configura DAC.
-	dac.setVoltage(810,false); // Fija voltaje inicial en Dac (0.85v).
+	dac.setVoltage(aceleradorEnDac(a0_min_value),false); // Fija voltaje inicial en Dac (0.85v).
 
 	// Configura pines y prepara las interrupciones.
 	pinMode(pin_piezo,OUTPUT);
