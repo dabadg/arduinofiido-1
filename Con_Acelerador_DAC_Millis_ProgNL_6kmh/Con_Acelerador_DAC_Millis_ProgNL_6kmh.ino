@@ -149,7 +149,8 @@ float a0_min_value = 190.0; // Valor por defecto, al inicializar, lee el valor r
 const float a0_low_value = 235.0;  // 1.15
 const float a0_6km_value = 450.0;  // 2.19
 const float a0_med_value = 550.0;  // 2.68
-const float a0_high_value = 847.0; // 4.13
+const float a0_high_value = 798.0; // 3.90
+const float a0_max_value = 847.0;  // 4.13
 
 // Variables para millis().
 unsigned long tcadencia;
@@ -269,24 +270,20 @@ void estableceCrucero() {
 float leeAcelerador() {
 	float cl_acelerador = 0;
 
-	// Leemos nivel de acelerador.
+	// Leemos nivel de acelerador tomando 30 medidas.
 	for (int f=1; f <= 30; f++) {
 		cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
 	}
 
 	cl_acelerador = cl_acelerador / 30;
-	return nivelaAcelerador(cl_acelerador);
-}
 
-
-float nivelaAcelerador(float n_acelerador) {
-  // Nivelamos los valores para que no salgan del rango de máximo/mínimo.
-  if (n_acelerador < a0_min_value) {
+  // Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
+  if (cl_acelerador < a0_min_value) {
     return a0_min_value;
-  } else if (n_acelerador > a0_high_value) {
-    return a0_high_value;
+  } else if (cl_acelerador > a0_max_value) {
+    return a0_max_value;
   }
-  return n_acelerador;
+  return cl_acelerador;
 }
 
 void mandaAcelerador() {
