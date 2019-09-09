@@ -61,10 +61,6 @@ AGRADECIMIENTOS:
 // Configurar según sensor y gustos.
 const int cadencia1 = 1;
 
-// Número de pulsos para que se considere que se está pedaleando cuando
-// arrancamos con freno pulsado si la variable frenopulsado esta a True.
-const int cadencia2 = 2;
-
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
 const boolean frenopulsado = false;
@@ -336,11 +332,7 @@ void freno() {
 	bkp_contador_retardo_aceleracion = 0;
 
 	if (cadencia_dinamica_ap == true) {
-		if (frenopulsado == true) {
-			cadencia = cadencia2;
-		} else {
-			cadencia = cadencia1;
-		}
+		cadencia = cadencia1;
 	}
 
 	paraMotor();
@@ -408,7 +400,6 @@ void setup() {
 	if (frenopulsado == true) {	
 		if (digitalRead(pin_freno) == LOW) {			
 			ayuda_salida = true; // Activamos la ayuda desde parado a 6kmh.
-			cadencia = cadencia2; // Cadencia para este modo.
 			delay(200);
 			repeatTones(tono_inicial,2,2900,90,200); // Tono aviso de modo con asistencia desde parado.
 			delay(200);
@@ -483,11 +474,7 @@ void loop() {
 				auto_progresivo = false;
 
 				if (cadencia_dinamica_ap == true) {
-					if (frenopulsado == true) {
-						cadencia = cadencia2;
-					} else {
-						cadencia = cadencia1;
-					}
+					cadencia = cadencia1;
 				}
 			} else {
 				auto_progresivo = false;
