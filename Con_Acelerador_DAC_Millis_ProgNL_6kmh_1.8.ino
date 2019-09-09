@@ -354,8 +354,8 @@ void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
-		// No queremos iniciar un progresivo si pedaleamos con el acelerador accionado.
-		auto_progresivo = true;
+		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
+		contador_retardo_inicio_progresivo++;
 		// Mandamos al DAC 6 km/h.
 		dac.setVoltage(aceleradorEnDac(sixkmh_acelerador),false);
 	}
