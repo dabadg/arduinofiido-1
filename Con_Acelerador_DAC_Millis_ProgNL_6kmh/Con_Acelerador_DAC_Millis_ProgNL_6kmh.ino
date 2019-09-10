@@ -82,10 +82,9 @@ const boolean freno_anula_crucero = false;
 
 // Nivel al que se desea iniciar el progresivo.
 // Aumentar si se desea salir con mas tirón.
-// >> NO PASAR DE 2.00, NI BAJAR DE 0.85 <<.
-float nivel_inicial_progresivo = 1.5; // TODO eliminar valor en voltios y utilizar a0_forward_init_value
 // >> NO PASAR DE 410, NI BAJAR DE 190 <<.
 float a0_forward_init_value = 306; // 1.5 (190 -> 410)
+float nivel_inicial_progresivo = a0_forward_init_value;
 
 // Retardo para inciar progresivo tras parar pedales.
 // Freno anula el tiempo.
@@ -135,10 +134,10 @@ const int tiempo_cadencia = 250;
 // Voltios máximos que da el acelerador, subir si se nota falta de 
 // potencia, bajar si para el motor a tope o se producen ruidos raros.
 // No pasar de 4.20.
-const float v_max_acelerador = 3.90; // TODO eliminar valor en voltios y utilizar a0_high_value
+//const float v_max_acelerador = 3.90; // TODO eliminar valor en voltios y utilizar a0_high_value
 
 // Voltaje mínimo de acelerador en reposo.
-const float voltaje_minimo = 0.85; // TODO eliminar valor en voltios y utilizar a0_min_value
+//const float voltaje_minimo = 0.85; // TODO eliminar valor en voltios y utilizar a0_min_value
 
 // 6 km/h en el acelerador.
 // -------------- const float sixkmh_acelerador = 2.19; // TODO eliminar valor en voltios y utilizar a0_6km_value
@@ -157,7 +156,7 @@ unsigned long tcrucero;
 unsigned long tiempo;
 
 // Backup voltaje.
-float bkp_voltaje = voltaje_minimo;
+float bkp_voltaje = a0_min_value;
 
 // Contadores de paro, aceleración y auto_progresivo.
 unsigned contador_retardo_paro_motor = 0;
@@ -180,9 +179,9 @@ float fac_c = suavidad_autoprogresivos / 10.0;
 
 float v_acelerador; // Valor recogido del acelerador.
 float v_crucero_ac; // Valor de crucero del acelerador.
-float v_crucero = 0.85; // Velocidad de crucero.
+float v_crucero = a0_min_value; // Velocidad de crucero inicial.
 // Los voltios que se mandan a la controladora.
-float nivel_aceleracion = nivel_inicial_progresivo;
+float nivel_aceleracion = a0_forward_init_value;
 
 // Contador de pulsos del pedal.
 int pulsos = 0;
@@ -266,8 +265,8 @@ float voltiosEnDac(float volts) {
 void estableceCrucero(float throtle) {
 
 	if (throtle > a0_low_value) {
-		v_crucero_ac = aceleradorEnVoltios(throtle);
-		v_crucero = aceleradorEnVoltios(throtle);
+		v_crucero_ac = throtle;
+		v_crucero = throtle;
 	}
 }
 
@@ -292,23 +291,23 @@ float leeAcelerador() {
 
 void mandaAcelerador() {
 	// Anula crucero por debajo del nivel inicial del progresivo.
-	if (v_crucero < nivel_inicial_progresivo) {	
-		v_crucero = voltaje_minimo;	
+	if (v_crucero < a0_forward_init_value) {	
+		v_crucero = a0_min_value;	
 	}	
 
 	// Evita salidas demasiado bruscas.
-	if (nivel_inicial_progresivo > 2) {	
-		nivel_inicial_progresivo = 2.00;
+	if (nivel_inicial_progresivo > 410) {	
+		nivel_inicial_progresivo = a0_6km_value;
 	}
 
 	if (modo_crucero == true) {
 		// Progresivo no lineal.
 		fac_n = nivel_inicial_progresivo;
-		fac_m = (v_crucero - nivel_inicial_progresivo) / pow(retardo_aceleracion,fac_p);
-		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion,fac_p);
+		fac_m = (v_crucero - a0_forward_init_value) / pow(retardo_aceleracion, fac_p);
+		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
-		if (nivel_aceleracion == nivel_inicial_progresivo || nivel_aceleracion < voltaje_minimo) {
-			nivel_aceleracion = voltaje_minimo;
+		if (nivel_aceleracion == nivel_inicial_progresivo || nivel_aceleracion < a0_min_value) {
+			nivel_aceleracion = a0_min_value;
 		}
 
 		if (nivel_aceleracion > v_crucero) {
@@ -320,7 +319,7 @@ void mandaAcelerador() {
 
 	if (nivel_aceleracion != bkp_voltaje) {
 		bkp_voltaje = nivel_aceleracion;
-		dac.setVoltage(voltiosEnDac(nivel_aceleracion),false);
+		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
 	}  
 }
 
@@ -339,7 +338,7 @@ void freno() {
 	paraMotor();
 
 	if (freno_anula_crucero == true) {
-		v_crucero = voltaje_minimo;
+		v_crucero = a0_min_value;
 	}
 }
 
@@ -356,7 +355,7 @@ void ayudaArranque() {
 	// Dejamos de asistir en el DAC.
 	dac.setVoltage(aceleradorEnDac(a0_min_value),false);
 	// Cortamos crucero.
-	v_crucero = voltaje_minimo;
+	v_crucero = a0_min_value;
 }
 
 void validaMinAcelerador() {
@@ -471,7 +470,7 @@ void loop() {
 					bkp_contador_retardo_aceleracion = retardo_aceleracion - fac_s;
 				}
 
-				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a+fac_b * pow(contador_retardo_inicio_progresivo,fac_c)) * v_crucero/v_max_acelerador;
+				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a+fac_b * pow(contador_retardo_inicio_progresivo,fac_c)) * v_crucero / a0_high_value;
 				auto_progresivo = false;
 
 				if (cadencia_dinamica_ap == true) {
