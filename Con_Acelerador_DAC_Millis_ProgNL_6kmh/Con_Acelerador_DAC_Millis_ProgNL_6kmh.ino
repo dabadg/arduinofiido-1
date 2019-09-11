@@ -193,6 +193,9 @@ int pulsos = 0;
 // Permite usar el acelerador desde parado a 6 km/h.
 boolean ayuda_salida = false;
 
+// Variable que almacena el estado de notificación de fijar crucero.
+boolean crucero_actualizado = false;
+
 //======= Variables interrupción =======================================
 // Variable donde se suman los pulsos del sensor PAS.
 volatile int p_pulsos = 0;
@@ -255,14 +258,13 @@ float aceleradorEnDac(float vl_acelerador) {
 	return vl_acelerador * 4096 / 1023;
 }
 
-boolean crucero_actualizado = false; // variable que almacena el estado de notificación de fijar crucero.
 void estableceCrucero(float vl_acelerador) {
 	if (vl_acelerador > a0_valor_suave && p_pulsos > 0) { // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
 		v_crucero = vl_acelerador;
-    crucero_actualizado=true;
-	} else if (vl_acelerador <= a0_valor_suave && crucero_actualizado){ // Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso 
-    crucero_actualizado=false;
-    repeatTones(tono_inicial, 1, 3000, 190, 1);
+		crucero_actualizado=true;
+	} else if (vl_acelerador <= a0_valor_suave && crucero_actualizado) { // Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso 
+		crucero_actualizado=false;
+		repeatTones(tono_inicial, 1, 3000, 190, 1);
 	}
 }
 
