@@ -1,6 +1,6 @@
 /* 
                     Versión Con Acelerador y DAC
-         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.8 Develop
+         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.9 Develop
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -64,7 +64,7 @@ const int cadencia1 = 1;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
-const boolean frenopulsado = true;
+const boolean frenopulsado = false;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear.
 // Usar múltiplos de 0.25 --> 0.25 = 1/4 de segundo.
@@ -84,7 +84,6 @@ const boolean freno_anula_crucero = false;
 // Aumentar si se desea salir con mas tirón.
 // >> NO PASAR DE 410, NI BAJAR DE 190 <<.
 float a0_valor_inicial_arranque_progresivo = 306; // 1.5 (190 -> 410)
-float nivel_inicial_progresivo = a0_valor_inicial_arranque_progresivo;
 
 // Retardo para inciar progresivo tras parar pedales.
 // Freno anula el tiempo.
@@ -100,7 +99,7 @@ float suavidad_autoprogresivos = 5;
 
 // Ideado para evitar posibles falsos positivos de pedal,
 // puede dificultar encontrar la cadencia en cuestas empinadas.
-const boolean cadencia_dinamica_ap = true;
+const boolean cadencia_dinamica_ap = false;
 
 // Dirección del bus I2C [DAC] (0x60) si está soldado, si no (0x62).
 const int dir_dac = 0x60;
@@ -159,6 +158,7 @@ boolean auto_progresivo = false;
 float fac_m = 0;
 float fac_n = 0;
 float fac_p = 0.6222 - 0.0222 * suavidad_progresivos;
+float nivel_inicial_progresivo = a0_valor_inicial_arranque_progresivo;
 
 // Variables para autoprogresivos.
 float fac_s = 0;
@@ -170,7 +170,6 @@ float fac_c = suavidad_autoprogresivos / 10.0;
 float v_acelerador; // Valor recogido del acelerador.
 float v_crucero_ac; // Valor de crucero del acelerador.
 float v_crucero = a0_valor_reposo; // Velocidad de crucero inicial.
-
 // Los voltios que se mandan a la controladora.
 float nivel_aceleracion = a0_valor_inicial_arranque_progresivo;
 
@@ -239,7 +238,7 @@ void pedal() {
 
 // Pasamos de escala acelerador -> DAC
 float aceleradorEnDac(float vl_acelerador) {
-  return vl_acelerador * 4096 / 1023;
+	return vl_acelerador * 4096 / 1023;
 }
 
 void estableceCrucero(float vl_acelerador) {
@@ -259,13 +258,14 @@ float leeAcelerador() {
 
 	cl_acelerador = cl_acelerador / 30;
 
-  // Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
-  if (cl_acelerador < a0_valor_reposo) {
-    return a0_valor_reposo;
-  } else if (cl_acelerador > a0_valor_max) {
-    return a0_valor_max;
-  }
-  return cl_acelerador;
+	// Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
+	if (cl_acelerador < a0_valor_reposo) {
+		return a0_valor_reposo;
+	} else if (cl_acelerador > a0_valor_max) {
+		return a0_valor_max;
+	}
+
+	return cl_acelerador;
 }
 
 void mandaAcelerador() {
@@ -405,8 +405,6 @@ void setup() {
 	}
 	
 	repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalización de setup.
-	/*delay(100);
-	repeatTones(tono_inicial,1,2500,90,150); // Tono verificación inicialización de modo x.*/
 	
 	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia.
 	tcrucero = millis(); // Arrancar tiempo inicio para establecer crucero.
@@ -480,7 +478,7 @@ void loop() {
 		if (pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 10 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
 			ayudaArranque();
 		}
-		
+
 		p_pulsos = 0;
 	}
 
