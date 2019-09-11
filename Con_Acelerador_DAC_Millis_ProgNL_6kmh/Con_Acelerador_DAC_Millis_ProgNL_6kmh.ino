@@ -143,7 +143,7 @@ const int pin_piezo = 11; // Pin del zumbador
 int cadencia = cadencia1;
 
 // Tiempo en milisegundos para contar pulsos.
-const int tiempo_cadencia = 250;
+const int tiempo_cadencia = 200;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Valor por defecto. Al inicializar, lee el valor real del acelerador.
@@ -183,7 +183,6 @@ float fac_a = 0;
 float fac_c = suavidad_autoprogresivos / 10.0;
 
 float v_acelerador; // Valor recogido del acelerador.
-float v_crucero_ac; // Valor de crucero del acelerador.
 float v_crucero = a0_valor_reposo; // Velocidad de crucero inicial.
 // Los voltios que se mandan a la controladora.
 float nivel_aceleracion = a0_valor_inicial_arranque_progresivo;
@@ -256,10 +255,14 @@ float aceleradorEnDac(float vl_acelerador) {
 	return vl_acelerador * 4096 / 1023;
 }
 
+boolean crucero_actualizado = false; // variable que almacena el estado de notificación de fijar crucero.
 void estableceCrucero(float vl_acelerador) {
-	if (vl_acelerador > a0_valor_minimo) {
-		v_crucero_ac = vl_acelerador;
-		v_crucero = v_crucero_ac;
+	if (vl_acelerador > a0_valor_suave && p_pulsos > 0) { // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
+		v_crucero = vl_acelerador;
+    crucero_actualizado=true;
+	} else if (vl_acelerador <= a0_valor_suave && crucero_actualizado){ // Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso 
+    crucero_actualizado=false;
+    repeatTones(tono_inicial, 1, 3000, 190, 1);
 	}
 }
 
@@ -354,7 +357,7 @@ void ayudaArranque() {
 
 void ayudaArranque2() {
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) {
+	while (analogRead(pin_acelerador) > a0_valor_minimo + 10 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
 		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
 		contador_retardo_inicio_progresivo++;
@@ -364,9 +367,8 @@ void ayudaArranque2() {
 		//delay(50); //No introducimos retardo porque se quiere una respuesta más inmediata dela celerador al salir pedalenado.
 		// El no tener este delay implica que el bucle dura unos 30 segundos, que soltando acelerador y volviéndolo a accionar, da otros 30, y así ...
 	}
-
 	// Cortamos crucero.
-	v_crucero = voltaje_minimo;
+	v_crucero = a0_valor_minimo;
 }
 
 void validaMinAcelerador() {
