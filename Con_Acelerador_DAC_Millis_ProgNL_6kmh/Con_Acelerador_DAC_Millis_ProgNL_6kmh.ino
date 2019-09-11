@@ -147,7 +147,7 @@ const int tiempo_cadencia = 200;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Valor por defecto. Al inicializar, lee el valor real del acelerador.
-const float a0_valor_minimo = 235.0; 	// 1.15
+const float a0_valor_minimo = 235.0;		// 1.15
 const float a0_valor_suave = 410.0;		// 2.00
 const float a0_valor_6kmh = 450.0;		// 2.19
 const float a0_valor_medio = 550.0;		// 2.68
@@ -261,9 +261,9 @@ float aceleradorEnDac(float vl_acelerador) {
 void estableceCrucero(float vl_acelerador) {
 	if (vl_acelerador > a0_valor_suave && p_pulsos > 0) { // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
 		v_crucero = vl_acelerador;
-		crucero_actualizado=true;
+		crucero_actualizado = true;
 	} else if (vl_acelerador <= a0_valor_suave && crucero_actualizado) { // Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso 
-		crucero_actualizado=false;
+		crucero_actualizado = false;
 		repeatTones(tono_inicial, 1, 3000, 190, 1);
 	}
 }
@@ -452,7 +452,7 @@ void loop() {
 	v_acelerador = leeAcelerador();
 
 	// Establecemos un retardo para detectar la caída de voltaje en el crucero.
-	if (tiempo > tcrucero + 125) { // Si ha pasado 125 ms.
+	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms.
 		tcrucero = millis(); // Actualiza tiempo actual.
 		estableceCrucero(v_acelerador);
 	}
