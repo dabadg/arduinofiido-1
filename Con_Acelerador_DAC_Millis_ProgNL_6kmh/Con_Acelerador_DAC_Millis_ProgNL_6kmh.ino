@@ -259,7 +259,7 @@ float aceleradorEnDac(float vl_acelerador) {
 void estableceCrucero(float vl_acelerador) {
 	if (vl_acelerador > a0_valor_minimo) {
 		v_crucero_ac = vl_acelerador;
-		v_crucero = vl_acelerador;
+		v_crucero = v_crucero_ac;
 	}
 }
 
