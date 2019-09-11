@@ -134,6 +134,7 @@ const int tiempo_cadencia = 250;
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Valor por defecto, al inicializar, lee el valor real del acelerador.
 const float a0_valor_minimo = 235.0;  // 1.15
+const float a0_valor_suave = 410.0;  // 2.00
 const float a0_valor_6kmh = 450.0;  // 2.19
 const float a0_valor_medio = 550.0;  // 2.68
 const float a0_valor_alto = 798.0; // 3.90
@@ -273,9 +274,9 @@ void mandaAcelerador() {
 		v_crucero = a0_valor_reposo;	
 	}	
 
-	// Evita salidas demasiado bruscas. // TODO 2.0 - > 2
-	if (nivel_inicial_progresivo > 410) {	
-		nivel_inicial_progresivo = a0_valor_6kmh;
+	// Evita salidas demasiado bruscas.
+	if (nivel_inicial_progresivo > a0_valor_suave) {	
+		nivel_inicial_progresivo = a0_valor_suave;
 	}
 
 	if (modo_crucero == true) {
