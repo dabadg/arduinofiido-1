@@ -37,6 +37,15 @@ AUTOPROGRESIVOS:
  * Si se frena antes de los 10 segundos se anula la función y comenzará
  * progresivo desde cero.
 ------------------------------------------------------------------------
+ASISTENCIA A 6 KM/H DESDE PARADO:
+ * Si no se pedalea y mientras el acelerador esté accionado, el motor 
+ * asiste hasta 6 km/h, ajustándose a la normativa.
+ * Si se suelta el acelerador, deja de asistir, y si se comienza a
+ * pedalear sin dejar de accionar el acelerador, se sale a la velocidad
+ * con la que vayamos regulando con el acelerador.
+ * Utilizar esta asistencia, borra el valor de crucero, si es que
+ * hubiera alguno fijado.
+------------------------------------------------------------------------
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
  * 
@@ -98,7 +107,7 @@ float suavidad_progresivos = 5;
 float suavidad_autoprogresivos = 5;
 
 // Ideado para evitar posibles falsos positivos de pedal,
-// puede dificultar encontrar la cadencia en cuestas empinadas.
+// puede dificultar encontrar la cadencia en cuestas.
 const boolean cadencia_dinamica_ap = false;
 
 // Dirección del bus I2C [DAC] (0x60) si está soldado, si no (0x62).
@@ -122,7 +131,7 @@ const int pin_freno = 3; // Pin de activación del freno
 const int pin_piezo = 11; // Pin del zumbador
 // Resto de pines 9,10
 
-//======= VARIABLES PARA CALCULOS ======================================
+//======= VARIABLES PARA CÁLCULOS ======================================
 
 // Número de pulsos para que se considere que se está pedaleando.
 int cadencia = cadencia1;
@@ -131,13 +140,13 @@ int cadencia = cadencia1;
 const int tiempo_cadencia = 250;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
-float a0_valor_reposo = 190.0; // Valor por defecto, al inicializar, lee el valor real del acelerador.
-const float a0_valor_minimo = 235.0;  // 1.15
-const float a0_valor_suave = 410.0;  // 2.00
-const float a0_valor_6kmh = 450.0;  // 2.19
-const float a0_valor_medio = 550.0;  // 2.68
-const float a0_valor_alto = 798.0; // 3.90
-const float a0_valor_max = 847.0;  // 4.13
+float a0_valor_reposo = 190.0; // Valor por defecto. Al inicializar, lee el valor real del acelerador.
+const float a0_valor_minimo = 235.0; 	// 1.15
+const float a0_valor_suave = 410.0;		// 2.00
+const float a0_valor_6kmh = 450.0;		// 2.19
+const float a0_valor_medio = 550.0;		// 2.68
+const float a0_valor_alto = 798.0;		// 3.90
+const float a0_valor_max = 847.0;		// 4.13
 
 // Variables para millis().
 unsigned long tcadencia;
@@ -271,11 +280,11 @@ float leeAcelerador() {
 void mandaAcelerador() {
 	// Anula crucero por debajo del nivel inicial del progresivo.
 	if (v_crucero < a0_valor_inicial_arranque_progresivo) {	
-		v_crucero = a0_valor_reposo;	
-	}	
+		v_crucero = a0_valor_reposo;
+	}
 
 	// Evita salidas demasiado bruscas.
-	if (nivel_inicial_progresivo > a0_valor_suave) {	
+	if (nivel_inicial_progresivo > a0_valor_suave) {
 		nivel_inicial_progresivo = a0_valor_suave;
 	}
 
@@ -338,7 +347,7 @@ void ayudaArranque() {
 }
 
 void validaMinAcelerador() {
-	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador, en caso de no tener acelerador, mantenemos valor por defecto.
+	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador. En caso de no tener acelerador, mantenemos valor por defecto.
 	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
 	float l_acelerador_reposo;
 
@@ -363,13 +372,13 @@ void setup() {
 	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false); // Fija voltaje inicial en Dac (0.85v).
 
 	// Configura pines y prepara las interrupciones.
-	pinMode(pin_piezo,OUTPUT);
-	pinMode(pin_freno,OUTPUT);
-	digitalWrite(pin_freno,HIGH);
-	pinMode(pin_pedal,INPUT_PULLUP);
-	pinMode(pin_acelerador,INPUT);
-	attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal,CHANGE); // Interrupción pedal.
-	attachInterrupt(digitalPinToInterrupt(pin_freno), freno,FALLING); // Interrupción freno.
+	pinMode(pin_piezo, OUTPUT);
+	pinMode(pin_freno, OUTPUT);
+	digitalWrite(pin_freno, HIGH);
+	pinMode(pin_pedal, INPUT_PULLUP);
+	pinMode(pin_acelerador, INPUT);
+	attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE); // Interrupción pedal.
+	attachInterrupt(digitalPinToInterrupt(pin_freno), freno, FALLING); // Interrupción freno.
 
 	validaMinAcelerador();
 
@@ -471,7 +480,6 @@ void loop() {
 					contador_retardo_aceleracion = 0;
 				}
 			}
-
 		}
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador.
