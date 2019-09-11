@@ -73,7 +73,13 @@ const int cadencia1 = 1;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
-const boolean frenopulsado = false;
+const boolean frenopulsado = true;
+
+// (True) si se desea tener la asistencia desde parado más orientada al
+// "zig zageo" entre coches.
+// (False) si se quiere tener más orientada a una respuesta más
+// inmediata al salir pedalenado sin soltar el acelerador.  
+const boolean modo_asistencia_6kmh = true;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear.
 // Usar múltiplos de 0.25 --> 0.25 = 1/4 de segundo.
@@ -346,6 +352,23 @@ void ayudaArranque() {
 	v_crucero = a0_valor_reposo;
 }
 
+void ayudaArranque2() {
+	// Mientras aceleramos y no pedaleamos.
+	while (analogRead(pin_acelerador) > a0_min_value + 10 && p_pulsos == 0) {
+		contador_retardo_aceleracion++;
+		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
+		contador_retardo_inicio_progresivo++;
+		// Crucero de 6 km/h
+		v_crucero = a0_valor_6kmh;
+		mandaAcelerador();
+		//delay(50); //No introducimos retardo porque se quiere una respuesta más inmediata dela celerador al salir pedalenado.
+		// El no tener este delay implica que el bucle dura unos 30 segundos, que soltando acelerador y volviéndolo a accionar, da otros 30, y así ...
+	}
+
+	// Cortamos crucero.
+	v_crucero = voltaje_minimo;
+}
+
 void validaMinAcelerador() {
 	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador. En caso de no tener acelerador, mantenemos valor por defecto.
 	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
@@ -484,7 +507,11 @@ void loop() {
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador.
 		if (pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 10 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
-			ayudaArranque();
+			if (modo_asistencia_6kmh == true) {
+				ayudaArranque();
+			} else {
+				ayudaArranque2();
+			}
 		}
 
 		p_pulsos = 0;
