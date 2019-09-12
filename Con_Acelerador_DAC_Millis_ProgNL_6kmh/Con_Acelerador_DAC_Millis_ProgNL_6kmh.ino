@@ -75,12 +75,6 @@ const int cadencia1 = 2;
 // 6 km/h arrancando con el freno pulsado.
 const boolean frenopulsado = true;
 
-// (True) si se desea tener la asistencia desde parado más orientada al
-// "zig zageo" entre coches.
-// (False) si se quiere tener más orientada a una respuesta más
-// inmediata al salir pedalenado sin soltar el acelerador.  
-const boolean modo_asistencia_6kmh = true;
-
 // Retardo en segundos para parar el motor una vez se deja de pedalear.
 // Usar múltiplos de 0.25 --> 0.25 = 1/4 de segundo.
 // No se recomienda subir más de 1.00 segundo.
@@ -121,6 +115,11 @@ const int dir_dac = 0x60;
 
 // (True) si se desea desacelerar motor al dejar de pedalear.
 const boolean desacelera_al_parar_pedal = true;
+
+// (True) si se desea tener la asistencia desde parado más orientada al
+// "zig zageo" entre coches. (False) si se quiere tener más orientada a
+// salidas desde parado.
+const boolean modo_asistencia_6kmh = true;
 
 // Constante que habilita los tonos de inicialización del sistema.
 const boolean tono_inicial = true;
