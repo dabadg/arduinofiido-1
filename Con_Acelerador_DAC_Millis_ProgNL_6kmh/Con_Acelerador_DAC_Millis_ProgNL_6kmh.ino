@@ -87,7 +87,7 @@ int retardo_aceleracion = 5;
 const boolean modo_crucero = true;
 
 // (True) si se desea anular la velocidad de crucero al frenar.
-const boolean freno_anula_crucero = false;
+const boolean freno_anula_crucero = true;
 
 // Nivel al que se desea iniciar el progresivo.
 // Aumentar si se desea salir con mas tirón.
@@ -200,6 +200,10 @@ boolean ayuda_salida = false;
 // Variable donde se suman los pulsos del sensor PAS.
 volatile int p_pulsos = 0;
 
+//======= Variables fijaCrucero =======================================
+float prev_vcrucero = a0_valor_reposo; // Variable para calcular el valor medio de medidas del acelerador para selección del crucero.
+float f_crucero = a0_valor_reposo; // Variable que almacena el valor del acelerador para fijar el crucero.
+
 //======= FUNCIONES DE TONOS ===========================================
 
 //================== TONES ==================
@@ -258,6 +262,7 @@ float aceleradorEnDac(float vl_acelerador) {
 	return vl_acelerador * 4096 / 1023;
 }
 
+/*
 void estableceCrucero(float vl_acelerador) {
 	if (vl_acelerador > a0_valor_minimo) {
 		v_crucero_ac = vl_acelerador;
@@ -273,7 +278,23 @@ void estableceCrucero(float vl_acelerador) {
 		crucero_actualizado = false;
 		repeatTones(tono_inicial, 1, 3000, 190, 1);
 	}
-}*/
+}
+*/
+void fijaCrucero(){ // utilizar dentro de control de tiempo - [ if (tiempo > tcrucero + 2500){} ]
+  if(pulsos > 0 && f_crucero <= a0_valor_reposo){ //Si se está pedaleando y el crucero no está fijado.
+    float tmpv = (prev_vcrucero + v_acelerador) / 2; //Calculamos la media de la medida anterior y la actual
+    if( comparaConTolerancia(tmpv, v_acelerador, 20.0) && tmpv > a0_valor_suave){ // Si la media entre el valor anterior y el actual está en rango, fija valor de posición de crucero. 
+      f_crucero = v_acelerador; // Guardamos la posición del acelerador en f_crucero
+      repeatTones(tono_inicial, 1, 3000, 190, 1);
+    }
+  }
+  prev_vcrucero = v_acelerador;
+}
+
+boolean comparaConTolerancia(float valor, float valor2, float toleranciaValor2){
+  return (valor > (valor2 - toleranciaValor2)) && (valor < (valor2 + toleranciaValor2));
+}
+
 
 float leeAcelerador() {
 	float cl_acelerador = 0;
@@ -345,6 +366,7 @@ void freno() {
 
 	if (freno_anula_crucero == true) {
 		v_crucero = a0_valor_reposo;
+    f_crucero = a0_valor_reposo; // Reinicia el crucero fijado al pulsar el freno //TODO buscar otra condición salir del crucero fijado 
 	}
 }
 
@@ -392,12 +414,11 @@ void validaMinAcelerador() {
 	l_acelerador_reposo = l_acelerador_reposo / 30;
 
 	// Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
-	if ((l_acelerador_reposo < a0_valor_reposo - 50) || (l_acelerador_reposo > a0_valor_reposo + 50)) {
-		SOS_TONE();
+	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
+    a0_valor_reposo = l_acelerador_reposo;
 	} else {
-		a0_valor_reposo = l_acelerador_reposo;
+    SOS_TONE();
 	}
-
 	delay(100);
 }
 
@@ -458,12 +479,23 @@ void loop() {
 
 	v_acelerador = leeAcelerador();
 
-	// Establecemos un retardo para detectar la caída de voltaje en el crucero.
-	if (tiempo > tcrucero + 100) { // Si ha pasado 100 ms.
-		tcrucero = millis(); // Actualiza tiempo actual.
-		estableceCrucero(v_acelerador);
-	}
-
+  if (tiempo > tcrucero + 5000){
+    tcrucero = millis(); // Actualiza tiempo de crucero, para detectar la siguiente vuelta.
+    fijaCrucero(); // fina crucero si la medida durante el ciclo ha sido estable.
+  }
+    
+  if(f_crucero > a0_valor_reposo){ // Si está establecido el crucero
+    if (v_acelerador > a0_valor_reposo) { // Si se usa el acelerador prevalece el acelerador
+      v_crucero = v_acelerador;
+    }else{
+      v_crucero = f_crucero;
+    }
+  }else{ // Si no está establecido el crucero
+    if (v_acelerador > a0_valor_reposo) { // llenamos v_crucero con la lectura del acelerador // TODO Ver como eliminar v_crucero
+      v_crucero = v_acelerador;
+    }
+  }
+  
 	if (tiempo > tcadencia + (unsigned long) tiempo_cadencia) {
 		pulsos = p_pulsos;
 		tcadencia = millis();
