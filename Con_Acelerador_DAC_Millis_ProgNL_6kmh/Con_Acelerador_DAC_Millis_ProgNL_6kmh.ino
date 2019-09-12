@@ -69,7 +69,7 @@ AGRADECIMIENTOS:
 
 // Número de pulsos para que se considere que se está pedaleando.
 // Configurar según sensor y gustos.
-const int cadencia1 = 1;
+const int cadencia1 = 2;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
@@ -143,7 +143,7 @@ const int pin_piezo = 11; // Pin del zumbador
 int cadencia = cadencia1;
 
 // Tiempo en milisegundos para contar pulsos.
-const int tiempo_cadencia = 200;
+const int tiempo_cadencia = 250;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Valor por defecto. Al inicializar, lee el valor real del acelerador.
@@ -194,7 +194,7 @@ int pulsos = 0;
 boolean ayuda_salida = false;
 
 // Variable que almacena el estado de notificación de fijar crucero.
-boolean crucero_actualizado = false;
+//boolean crucero_actualizado = false;
 
 //======= Variables interrupción =======================================
 // Variable donde se suman los pulsos del sensor PAS.
@@ -259,6 +259,13 @@ float aceleradorEnDac(float vl_acelerador) {
 }
 
 void estableceCrucero(float vl_acelerador) {
+	if (vl_acelerador > a0_valor_minimo) {
+		v_crucero_ac = vl_acelerador;
+		v_crucero = v_crucero_ac;
+	}
+}
+
+/*void estableceCrucero(float vl_acelerador) {
 	if (vl_acelerador > a0_valor_suave && p_pulsos > 0) { // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
 		v_crucero = vl_acelerador;
 		crucero_actualizado = true;
@@ -266,7 +273,7 @@ void estableceCrucero(float vl_acelerador) {
 		crucero_actualizado = false;
 		repeatTones(tono_inicial, 1, 3000, 190, 1);
 	}
-}
+}*/
 
 float leeAcelerador() {
 	float cl_acelerador = 0;
