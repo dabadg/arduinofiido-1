@@ -183,6 +183,7 @@ float fac_a = 0;
 float fac_c = suavidad_autoprogresivos / 10.0;
 
 float v_acelerador; // Valor recogido del acelerador.
+float v_crucero_ac; // Valor de crucero del acelerador.
 float v_crucero = a0_valor_reposo; // Velocidad de crucero inicial.
 // Los voltios que se mandan a la controladora.
 float nivel_aceleracion = a0_valor_inicial_arranque_progresivo;
