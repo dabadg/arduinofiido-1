@@ -146,7 +146,7 @@ const int tiempo_cadencia = 250;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Valor por defecto. Al inicializar, lee el valor real del acelerador.
-const float a0_valor_minimo = 235.0;	// 1.15
+const float a0_valor_minimo = 235.0;		// 1.15
 const float a0_valor_suave = 410.0;		// 2.00
 const float a0_valor_6kmh = 450.0;		// 2.19
 const float a0_valor_medio = 550.0;		// 2.68
@@ -206,6 +206,7 @@ volatile int p_pulsos = 0;
 float prev_vcrucero = a0_valor_reposo;
 // Variable que almacena el valor del acelerador para fijar el crucero.
 float f_crucero = a0_valor_reposo;
+const int tiempo_fijar_crucero = 5000;
 
 //======= FUNCIONES DE TONOS ===========================================
 
@@ -301,6 +302,8 @@ void fijaCrucero() {
 	prev_vcrucero = v_acelerador;
 }
 
+// Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
+// valor2+tolerancia < valor > valor2-tolerancia
 boolean comparaConTolerancia(float valor, float valor2, float toleranciaValor2) {
 	return (valor > (valor2 - toleranciaValor2)) && (valor < (valor2 + toleranciaValor2));
 }
@@ -488,7 +491,7 @@ void loop() {
 
 	v_acelerador = leeAcelerador();
 
-	if (tiempo > tcrucero + 5000) {
+	if (tiempo > tcrucero + tiempo_fijar_crucero) {
 		tcrucero = millis(); // Actualiza tiempo de crucero, para detectar la siguiente vuelta.
 		fijaCrucero(); // Fija crucero si la medida durante el ciclo ha sido estable.
 	}
