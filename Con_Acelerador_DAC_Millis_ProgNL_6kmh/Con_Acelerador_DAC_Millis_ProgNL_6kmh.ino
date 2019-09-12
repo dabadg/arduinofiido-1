@@ -92,7 +92,7 @@ const boolean freno_anula_crucero = false;
 // Nivel al que se desea iniciar el progresivo.
 // Aumentar si se desea salir con mas tirón.
 // >> NO PASAR DE 410, NI BAJAR DE 190 <<.
-float a0_valor_inicial_arranque_progresivo = 306; // 1.5 (190 -> 410)
+float a0_valor_inicial_arranque_progresivo = 306; // 1.5 (190 --> 410)
 
 // Retardo para inciar progresivo tras parar pedales.
 // Freno anula el tiempo.
@@ -373,7 +373,7 @@ void ayudaArranque2() {
 		// Crucero de 6 km/h
 		v_crucero = a0_valor_6kmh;
 		mandaAcelerador();
-		//delay(50); //No introducimos retardo porque se quiere una respuesta más inmediata dela celerador al salir pedalenado.
+		//delay(50); // No introducimos retardo porque se quiere una respuesta más inmediata dela celerador al salir pedalenado.
 		// El no tener este delay implica que el bucle dura unos 30 segundos, que soltando acelerador y volviéndolo a accionar, da otros 30, y así ...
 	}
 	// Cortamos crucero.
@@ -446,9 +446,9 @@ void setup() {
 			fac_a = 1.0 - pow(1.0,fac_c) * fac_b;
 		}
 	}
-	
+
 	repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalización de setup.
-	
+
 	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia.
 	tcrucero = millis(); // Arrancar tiempo inicio para establecer crucero.
 }
