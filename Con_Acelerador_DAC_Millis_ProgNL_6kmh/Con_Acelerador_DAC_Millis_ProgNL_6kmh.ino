@@ -426,9 +426,9 @@ void validaMinAcelerador() {
 
 	// Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
 	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
-    a0_valor_reposo = l_acelerador_reposo;
+		a0_valor_reposo = l_acelerador_reposo;
 	} else {
-    SOS_TONE();
+		SOS_TONE();
 	}
 	delay(100);
 }
