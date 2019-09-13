@@ -116,11 +116,6 @@ const int dir_dac = 0x60;
 // (True) si se desea desacelerar motor al dejar de pedalear.
 const boolean desacelera_al_parar_pedal = true;
 
-// (True) si se desea tener la asistencia desde parado más orientada al
-// "zig zageo" entre coches. (False) si se quiere tener más orientada a
-// salidas desde parado.
-const boolean modo_asistencia_6kmh = true;
-
 // Constante que habilita los tonos de inicialización del sistema.
 const boolean tono_inicial = true;
 
@@ -354,22 +349,6 @@ void freno() {
 
 void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_reposo + 30 && p_pulsos == 0) {
-		contador_retardo_aceleracion++;
-		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
-		contador_retardo_inicio_progresivo++;
-		// Mandamos al DAC 6 km/h.
-		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-	}
-
-	// Dejamos de asistir en el DAC.
-	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
-	// Cortamos crucero.
-	v_crucero = a0_valor_reposo;
-}
-
-void ayudaArranque2() {
-	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
 		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
@@ -381,7 +360,7 @@ void ayudaArranque2() {
 		// El no tener este delay implica que el bucle dura unos 30 segundos, que soltando acelerador y volviéndolo a accionar, da otros 30, y así ...
 	}
 	// Cortamos crucero.
-	v_crucero = a0_valor_reposo;
+	//v_crucero = a0_valor_reposo;
 }
 
 void validaMinAcelerador() {
@@ -517,11 +496,7 @@ void loop() {
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador.
 		if (pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 30 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
-			if (modo_asistencia_6kmh == true) {
-				ayudaArranque();
-			} else {
-				ayudaArranque2();
-			}
+			ayudaArranque();
 		}
 
 		p_pulsos = 0;
