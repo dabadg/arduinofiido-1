@@ -89,11 +89,6 @@ const boolean modo_crucero = true;
 // (True) si se desea anular la velocidad de crucero al frenar.
 const boolean freno_anula_crucero = false;
 
-// Nivel al que se desea iniciar el progresivo.
-// Aumentar si se desea salir con mas tirón.
-// >> NO PASAR DE 410, NI BAJAR DE 190 <<.
-float a0_valor_inicial_arranque_progresivo = 306; // 1.5 (190 --> 410)
-
 // Retardo para inciar progresivo tras parar pedales.
 // Freno anula el tiempo.
 int retardo_inicio_progresivo = 10;
@@ -142,20 +137,19 @@ const int pin_piezo = 11; // Pin del zumbador
 int cadencia = cadencia1;
 
 // Tiempo en milisegundos para contar pulsos.
-const int tiempo_cadencia = 250;
+const int tiempo_cadencia = 225;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
-const float a0_valor_minimo = 235.0;	// 1.15
-const float a0_valor_suave = 410.0;	// 2.00
-const float a0_valor_6kmh = 450.0;	// 2.19
-const float a0_valor_medio = 550.0;	// 2.68
-const float a0_valor_alto = 798.0;	// 3.90
-const float a0_valor_max = 847.0;	// 4.13
+const float a0_valor_minimo = 235.0; // 1.15
+const float a0_valor_suave = 410.0;  // 2.00
+const float a0_valor_6kmh = 450.0;   // 2.19
+const float a0_valor_medio = 550.0;  // 2.68
+const float a0_valor_alto = 798.0;   // 3.90
+const float a0_valor_max = 847.0;    // 4.13
 
 // Variables para millis().
 unsigned long tcadencia;
-unsigned long tcrucero;
 unsigned long tiempo;
 
 // Backup voltaje.
@@ -181,11 +175,14 @@ float fac_b = 1;
 float fac_a = 0;
 float fac_c = suavidad_autoprogresivos / 10.0;
 
-float v_acelerador; // Valor recogido del acelerador.
-float v_crucero_ac; // Valor de crucero del acelerador.
-float v_crucero = a0_valor_reposo; // Velocidad de crucero inicial.
+// Valor recogido del acelerador.
+float v_acelerador;
+// Valor de crucero del acelerador.
+float v_crucero_ac;
+// Velocidad de crucero inicial.
+float v_crucero = a0_valor_reposo;
 // Los voltios que se mandan a la controladora.
-float nivel_aceleracion = a0_valor_inicial_arranque_progresivo;
+float nivel_aceleracion = a0_valor_reposo;
 
 // Contador de pulsos del pedal.
 int pulsos = 0;
@@ -194,19 +191,11 @@ int pulsos = 0;
 boolean ayuda_salida = false;
 
 // Variable que almacena el estado de notificación de fijar crucero.
-//boolean crucero_actualizado = false;
+boolean crucero_actualizado = false;
 
 //======= Variables interrupción =======================================
 // Variable donde se suman los pulsos del sensor PAS.
 volatile int p_pulsos = 0;
-
-//======= Variables fijaCrucero ========================================
-// Variable para calcular el valor medio de medidas del acelerador para
-// selección del crucero.
-//float prev_vcrucero = a0_valor_reposo;
-// Variable que almacena el valor del acelerador para fijar el crucero.
-//float f_crucero = a0_valor_reposo;
-//const int tiempo_fijar_crucero = 5000;
 
 //======= FUNCIONES DE TONOS ===========================================
 
@@ -267,39 +256,17 @@ float aceleradorEnDac(float vl_acelerador) {
 }
 
 void estableceCrucero(float vl_acelerador) {
-	if (vl_acelerador > a0_valor_minimo) {
+	// El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
+	if (vl_acelerador > a0_valor_suave && p_pulsos > 0) {
 		v_crucero_ac = vl_acelerador;
 		v_crucero = v_crucero_ac;
-	}
-}
-
-/*void estableceCrucero(float vl_acelerador) {
-	if (vl_acelerador > a0_valor_suave && p_pulsos > 0) { // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
-		v_crucero = vl_acelerador;
 		crucero_actualizado = true;
-	} else if (vl_acelerador <= a0_valor_suave && crucero_actualizado) { // Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso 
+	// Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso.
+	} else if (vl_acelerador <= a0_valor_suave && crucero_actualizado) {
 		crucero_actualizado = false;
 		repeatTones(tono_inicial, 1, 3000, 190, 1);
 	}
 }
-*/
-
-// Utilizar dentro de control de tiempo - [ if (tiempo > tcrucero + 2500){} ].
-/*void fijaCrucero() {
-	//Si se está pedaleando y el crucero no está fijado.
-	if (pulsos > 0 && f_crucero <= a0_valor_reposo) {
-		//Calculamos la media de la medida anterior y la actual.
-		float tmpv = (prev_vcrucero + v_acelerador) / 2;
-		// Si la media entre el valor anterior y el actual está en rango, fija valor de posición de crucero.
-		if (comparaConTolerancia(tmpv, v_acelerador, 20.0) && tmpv > a0_valor_suave) {
-			// Guardamos la posición del acelerador en f_crucero
-			f_crucero = v_acelerador;
-			repeatTones(tono_inicial, 1, 3000, 190, 1);
-		}
-	}
-
-	prev_vcrucero = v_acelerador;
-}*/
 
 // Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
 // valor2+tolerancia < valor > valor2-tolerancia
@@ -328,23 +295,13 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
-	// Anula crucero por debajo del nivel inicial del progresivo.
-	if (v_crucero < a0_valor_inicial_arranque_progresivo) {	
-		v_crucero = a0_valor_reposo;
-	}
-
-	// Evita salidas demasiado bruscas.
-	if (nivel_inicial_progresivo > a0_valor_suave) {
-		nivel_inicial_progresivo = a0_valor_suave;
-	}
-
 	if (modo_crucero == true) {
 		// Progresivo no lineal.
-		fac_n = nivel_inicial_progresivo;
-		fac_m = (v_crucero - a0_valor_inicial_arranque_progresivo) / pow(retardo_aceleracion, fac_p);
+		fac_n = a0_valor_reposo;
+		fac_m = (v_crucero - a0_valor_reposo) / pow(retardo_aceleracion, fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
-		if (nivel_aceleracion == nivel_inicial_progresivo || nivel_aceleracion < a0_valor_reposo) {
+		if (nivel_aceleracion < a0_valor_reposo) {
 			nivel_aceleracion = a0_valor_reposo;
 		}
 
@@ -377,13 +334,12 @@ void freno() {
 
 	if (freno_anula_crucero == true) {
 		v_crucero = a0_valor_reposo;
-		//f_crucero = a0_valor_reposo; // Reinicia el crucero fijado al pulsar el freno. TODO: buscar otra condición salir del crucero fijado 
 	}
 }
 
 void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_reposo + 25 && p_pulsos == 0) {
+	while (analogRead(pin_acelerador) > a0_valor_reposo + 30 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
 		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
 		contador_retardo_inicio_progresivo++;
@@ -399,7 +355,7 @@ void ayudaArranque() {
 
 void ayudaArranque2() {
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_minimo + 25 && p_pulsos == 0) {
+	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
 		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
 		contador_retardo_inicio_progresivo++;
@@ -452,10 +408,12 @@ void setup() {
 
 	// Si arrancamos con el freno pulsado.
 	if (frenopulsado == true) {	
-		if (digitalRead(pin_freno) == LOW) {			
-			ayuda_salida = true; // Activamos la ayuda desde parado a 6kmh.
+		if (digitalRead(pin_freno) == LOW) {
+			// Activamos la ayuda desde parado a 6kmh.	
+			ayuda_salida = true;
 			delay(200);
-			repeatTones(tono_inicial, 2, 2900, 90, 200); // Tono aviso de modo con asistencia desde parado.
+			// Tono aviso de modo con asistencia desde parado.
+			repeatTones(tono_inicial, 2, 2900, 90, 200);
 			delay(200);
 		}
 	}
@@ -464,7 +422,7 @@ void setup() {
 	retardo_paro_motor = retardo_paro_motor * (1000 / tiempo_cadencia);
 	retardo_aceleracion = retardo_aceleracion * (1000 / tiempo_cadencia);
 	retardo_inicio_progresivo = retardo_inicio_progresivo * (1000 / tiempo_cadencia);
-	// Anulamos el retardo por seguridad para que empiece progresivo al encender la bici
+	// Anulamos el retardo por seguridad para que empiece progresivo al encender la bici.
 	contador_retardo_inicio_progresivo = retardo_inicio_progresivo;
 
 	// Cálculo de factores para auto_progresivo.
@@ -490,28 +448,10 @@ void loop() {
 
 	v_acelerador = leeAcelerador();
 
-	if (tiempo > tcrucero + 125) {
-		tcrucero = millis(); // Actualiza tiempo de crucero, para detectar la siguiente vuelta.
-		//fijaCrucero(); // Fija crucero si la medida durante el ciclo ha sido estable.
-		estableceCrucero(v_acelerador);
-	}
-
-	/*
-	if (f_crucero > a0_valor_reposo) { // Si está establecido el crucero.
-		if (v_acelerador > a0_valor_reposo) { // Si se usa el acelerador prevalece el acelerador.
-			v_crucero = v_acelerador;
-		} else {
-			v_crucero = f_crucero;
-		}
-	} else { // Si no está establecido el crucero.
-		if (v_acelerador > a0_valor_reposo) { // llenamos v_crucero con la lectura del acelerador. TODO: Ver como eliminar v_crucero
-			v_crucero = v_acelerador;
-		}
-	}*/
-
 	if (tiempo > tcadencia + (unsigned long) tiempo_cadencia) {
 		pulsos = p_pulsos;
 		tcadencia = millis();
+		estableceCrucero(v_acelerador);
 
 		if (pulsos < cadencia) { // Si se pedalea despacio o se paran los pedales.
 			contador_retardo_paro_motor++;
@@ -562,7 +502,7 @@ void loop() {
 		}
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador.
-		if (pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 25 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
+		if (pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 30 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
 			if (modo_asistencia_6kmh == true) {
 				ayudaArranque();
 			} else {
