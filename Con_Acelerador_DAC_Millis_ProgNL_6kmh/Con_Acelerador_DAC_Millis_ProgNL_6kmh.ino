@@ -359,6 +359,11 @@ void ayudaArranque() {
 		//delay(50); // No introducimos retardo porque se quiere una respuesta más inmediata dela celerador al salir pedalenado.
 		// El no tener este delay implica que el bucle dura unos 30 segundos, que soltando acelerador y volviéndolo a accionar, da otros 30, y así ...
 	}
+
+	if (cadencia_dinamica_ap == true) {
+		cadencia = cadencia1;
+	}
+
 	// Cortamos crucero.
 	//v_crucero = a0_valor_reposo;
 }
