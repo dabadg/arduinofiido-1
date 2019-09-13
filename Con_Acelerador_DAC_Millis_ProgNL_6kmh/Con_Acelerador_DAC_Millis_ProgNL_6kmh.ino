@@ -166,7 +166,6 @@ boolean auto_progresivo = false;
 float fac_m = 0;
 float fac_n = 0;
 float fac_p = 0.6222 - 0.0222 * suavidad_progresivos;
-float nivel_inicial_progresivo = a0_valor_inicial_arranque_progresivo;
 
 // Variables para autoprogresivos.
 float fac_s = 0;
@@ -440,7 +439,6 @@ void setup() {
 	repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalización de setup.
 
 	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia.
-	tcrucero = millis(); // Arrancar tiempo inicio para establecer crucero.
 }
 
 void loop() {
