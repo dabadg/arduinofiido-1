@@ -1,6 +1,6 @@
 /* 
                     Versión Con Acelerador y DAC
-         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.9 Develop
+         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.9 RC1
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -351,9 +351,7 @@ void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
-		// No queremos iniciar un progresivo si empezamos a pedalear con el acelerador accionado.
 		contador_retardo_inicio_progresivo++;
-		// Crucero de 6 km/h
 		v_crucero = a0_valor_6kmh;
 		mandaAcelerador();
 		//delay(50); // No introducimos retardo porque se quiere una respuesta más inmediata dela celerador al salir pedalenado.
