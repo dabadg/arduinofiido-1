@@ -89,6 +89,11 @@ const boolean modo_crucero = true;
 // (True) si se desea anular la velocidad de crucero al frenar.
 const boolean freno_anula_crucero = false;
 
+// Nivel al que se desea iniciar el progresivo.
+// Aumentar si se desea salir con mas tirón.
+// >> NO PASAR DE 410, NI BAJAR DE 190 <<.
+float a0_valor_inicial_arranque_progresivo = 306; // 1.50.
+
 // Retardo para inciar progresivo tras parar pedales.
 // Freno anula el tiempo.
 int retardo_inicio_progresivo = 10;
@@ -166,6 +171,7 @@ boolean auto_progresivo = false;
 float fac_m = 0;
 float fac_n = 0;
 float fac_p = 0.6222 - 0.0222 * suavidad_progresivos;
+float nivel_inicial_progresivo = a0_valor_inicial_arranque_progresivo;
 
 // Variables para autoprogresivos.
 float fac_s = 0;
@@ -181,7 +187,7 @@ float v_crucero_ac;
 // Velocidad de crucero inicial.
 float v_crucero = a0_valor_reposo;
 // Los voltios que se mandan a la controladora.
-float nivel_aceleracion = a0_valor_reposo;
+float nivel_aceleracion = a0_valor_inicial_arranque_progresivo;
 
 // Contador de pulsos del pedal.
 int pulsos = 0;
@@ -294,13 +300,23 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
+	// Anula crucero por debajo del nivel inicial del progresivo.
+	if (v_crucero < a0_valor_inicial_arranque_progresivo) {	
+		v_crucero = a0_valor_reposo;
+	}
+
+	// Evita salidas demasiado bruscas.
+	if (nivel_inicial_progresivo > a0_valor_suave) {
+		nivel_inicial_progresivo = a0_valor_suave;
+	}
+
 	if (modo_crucero == true) {
 		// Progresivo no lineal.
-		fac_n = a0_valor_reposo;
-		fac_m = (v_crucero - a0_valor_reposo) / pow(retardo_aceleracion, fac_p);
+		fac_n = nivel_inicial_progresivo;
+		fac_m = (v_crucero - a0_valor_inicial_arranque_progresivo) / pow(retardo_aceleracion, fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
-		if (nivel_aceleracion < a0_valor_reposo) {
+		if (nivel_aceleracion == nivel_inicial_progresivo || nivel_aceleracion < a0_valor_reposo) {
 			nivel_aceleracion = a0_valor_reposo;
 		}
 
@@ -439,6 +455,7 @@ void setup() {
 	repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalización de setup.
 
 	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia.
+	tcrucero = millis(); // Arrancar tiempo inicio para establecer crucero.
 }
 
 void loop() {
