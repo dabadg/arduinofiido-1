@@ -303,9 +303,9 @@ void estableceCrucero(float vl_acelerador) {
 
 // Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
 // valor2+tolerancia < valor > valor2-tolerancia
-/*boolean comparaConTolerancia(float valor, float valor2, float toleranciaValor2) {
+boolean comparaConTolerancia(float valor, float valor2, float toleranciaValor2) {
 	return (valor > (valor2 - toleranciaValor2)) && (valor < (valor2 + toleranciaValor2));
-}*/
+}
 
 float leeAcelerador() {
 	float cl_acelerador = 0;
