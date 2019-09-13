@@ -455,7 +455,6 @@ void setup() {
 	repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalización de setup.
 
 	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia.
-	tcrucero = millis(); // Arrancar tiempo inicio para establecer crucero.
 }
 
 void loop() {
