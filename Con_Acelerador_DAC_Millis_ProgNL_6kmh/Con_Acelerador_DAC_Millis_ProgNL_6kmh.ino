@@ -120,7 +120,7 @@ const boolean desacelera_al_parar_pedal = true;
 // 1 --> Borra valor de crucero.
 // 2 --> Mantiene el valor de crucero de la asistencia de 6 km/h.
 // 3 --> Recupera valor de crucero anterior, si lo hubiera.
-unsigned int modo_crucero_asistencia = 1;
+const int modo_crucero_asistencia = 1;
 
 // Constante que habilita los tonos de inicialización del sistema.
 const boolean tono_inicial = true;
@@ -355,8 +355,9 @@ void freno() {
 
 void ayudaArranque() {
 	// Guardamos valor de crucero
-	float v_crucero_prev = v_crucero;
-
+        if (modo_crucero_asistencia == 2) {
+	    float v_crucero_prev = v_crucero;
+        }
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
