@@ -355,7 +355,7 @@ void freno() {
 
 void ayudaArranque() {
 	// Guardamos valor de crucero
-        if (modo_crucero_asistencia == 2) {
+        if (modo_crucero_asistencia == 3) {
 	    float v_crucero_prev = v_crucero;
         }
 	// Mientras aceleramos y no pedaleamos.
@@ -373,12 +373,12 @@ void ayudaArranque() {
 	}
 
 	if (modo_crucero_asistencia == 1) {
-		// Cortamos a celerador
+		// Cortamos crucero.
 		v_crucero = a0_valor_reposo;
 	} else if (modo_crucero_asistencia == 2) {
-		// Mismo crucero que la asistencia desde parado
+		// Mismo crucero que la asistencia desde parado.
 		v_crucero = a0_valor_6kmh;
-	} else if (modo_crucero_asistencia == 2) {
+	} else if (modo_crucero_asistencia == 3) {
 		// Crucero anterior, si lo hubiera.
 		v_crucero = v_crucero_prev;
 	}
