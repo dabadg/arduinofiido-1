@@ -1,6 +1,6 @@
 /* 
                     Versión Con Acelerador y DAC
-         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.9 RC1
+         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.9 RC2
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -44,7 +44,7 @@ ASISTENCIA A 6 KM/H DESDE PARADO:
  * pedalear sin dejar de accionar el acelerador, se sale a la velocidad
  * con la que vayamos regulando con el acelerador.
  * Se puede configurar el comportamiento del crucero en este modo desde
- * variabe de usuario.
+ * variable de usuario.
 ------------------------------------------------------------------------
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
@@ -355,16 +355,15 @@ void freno() {
 
 void ayudaArranque() {
 	// Guardamos valor de crucero
-        if (modo_crucero_asistencia == 3) {
-	    float v_crucero_prev = v_crucero;
-        }
+	float v_crucero_prev = v_crucero;
+
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
 		contador_retardo_inicio_progresivo++;
 		v_crucero = a0_valor_6kmh;
 		mandaAcelerador();
-		//delay(50); // No introducimos retardo porque se quiere una respuesta más inmediata dela celerador al salir pedalenado.
+		//delay(50); // No introducimos retardo porque se quiere una respuesta más inmediata del acelerador al salir pedalenado.
 		// El no tener este delay implica que el bucle dura unos 30 segundos, que soltando acelerador y volviéndolo a accionar, da otros 30, y así ...
 	}
 
