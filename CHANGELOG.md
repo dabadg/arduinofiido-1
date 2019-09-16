@@ -1,11 +1,9 @@
-CHANGELOG 1.8 --> 1.9 Develop:
-- Añadidos métodos de gestión de valores de acelerador por dabadg (https://github.com/dabadg).
-- Revertida variable cadencia2.
-- Nueva variable para controlar la cadencia en los auto_progresivos.
-- Modificación de métodos para trabajar en escala analógica con los valores del acelerador por dabadg (https://github.com/dabadg).
-- Añadida variable para elegir entre modos en la asistencia a 6 km/h.
-- Correcciones y limpieza de código.
-- Preparación de nuevo método para establecer crucero sólo cuando se pedalea por dabadg (https://github.com/dabadg).
+CHANGELOG 1.8 --> 1.9 RC2:
+- Nueva variable de usuario para controlar la cadencia en los auto_progresivos.
+- Refactorización y modificación de métodos para trabajar en escala analógica con los valores del acelerador por dabadg (https://github.com/dabadg).
+- Añadida variable para elegir entre modos de crucero en la asistencia a 6 km/h.
+- Optimizaciones, correcciones y limpieza de código.
+- Nuevo método para establecer crucero sólo cuando se pedalea por dabadg (https://github.com/dabadg).
 
 CHANGELOG 1.7.1 --> 1.8:
 - Recuperado nivel inicial en el progresivo.
