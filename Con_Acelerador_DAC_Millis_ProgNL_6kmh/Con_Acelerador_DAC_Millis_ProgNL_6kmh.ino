@@ -163,9 +163,9 @@ float bkp_voltaje = a0_valor_reposo;
 
 // Contadores de paro, aceleración y auto_progresivo.
 unsigned contador_retardo_paro_motor = 0;
-int contador_retardo_aceleracion = 0;
+long contador_retardo_aceleracion = 0;
 unsigned contador_retardo_inicio_progresivo = 0;
-int bkp_contador_retardo_aceleracion = 0;
+long bkp_contador_retardo_aceleracion = 0;
 boolean auto_progresivo = false;
 
 // Variables progresivos.
@@ -366,8 +366,6 @@ void ayudaArranque() {
 		contador_retardo_inicio_progresivo = 0;
 		auto_progresivo = true;
 		mandaAcelerador();
-		//delay(50); // No introducimos retardo porque se quiere una respuesta más inmediata del acelerador al salir pedalenado.
-		// El no tener este delay implica que el bucle dura unos 30 segundos, que soltando acelerador y volviéndolo a accionar, da otros 30, y así ...
 	}
 
 	if (cadencia_dinamica_ap == true) {
