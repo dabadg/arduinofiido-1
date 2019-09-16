@@ -357,11 +357,14 @@ void ayudaArranque() {
 	// Guardamos valor de crucero
 	float v_crucero_prev = v_crucero;
 
+	// Fijamos valor de crucero a 6 km/h
+	v_crucero = a0_valor_6kmh;
+
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
-		contador_retardo_inicio_progresivo++;
-		v_crucero = a0_valor_6kmh;
+		contador_retardo_inicio_progresivo = 0;
+		auto_progresivo = true;
 		mandaAcelerador();
 		//delay(50); // No introducimos retardo porque se quiere una respuesta más inmediata del acelerador al salir pedalenado.
 		// El no tener este delay implica que el bucle dura unos 30 segundos, que soltando acelerador y volviéndolo a accionar, da otros 30, y así ...
