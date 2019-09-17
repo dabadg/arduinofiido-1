@@ -1,7 +1,7 @@
-CHANGELOG 1.8 --> 1.9 RC2:
+CHANGELOG 1.8 --> 1.9:
 - Nueva variable de usuario para controlar la cadencia en los auto_progresivos.
 - Refactorización y modificación de métodos para trabajar en escala analógica con los valores del acelerador por dabadg (https://github.com/dabadg).
-- Añadida variable para elegir entre modos de crucero en la asistencia a 6 km/h.
+- Añadida variable para elegir entre modos de crucero en la asistencia a 6 km/h y mejorada la respuesta en este modo.
 - Optimizaciones, correcciones y limpieza de código.
 - Nuevo método para establecer crucero sólo cuando se pedalea por dabadg (https://github.com/dabadg).
 
