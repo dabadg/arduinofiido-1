@@ -1,3 +1,7 @@
+CHANGELOG 1.9 --> 1.9.1:
+- Ajustes finales en las variables de usuario.
+- Optimización, eliminadas variables no necesarias.
+
 CHANGELOG 1.8 --> 1.9:
 - Nueva variable de usuario para controlar la cadencia en los auto_progresivos.
 - Refactorización y modificación de métodos para trabajar en escala analógica con los valores del acelerador por dabadg (https://github.com/dabadg).
