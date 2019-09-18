@@ -1,6 +1,6 @@
 /* 
                     Versión Con Acelerador y DAC
-         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.9 RC2
+         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.9.1
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -87,7 +87,7 @@ int retardo_aceleracion = 5;
 const boolean modo_crucero = true;
 
 // (True) si se desea anular la velocidad de crucero al frenar.
-const boolean freno_anula_crucero = false;
+const boolean freno_anula_crucero = true;
 
 // Nivel al que se desea iniciar el progresivo.
 // Aumentar si se desea salir con mas tirón.
@@ -118,8 +118,7 @@ const boolean desacelera_al_parar_pedal = true;
 
 // Comportamiento del crucero cuando se usa la asistencia desde parado.
 // 1 --> Borra valor de crucero.
-// 2 --> Mantiene el valor de crucero de la asistencia de 6 km/h.
-// 3 --> Recupera valor de crucero anterior, si lo hubiera.
+// 2 --> Guarda el valor de crucero de la asistencia de 6 km/h.
 const int modo_crucero_asistencia = 1;
 
 // Constante que habilita los tonos de inicialización del sistema.
@@ -143,7 +142,7 @@ const int pin_piezo = 11; // Pin del zumbador
 int cadencia = cadencia1;
 
 // Tiempo en milisegundos para contar pulsos.
-const int tiempo_cadencia = 225;
+const int tiempo_cadencia = 250;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
@@ -184,8 +183,6 @@ float fac_c = suavidad_autoprogresivos / 10.0;
 // Valor recogido del acelerador.
 float v_acelerador;
 // Valor de crucero del acelerador.
-float v_crucero_ac;
-// Velocidad de crucero inicial.
 float v_crucero = a0_valor_reposo;
 // Los voltios que se mandan a la controladora.
 float nivel_aceleracion = a0_valor_inicial_arranque_progresivo;
@@ -264,8 +261,7 @@ float aceleradorEnDac(float vl_acelerador) {
 void estableceCrucero(float vl_acelerador) {
 	// El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
 	if (vl_acelerador > a0_valor_suave && p_pulsos > 0) {
-		v_crucero_ac = vl_acelerador;
-		v_crucero = v_crucero_ac;
+		v_crucero = vl_acelerador;
 		crucero_actualizado = true;
 	// Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso.
 	} else if (vl_acelerador <= a0_valor_suave && crucero_actualizado) {
@@ -275,7 +271,7 @@ void estableceCrucero(float vl_acelerador) {
 }
 
 // Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
-// valor2+tolerancia < valor > valor2-tolerancia
+// valor2-tolerancia > valor < valor2+tolerancia
 boolean comparaConTolerancia(float valor, float valor2, float toleranciaValor2) {
 	return (valor > (valor2 - toleranciaValor2)) && (valor < (valor2 + toleranciaValor2));
 }
@@ -354,15 +350,13 @@ void freno() {
 }
 
 void ayudaArranque() {
-	// Guardamos valor de crucero
-	float v_crucero_prev = v_crucero;
-
 	// Fijamos valor de crucero a 6 km/h
 	v_crucero = a0_valor_6kmh;
 
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
 		contador_retardo_aceleracion++;
+		// Preparamos el auto_progresivo.
 		contador_retardo_inicio_progresivo = 0;
 		auto_progresivo = true;
 		mandaAcelerador();
@@ -378,9 +372,6 @@ void ayudaArranque() {
 	} else if (modo_crucero_asistencia == 2) {
 		// Mismo crucero que la asistencia desde parado.
 		v_crucero = a0_valor_6kmh;
-	} else if (modo_crucero_asistencia == 3) {
-		// Crucero anterior, si lo hubiera.
-		v_crucero = v_crucero_prev;
 	}
 }
 
@@ -484,7 +475,7 @@ void loop() {
 				paraMotor();
 			}
 		} else if (pulsos >= cadencia) { // Si se pedalea normal (por encima de la cadencia).
-			if (contador_retardo_inicio_progresivo < retardo_inicio_progresivo && auto_progresivo) {
+			if (auto_progresivo && contador_retardo_inicio_progresivo < retardo_inicio_progresivo) {
 				if (bkp_contador_retardo_aceleracion > retardo_aceleracion - fac_s) {
 					bkp_contador_retardo_aceleracion = retardo_aceleracion - fac_s;
 				}
@@ -516,7 +507,7 @@ void loop() {
 		}
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador.
-		if (pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 30 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor && ayuda_salida) {
+		if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 30 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor) {
 			ayudaArranque();
 		}
 
