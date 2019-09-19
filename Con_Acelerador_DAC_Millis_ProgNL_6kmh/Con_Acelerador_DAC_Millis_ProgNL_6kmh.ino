@@ -83,7 +83,8 @@ float retardo_paro_motor = 0.50;
 // Retardo en segundos para ponerse a velocidad máxima o crucero.
 int retardo_aceleracion = 5;
 
-// (True) modo crucero (False) manda señal del acelerador.
+// True --> Modo crucero.
+// False --> Manda señal del acelerador.
 const boolean modo_crucero = true;
 
 // (True) si se desea anular la velocidad de crucero al frenar.
@@ -103,7 +104,7 @@ int retardo_inicio_progresivo = 10;
 float suavidad_progresivos = 5;
 
 // Suavidad de los autoprogresivos, varía entre 1-10.
-// Al crecer se hacen más brucos
+// Al crecer se hacen más bruscos.
 float suavidad_autoprogresivos = 5;
 
 // Ideado para evitar posibles falsos positivos de pedal,
@@ -130,11 +131,11 @@ const boolean tono_inicial = true;
 Adafruit_MCP4725 dac;
 
 //======= PINES ========================================================
-const int pin_acelerador = A0; // Pin acelerador
-const int pin_pedal = 2; // Pin sensor pas, en Nano/Uno usar 2 ó 3
-const int pin_freno = 3; // Pin de activación del freno
-const int pin_piezo = 11; // Pin del zumbador
-// Resto de pines 9,10
+const int pin_acelerador = A0; // Pin acelerador.
+const int pin_pedal = 2; // Pin sensor pas, en Nano/Uno usar 2 ó 3.
+const int pin_freno = 3; // Pin de activación del freno.
+const int pin_piezo = 11; // Pin del zumbador.
+// Resto de pines 9 y 10.
 
 //======= VARIABLES PARA CÁLCULOS ======================================
 
@@ -253,7 +254,7 @@ void pedal() {
 	p_pulsos++;
 }
 
-// Pasamos de escala acelerador -> DAC
+// Pasamos de escala acelerador -> DAC.
 float aceleradorEnDac(float vl_acelerador) {
 	return vl_acelerador * 4096 / 1023;
 }
@@ -443,9 +444,10 @@ void setup() {
 		}
 	}
 
-	repeatTones(tono_inicial, 3, 3000, 90, 90); // Tono de finalización de setup.
-
-	tcadencia = millis(); // Arrancar tiempo inicio para comprobar cadencia.
+	// Tono de finalización de setup.
+	repeatTones(tono_inicial, 3, 3000, 90, 90);
+	// Arrancar tiempo de inicio para comprobar cadencia.
+	tcadencia = millis();
 }
 
 void loop() {
@@ -458,7 +460,8 @@ void loop() {
 		tcadencia = millis();
 		estableceCrucero(v_acelerador);
 
-		if (pulsos < cadencia) { // Si se pedalea despacio o se paran los pedales.
+		// Si se pedalea despacio o se paran los pedales.
+		if (pulsos < cadencia) {
 			contador_retardo_paro_motor++;
 
 			if (contador_retardo_paro_motor >= retardo_paro_motor) {
@@ -474,7 +477,8 @@ void loop() {
 				}
 				paraMotor();
 			}
-		} else if (pulsos >= cadencia) { // Si se pedalea normal (por encima de la cadencia).
+		// Si se pedalea normal (por encima de la cadencia).
+		} else if (pulsos >= cadencia) {
 			if (auto_progresivo && contador_retardo_inicio_progresivo < retardo_inicio_progresivo) {
 				if (bkp_contador_retardo_aceleracion > retardo_aceleracion - fac_s) {
 					bkp_contador_retardo_aceleracion = retardo_aceleracion - fac_s;
@@ -496,7 +500,8 @@ void loop() {
 			if (contador_retardo_aceleracion < retardo_aceleracion) {
 				contador_retardo_aceleracion++;
 			}
-		} else if (pulsos == 0) { // Si están los pedales parados.
+		// Si están los pedales parados.
+		} else if (pulsos == 0) {
 			// Desacelera al parar los pedales.
 			if (contador_retardo_aceleracion > 0 && desacelera_al_parar_pedal == true) {
 				contador_retardo_aceleracion = contador_retardo_aceleracion - 2;
