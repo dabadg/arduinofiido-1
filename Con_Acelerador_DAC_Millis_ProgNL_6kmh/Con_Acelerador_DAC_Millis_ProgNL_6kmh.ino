@@ -117,9 +117,9 @@ const int dir_dac = 0x60;
 const boolean desacelera_al_parar_pedal = true;
 
 // Comportamiento del crucero cuando se usa la asistencia desde parado.
-// 1 --> Borra valor de crucero.
-// 2 --> Guarda el valor de crucero de la asistencia de 6 km/h.
-const int modo_crucero_asistencia = 1;
+// True --> Guarda el valor de crucero de la asistencia de 6 km/h.
+// False --> Borra valor de crucero.
+const boolean modo_crucero_asistencia = false;
 
 // Constante que habilita los tonos de inicialización del sistema.
 const boolean tono_inicial = true;
@@ -366,10 +366,10 @@ void ayudaArranque() {
 		cadencia = cadencia1;
 	}
 
-	if (modo_crucero_asistencia == 1) {
+	if (!modo_crucero_asistencia) {
 		// Cortamos crucero.
 		v_crucero = a0_valor_reposo;
-	} else if (modo_crucero_asistencia == 2) {
+	} else {
 		// Mismo crucero que la asistencia desde parado.
 		v_crucero = a0_valor_6kmh;
 	}
