@@ -69,7 +69,7 @@ AGRADECIMIENTOS:
 
 // Número de pulsos para que se considere que se está pedaleando.
 // Configurar según sensor y gustos.
-const int cadencia1 = 2;
+const int cadencia = 1;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
@@ -88,6 +88,7 @@ int retardo_aceleracion = 5;
 const boolean modo_crucero = true;
 
 // (True) si se desea anular la velocidad de crucero al frenar.
+// Se recomienda activarlo para mayor seguridad.
 const boolean freno_anula_crucero = true;
 
 // Nivel al que se desea iniciar el progresivo.
@@ -106,10 +107,6 @@ float suavidad_progresivos = 5;
 // Suavidad de los autoprogresivos, varía entre 1-10.
 // Al crecer se hacen más bruscos.
 float suavidad_autoprogresivos = 5;
-
-// Ideado para evitar posibles falsos positivos de pedal,
-// puede dificultar encontrar la cadencia en cuestas.
-const boolean cadencia_dinamica_ap = false;
 
 // Dirección del bus I2C [DAC] (0x60) si está soldado, si no (0x62).
 const int dir_dac = 0x60;
@@ -139,9 +136,6 @@ const int pin_piezo = 11; // Pin del zumbador.
 
 //======= VARIABLES PARA CÁLCULOS ======================================
 
-// Número de pulsos para que se considere que se está pedaleando.
-int cadencia = cadencia1;
-
 // Tiempo en milisegundos para contar pulsos.
 const int tiempo_cadencia = 250;
 
@@ -157,9 +151,6 @@ const float a0_valor_max = 847.0;    // 4.13
 // Variables para millis().
 unsigned long tcadencia;
 unsigned long tiempo;
-
-// Backup voltaje.
-float bkp_voltaje = a0_valor_reposo;
 
 // Contadores de paro, aceleración y auto_progresivo.
 unsigned contador_retardo_paro_motor = 0;
@@ -325,10 +316,8 @@ void mandaAcelerador() {
 		nivel_aceleracion = v_acelerador;
 	}
 
-	if (nivel_aceleracion != bkp_voltaje) {
-		bkp_voltaje = nivel_aceleracion;
-		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
-	}  
+	dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
+
 }
 
 void paraMotor() {
@@ -338,10 +327,6 @@ void paraMotor() {
 void freno() {
 	contador_retardo_inicio_progresivo = retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
-
-	if (cadencia_dinamica_ap == true) {
-		cadencia = cadencia1;
-	}
 
 	paraMotor();
 
@@ -361,10 +346,6 @@ void ayudaArranque() {
 		contador_retardo_inicio_progresivo = 0;
 		auto_progresivo = true;
 		mandaAcelerador();
-	}
-
-	if (cadencia_dinamica_ap == true) {
-		cadencia = cadencia1;
 	}
 
 	if (!modo_crucero_asistencia) {
@@ -475,10 +456,6 @@ void loop() {
 
 				if (contador_retardo_aceleracion > 4) {
 					bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
-					
-					if (cadencia_dinamica_ap == true) {
-						cadencia = 3;
-					}
 				}
 				paraMotor();
 			}
@@ -490,11 +467,7 @@ void loop() {
 				}
 
 				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a+fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
-				auto_progresivo = false;
-
-				if (cadencia_dinamica_ap == true) {
-					cadencia = cadencia1;
-				}
+				//auto_progresivo = false;
 			} else {
 				auto_progresivo = false;
 			}
