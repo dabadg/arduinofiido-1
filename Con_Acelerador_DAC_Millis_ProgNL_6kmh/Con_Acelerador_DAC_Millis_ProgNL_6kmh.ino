@@ -18,7 +18,7 @@ VERSIÓN CRUCERO:
  * gradualmente hasta llegar al valor de crucero.
  * Si se vuelve a mover el acelerador se toma este como nuevo crucero.
  * Usamos un pin analógico de entrada conectado al
- * acelerador, por otra parte mandaremos a la placa DAC mediante
+ * acelerador, por otra parte, mandaremos a la placa DAC mediante
  * comunicacion i2c el valor de salida hacia la controladora.
  * El acelerador da un voltaje variable entre 0.85 y 3.9
  * Se puede configurar que el freno anule el crucero.
@@ -397,8 +397,10 @@ void validaMinAcelerador() {
 }
 
 void setup() {
-	dac.begin(dir_dac); // Configura DAC.
-	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false); // Fija voltaje inicial en Dac (0.85v).
+	// Configura DAC.
+	dac.begin(dir_dac);
+	// Fija voltaje inicial en Dac (0.85v).
+	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 
 	// Configura pines y prepara las interrupciones.
 	pinMode(pin_piezo, OUTPUT);
@@ -406,12 +408,15 @@ void setup() {
 	digitalWrite(pin_freno, HIGH);
 	pinMode(pin_pedal, INPUT_PULLUP);
 	pinMode(pin_acelerador, INPUT);
-	attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE); // Interrupción pedal.
-	attachInterrupt(digitalPinToInterrupt(pin_freno), freno, FALLING); // Interrupción freno.
+	// Interrupción pedal.
+	attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE);
+	// Interrupción freno.
+	attachInterrupt(digitalPinToInterrupt(pin_freno), freno, FALLING);
 
 	validaMinAcelerador();
 
-	repeatTones(tono_inicial, 1, 3000, 90, 190); // Tono aviso de inicio a la espera de frenadas (al encender bici).
+	// Tono aviso de inicio a la espera de frenadas (al encender bici).
+	repeatTones(tono_inicial, 1, 3000, 90, 190);
 
 	// Si arrancamos con el freno pulsado.
 	if (frenopulsado == true) {	
@@ -435,7 +440,7 @@ void setup() {
 	// Cálculo de factores para auto_progresivo.
 	if (retardo_inicio_progresivo > 0) {
 		fac_s = retardo_paro_motor * 2.0;
-		fac_t = (retardo_aceleracion * 1.0) / ((retardo_aceleracion-fac_s) * 1.0);
+		fac_t = (retardo_aceleracion * 1.0) / ((retardo_aceleracion - fac_s) * 1.0);
 		fac_b = (1.0 / (retardo_aceleracion - fac_s) - fac_t) / (pow((retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
 		fac_a = fac_t - pow(1.0,fac_c) * fac_b;
 		if (!desacelera_al_parar_pedal) {
