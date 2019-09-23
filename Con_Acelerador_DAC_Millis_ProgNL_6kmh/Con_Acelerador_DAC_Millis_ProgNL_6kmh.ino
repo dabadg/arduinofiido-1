@@ -344,7 +344,7 @@ void ayudaArranque() {
 		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 	}
 
-	// Confdición controlada por variable de usuario.
+	// Condicción controlada por variable de usuario.
 	if (!modo_crucero_asistencia) {
 		// Cortamos crucero.
 		v_crucero = a0_valor_reposo;
