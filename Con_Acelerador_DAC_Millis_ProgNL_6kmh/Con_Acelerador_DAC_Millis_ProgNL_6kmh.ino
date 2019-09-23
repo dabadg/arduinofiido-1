@@ -155,7 +155,6 @@ boolean auto_progresivo = false;
 float fac_m = 0;
 float fac_n = 0;
 float fac_p = 0.6222 - 0.0222 * suavidad_progresivos;
-float nivel_inicial_progresivo = a0_valor_reposo;
 
 // Variables para autoprogresivos.
 float fac_s = 0;
