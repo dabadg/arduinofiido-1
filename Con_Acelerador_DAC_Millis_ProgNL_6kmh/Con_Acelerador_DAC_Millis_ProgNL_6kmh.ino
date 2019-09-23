@@ -282,7 +282,7 @@ float leeAcelerador() {
 void mandaAcelerador() {
 	if (modo_crucero == true) {
 		// Progresivo no lineal.
-		fac_n = a0_valor_reposo;
+		fac_n = a0_valor_minimo;
 		fac_m = (v_crucero - a0_valor_reposo) / pow(retardo_aceleracion, fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
