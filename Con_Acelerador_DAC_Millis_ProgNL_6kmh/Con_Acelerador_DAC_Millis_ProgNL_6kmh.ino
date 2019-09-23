@@ -106,9 +106,6 @@ float suavidad_autoprogresivos = 5;
 // Dirección del bus I2C [DAC] (0x60) si está soldado, si no (0x62).
 const int dir_dac = 0x60;
 
-// (True) si se desea desacelerar motor al dejar de pedalear.
-const boolean desacelera_al_parar_pedal = false;
-
 // Comportamiento del crucero cuando se usa la asistencia desde parado.
 // True --> Guarda el valor de crucero de la asistencia de 6 km/h.
 // False --> Borra valor de crucero.
@@ -132,7 +129,7 @@ const int pin_piezo = 11; // Pin del zumbador.
 //======= VARIABLES PARA CÁLCULOS ======================================
 
 // Tiempo en milisegundos para contar pulsos.
-const int tiempo_cadencia = 240;
+const int tiempo_cadencia = 250;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
@@ -162,8 +159,7 @@ float nivel_inicial_progresivo = a0_valor_reposo;
 
 // Variables para autoprogresivos.
 float fac_s = 0;
-float fac_t = 0;
-float fac_b = 1;
+float fac_b = 0;
 float fac_a = 0;
 float fac_c = suavidad_autoprogresivos / 10.0;
 
@@ -413,13 +409,8 @@ void setup() {
 	// Cálculo de factores para auto_progresivo.
 	if (retardo_inicio_progresivo > 0) {
 		fac_s = retardo_paro_motor * 2.0;
-		fac_t = (retardo_aceleracion * 1.0) / ((retardo_aceleracion - fac_s) * 1.0);
-		fac_b = (1.0 / (retardo_aceleracion - fac_s) - fac_t) / (pow((retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
-		fac_a = fac_t - pow(1.0,fac_c) * fac_b;
-		if (!desacelera_al_parar_pedal) {
-			fac_b = (1.0 / retardo_aceleracion - 1.0) / (pow((retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
-			fac_a = 1.0 - pow(1.0,fac_c) * fac_b;
-		}
+		fac_b = (1.0 / retardo_aceleracion - 1.0) / (pow((retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
+		fac_a = 1.0 - pow(1.0,fac_c) * fac_b;
 	}
 
 	// Tono de finalización de setup.
@@ -459,7 +450,7 @@ void loop() {
 					bkp_contador_retardo_aceleracion = retardo_aceleracion - fac_s;
 				}
 
-				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a+fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
+				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
 				auto_progresivo = false;
 			} else {
 				auto_progresivo = false;
@@ -470,17 +461,6 @@ void loop() {
 
 			if (contador_retardo_aceleracion < retardo_aceleracion) {
 				contador_retardo_aceleracion++;
-			}
-		}
-		
-		// Si están los pedales parados.
-		if (pulsos == 0) {
-			// Desacelera al parar los pedales.
-			if (contador_retardo_aceleracion > 0 && desacelera_al_parar_pedal == true) {
-				contador_retardo_aceleracion = contador_retardo_aceleracion - 2;
-				if (contador_retardo_aceleracion < 0) {
-					contador_retardo_aceleracion = 0;
-				}
 			}
 		}
 
