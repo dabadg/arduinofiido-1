@@ -78,7 +78,7 @@ const boolean frenopulsado = true;
 // Retardo en segundos para parar el motor una vez se deja de pedalear.
 // Usar múltiplos de 0.25 --> 0.25 = 1/4 de segundo.
 // No se recomienda subir más de 1.00 segundo.
-float retardo_paro_motor = 0.50;
+float retardo_paro_motor = 0.75;
 
 // Retardo en segundos para ponerse a velocidad máxima o crucero.
 int retardo_aceleracion = 5;
