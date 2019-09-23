@@ -467,7 +467,7 @@ void loop() {
 				}
 
 				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a+fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
-				//auto_progresivo = false;
+				auto_progresivo = false;
 			} else {
 				auto_progresivo = false;
 			}
