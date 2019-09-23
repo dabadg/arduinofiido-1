@@ -69,7 +69,7 @@ AGRADECIMIENTOS:
 
 // Número de pulsos para que se considere que se está pedaleando.
 // Configurar según sensor y gustos.
-const int cadencia = 1;
+const int cadencia = 2;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
