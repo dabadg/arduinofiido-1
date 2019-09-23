@@ -334,7 +334,7 @@ void ayudaArranque() {
 	}
 
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
+	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos < cadencia) {
 		contador_retardo_aceleracion++;
 
 		// Preparamos el auto_progresivo.
