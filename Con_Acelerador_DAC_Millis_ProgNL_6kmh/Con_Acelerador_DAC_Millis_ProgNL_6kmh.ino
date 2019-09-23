@@ -410,7 +410,7 @@ void setup() {
 	if (retardo_inicio_progresivo > 0) {
 		fac_s = retardo_paro_motor * 2.0;
 		fac_b = (1.0 / retardo_aceleracion - 1.0) / (pow((retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
-		fac_a = 1.0 - pow(1.0,fac_c) * fac_b;
+		fac_a = 1.0 - pow(1.0, fac_c) * fac_b;
 	}
 
 	// Tono de finalización de setup.
