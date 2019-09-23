@@ -1,6 +1,6 @@
 /* 
                     Versión Con Acelerador y DAC
-         Con_Acelerador_DAC_Millis_ProgNL_6kmh 1.9.1
+         Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.0
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -91,11 +91,6 @@ const boolean modo_crucero = true;
 // Se recomienda activarlo para mayor seguridad.
 const boolean freno_anula_crucero = true;
 
-// Nivel al que se desea iniciar el progresivo.
-// Aumentar si se desea salir con mas tirón.
-// >> NO PASAR DE 410, NI BAJAR DE 190 <<.
-float a0_valor_inicial_arranque_progresivo = 306; // 1.50.
-
 // Retardo para inciar progresivo tras parar pedales.
 // Freno anula el tiempo.
 int retardo_inicio_progresivo = 10;
@@ -112,7 +107,7 @@ float suavidad_autoprogresivos = 5;
 const int dir_dac = 0x60;
 
 // (True) si se desea desacelerar motor al dejar de pedalear.
-const boolean desacelera_al_parar_pedal = true;
+const boolean desacelera_al_parar_pedal = false;
 
 // Comportamiento del crucero cuando se usa la asistencia desde parado.
 // True --> Guarda el valor de crucero de la asistencia de 6 km/h.
@@ -137,7 +132,7 @@ const int pin_piezo = 11; // Pin del zumbador.
 //======= VARIABLES PARA CÁLCULOS ======================================
 
 // Tiempo en milisegundos para contar pulsos.
-const int tiempo_cadencia = 250;
+const int tiempo_cadencia = 240;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
@@ -163,7 +158,7 @@ boolean auto_progresivo = false;
 float fac_m = 0;
 float fac_n = 0;
 float fac_p = 0.6222 - 0.0222 * suavidad_progresivos;
-float nivel_inicial_progresivo = a0_valor_inicial_arranque_progresivo;
+float nivel_inicial_progresivo = a0_valor_reposo;
 
 // Variables para autoprogresivos.
 float fac_s = 0;
@@ -177,7 +172,7 @@ float v_acelerador;
 // Valor de crucero del acelerador.
 float v_crucero = a0_valor_reposo;
 // Los voltios que se mandan a la controladora.
-float nivel_aceleracion = a0_valor_inicial_arranque_progresivo;
+float nivel_aceleracion = a0_valor_reposo;
 
 // Contador de pulsos del pedal.
 int pulsos = 0;
@@ -289,23 +284,13 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
-	// Anula crucero por debajo del nivel inicial del progresivo.
-	if (v_crucero < a0_valor_inicial_arranque_progresivo) {	
-		v_crucero = a0_valor_reposo;
-	}
-
-	// Evita salidas demasiado bruscas.
-	if (nivel_inicial_progresivo > a0_valor_suave) {
-		nivel_inicial_progresivo = a0_valor_suave;
-	}
-
 	if (modo_crucero == true) {
 		// Progresivo no lineal.
-		fac_n = nivel_inicial_progresivo;
-		fac_m = (v_crucero - a0_valor_inicial_arranque_progresivo) / pow(retardo_aceleracion, fac_p);
+		fac_n = a0_valor_reposo;
+		fac_m = (v_crucero - a0_valor_reposo) / pow(retardo_aceleracion, fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
-		if (nivel_aceleracion == nivel_inicial_progresivo || nivel_aceleracion < a0_valor_reposo) {
+		if (nivel_aceleracion < a0_valor_reposo) {
 			nivel_aceleracion = a0_valor_reposo;
 		}
 
@@ -317,7 +302,6 @@ void mandaAcelerador() {
 	}
 
 	dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
-
 }
 
 void paraMotor() {
@@ -345,7 +329,15 @@ void ayudaArranque() {
 		// Preparamos el auto_progresivo.
 		contador_retardo_inicio_progresivo = 0;
 		auto_progresivo = true;
-		mandaAcelerador();
+		if (!modo_crucero) {
+			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+		} else {
+			mandaAcelerador();
+		}
+	}
+
+	if (!modo_crucero) {
+		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 	}
 
 	if (!modo_crucero_asistencia) {
@@ -383,7 +375,7 @@ void setup() {
 	// Fija voltaje inicial en Dac (0.85v).
 	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 
-	// Configura pines y prepara las interrupciones.
+	// Configura pines.
 	pinMode(pin_piezo, OUTPUT);
 	pinMode(pin_freno, OUTPUT);
 	digitalWrite(pin_freno, HIGH);
@@ -457,6 +449,7 @@ void loop() {
 				if (contador_retardo_aceleracion > 4) {
 					bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
 				}
+
 				paraMotor();
 			}
 		// Si se pedalea normal (por encima de la cadencia).
@@ -478,8 +471,10 @@ void loop() {
 			if (contador_retardo_aceleracion < retardo_aceleracion) {
 				contador_retardo_aceleracion++;
 			}
+		}
+		
 		// Si están los pedales parados.
-		} else if (pulsos == 0) {
+		if (pulsos == 0) {
 			// Desacelera al parar los pedales.
 			if (contador_retardo_aceleracion > 0 && desacelera_al_parar_pedal == true) {
 				contador_retardo_aceleracion = contador_retardo_aceleracion - 2;
