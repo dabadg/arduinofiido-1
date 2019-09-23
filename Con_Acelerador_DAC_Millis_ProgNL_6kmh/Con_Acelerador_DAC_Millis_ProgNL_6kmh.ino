@@ -69,7 +69,7 @@ AGRADECIMIENTOS:
 
 // Número de pulsos para que se considere que se está pedaleando.
 // Configurar según sensor y gustos.
-const int cadencia = 2;
+const int cadencia_pedaleo = 2;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
@@ -111,6 +111,12 @@ const int dir_dac = 0x60;
 // False --> Borra valor de crucero.
 const boolean modo_crucero_asistencia = false;
 
+// En True la cadencia durante la asistencia desde parado a 6km/h se
+// pone a 3 (puede dificultar las salidas en cuestas desde parado).
+// Una vez salgamos de dicha asistencia, la cadencia vuelve a la 
+// definida en la variable cadencia_pedaleo.
+const boolean cadencia_en_asistencia = false;
+
 // Constante que habilita los tonos de inicialización del sistema.
 // Recomendado poner a True si se tiene zumbador en el pin 11.
 const boolean tono_inicial = false;
@@ -128,6 +134,9 @@ const int pin_piezo = 11; // Pin del zumbador.
 // Resto de pines 9 y 10.
 
 //======= VARIABLES PARA CÁLCULOS ======================================
+
+// Número de pulsos para que se considere que se está pedaleando.
+int cadencia = cadencia_pedaleo;
 
 // Tiempo en milisegundos para contar pulsos.
 const int tiempo_cadencia = 250;
@@ -318,6 +327,11 @@ void freno() {
 void ayudaArranque() {
 	// Fijamos valor de crucero a 6 km/h
 	v_crucero = a0_valor_6kmh;
+	
+	// Ponemos cadencia a 3 si así está definido en variable de usuario.
+	if (cadencia_en_asistencia) {
+		cadencia = 3;
+	}
 
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos == 0) {
@@ -336,6 +350,11 @@ void ayudaArranque() {
 			// Llamamos a a la función con el crucero de 6 km/h ya fijado.
 			mandaAcelerador();
 		}
+	}
+	
+	// Recuperamos cadencia habitual.
+	if (cadencia_en_asistencia) {
+		cadencia = cadencia_pedaleo;
 	}
 
 	// Si no está el modo crucero.
