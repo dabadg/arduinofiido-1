@@ -112,7 +112,8 @@ const int dir_dac = 0x60;
 const boolean modo_crucero_asistencia = false;
 
 // Constante que habilita los tonos de inicialización del sistema.
-const boolean tono_inicial = true;
+// Recomendado poner a True si se tiene zumbador en el pin 11.
+const boolean tono_inicial = false;
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
@@ -324,14 +325,19 @@ void ayudaArranque() {
 		// Preparamos el auto_progresivo.
 		contador_retardo_inicio_progresivo = 0;
 		auto_progresivo = true;
+		// Si no está el modo crucero.
 		if (!modo_crucero) {
+			// Mandamos el voltaje directamente al DAC de 6 km/h.
 			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 		} else {
+			// Llamamos a a la función con el crucero de 6 km/h ya fijado.
 			mandaAcelerador();
 		}
 	}
 
+	// Si no está en modo crucero.
 	if (!modo_crucero) {
+		// Cortamos para adecuarnos a la normativa.
 		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 	}
 
@@ -376,6 +382,7 @@ void setup() {
 	digitalWrite(pin_freno, HIGH);
 	pinMode(pin_pedal, INPUT_PULLUP);
 	pinMode(pin_acelerador, INPUT);
+
 	// Interrupción pedal.
 	attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE);
 	// Interrupción freno.
