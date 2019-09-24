@@ -93,7 +93,7 @@ const boolean freno_anula_crucero = true;
 
 // Nivel al que se desea iniciar el progresivo. Aumentar si se desea
 // salir con mas tirón. >> NO PASAR DE 410, NI BAJAR DE 190 <<.	
-float a0_valor_inicial_arranque_progresivo = 306; // 1.50.
+const float a0_valor_inicial_arranque_progresivo = 306; // 1.50.
 
 // Retardo para inciar progresivo tras parar pedales.
 // Freno anula el tiempo.
@@ -147,6 +147,7 @@ const int tiempo_cadencia = 250;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
+const float a0_valor_corte = 216.0;  // 1.15
 const float a0_valor_minimo = 235.0; // 1.15
 const float a0_valor_suave = 410.0;  // 2.00
 const float a0_valor_6kmh = 450.0;   // 2.19
@@ -294,8 +295,8 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
-	// Anula crucero por debajo del nivel inicial del progresivo.	
-	if (v_crucero < nivel_inicial_progresivo) {		
+	// Anula crucero por debajo de 1.05 v.
+	if (v_crucero < a0_valor_corte) {		
 		v_crucero = a0_valor_reposo;	
 	}	
 
