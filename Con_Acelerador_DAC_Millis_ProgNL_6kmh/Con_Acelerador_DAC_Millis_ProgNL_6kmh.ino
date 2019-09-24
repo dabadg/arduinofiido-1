@@ -327,7 +327,7 @@ void freno() {
 void ayudaArranque() {
 	// Fijamos valor de crucero a 6 km/h
 	v_crucero = a0_valor_6kmh;
-	
+
 	// Ponemos cadencia a 3 si así está definido en variable de usuario.
 	if (cadencia_en_asistencia) {
 		cadencia = 3;
@@ -503,3 +503,4 @@ void loop() {
 
 	mandaAcelerador();
 }
+
