@@ -311,6 +311,7 @@ void mandaAcelerador() {
 		fac_m = (v_crucero - a0_valor_inicial_arranque_progresivo) / pow(retardo_aceleracion, fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
+		// Work around para volver del modo asistivo nativo de la bici.
 		if (nivel_aceleracion == nivel_inicial_progresivo || nivel_aceleracion < a0_valor_reposo) {
 			nivel_aceleracion = a0_valor_reposo;
 		}
