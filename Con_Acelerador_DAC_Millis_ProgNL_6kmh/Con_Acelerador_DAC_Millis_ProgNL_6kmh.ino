@@ -366,6 +366,8 @@ void ayudaArranque() {
 		} else {
 			// Llamamos a a la función con el crucero de 6 km/h ya fijado.
 			mandaAcelerador();
+			// Testing
+			//nivel_aceleracion = a0_valor_6kmh;
 		}
 	}
 	
