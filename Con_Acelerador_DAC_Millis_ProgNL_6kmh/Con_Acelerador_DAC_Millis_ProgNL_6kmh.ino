@@ -139,8 +139,9 @@ int cadencia = cadencia_pedaleo;
 
 // Tiempo en milisegundos para contar pulsos.
 const int tiempo_cadencia = 250;
-//const float tiempo_cadencia = 333.3; // Para cadencia 2 (6 imanes --> vuelta por segundo).
 //const float tiempo_cadencia = 166.6; // Para cadencia 1 (6 imanes --> vuelta por segundo).
+//const float tiempo_cadencia = 333.3; // Para cadencia 2 (6 imanes --> vuelta por segundo).
+//const int tiempo_cadencia = 500; // Para cadencia 3 (6 imanes --> vuelta por segundo).
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
