@@ -101,7 +101,7 @@ int retardo_inicio_progresivo = 10;
 
 // Suavidad de los progresivos, varía entre 1-10.
 // Al crecer se hacen más bruscos.
-float suavidad_progresivos = 5;
+float suavidad_progresivos = 3;
 
 // Suavidad de los autoprogresivos, varía entre 1-10.
 // Al crecer se hacen más bruscos.
