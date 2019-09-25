@@ -1,3 +1,13 @@
+CHANGELOG 1.9 --> 2.0.1:
+- Mejorado asistido a 6km/h
+  - Depende de la cadencia si se sale pedalenado.
+  - No hay bajón de potencia en el proceso.
+  - Modo peatonal.
+  - Añadido asistencia desde parado, aunque el modo crucero esté desactivado en variable de usuario.
+- Optimización, eliminadas variables no necesarias.
+- Solucionado cortar crucero con el acelerador.
+- Modificaciones para los cálculos de los progresivos y auto_progresivos.
+
 CHANGELOG 1.9 --> 1.9.1:
 - Ajustes finales en las variables de usuario.
 - Optimización, eliminadas variables no necesarias.
