@@ -38,13 +38,13 @@ AUTOPROGRESIVOS:
  * progresivo desde cero.
 ------------------------------------------------------------------------
 ASISTENCIA A 6 KM/H DESDE PARADO:
- * Si no se pedalea y mientras el acelerador esté accionado, el motor 
- * asiste hasta 6 km/h, ajustándose a la normativa.
- * Si se suelta el acelerador, deja de asistir, y si se comienza a
- * pedalear sin dejar de accionar el acelerador, se sale a la velocidad
- * con la que vayamos regulando con el acelerador.
- * Se puede configurar el comportamiento del crucero en este modo desde
- * variable de usuario.
+ * Si no se pedalea y mientras el acelerador esté accionado, se fija un
+ * crucero para que el motor asista hasta 6 km/h, ajustándose a la
+ * normativa. Si se suelta el acelerador --> deja de asistir.
+ * Si se comienza a pedalear sin dejar de accionar el acelerador --> se
+ * sale a la velocidad con la que vayamos regulando con el acelerador.
+ * El crucero de 6 km/h se puede aprovechar como un "modo peatonal" en
+ * el caso de haber soltado el acelerador y empezar a pedalear.
 ------------------------------------------------------------------------
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
@@ -110,11 +110,6 @@ float suavidad_autoprogresivos = 5;
 // Dirección del bus I2C [DAC] (0x60) si está soldado, si no (0x62).
 const int dir_dac = 0x60;
 
-// Comportamiento del crucero cuando se usa la asistencia desde parado.
-// True --> Guarda el valor de crucero de la asistencia de 6 km/h.
-// False --> Borra valor de crucero.
-const boolean modo_crucero_asistencia = false;
-
 // En True la cadencia durante la asistencia desde parado a 6km/h se
 // pone a 3 (puede dificultar las salidas en cuestas desde parado).
 // Una vez salgamos de dicha asistencia, la cadencia vuelve a la 
@@ -172,7 +167,7 @@ float fac_n = 0;
 float fac_p = 0.6222 - 0.0222 * suavidad_progresivos;
 float nivel_inicial_progresivo = a0_valor_inicial_arranque_progresivo;
 
-// Variables para autoprogresivos.
+// Variables para auto_progresivos.
 float fac_s = 0;
 float fac_b = 0;
 float fac_a = 0;
@@ -295,9 +290,9 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
-	// Anula crucero por debajo de 1.05 v.
-	if (v_crucero < a0_valor_corte) {		
-		v_crucero = a0_valor_reposo;	
+	// Anula crucero por debajo del nivel inicial del progresivo.
+	if (v_crucero < nivel_inicial_progresivo) {		
+		v_crucero = a0_valor_corte;	
 	}	
 
 	// Evita salidas demasiado bruscas.	
@@ -351,7 +346,7 @@ void ayudaArranque() {
 	}
 
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_minimo + 30 && p_pulsos < cadencia) {
+	while (analogRead(pin_acelerador) > a0_valor_minimo + 15 && p_pulsos < cadencia) {
 		contador_retardo_aceleracion++;
 
 		// Preparamos el auto_progresivo.
@@ -366,8 +361,6 @@ void ayudaArranque() {
 		} else {
 			// Llamamos a a la función con el crucero de 6 km/h ya fijado.
 			mandaAcelerador();
-			// Testing
-			//nivel_aceleracion = a0_valor_6kmh;
 		}
 	}
 	
@@ -380,15 +373,6 @@ void ayudaArranque() {
 	if (!modo_crucero) {
 		// Cortamos para adecuarnos a la normativa.
 		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
-	}
-
-	// Condicción controlada por variable de usuario.
-	if (!modo_crucero_asistencia) {
-		// Cortamos crucero.
-		v_crucero = a0_valor_reposo;
-	} else {
-		// Mismo crucero que la asistencia desde parado.
-		v_crucero = a0_valor_6kmh;
 	}
 }
 
@@ -513,7 +497,7 @@ void loop() {
 		}
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador.
-		if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 30 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor) {
+		if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 15 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor) {
 			ayudaArranque();
 		}
 
