@@ -73,7 +73,7 @@ const int cadencia_pedaleo = 2;
 
 // (True) si se desea activar la posibilidad de acelerar desde parado a
 // 6 km/h arrancando con el freno pulsado.
-const boolean frenopulsado = true;
+const boolean freno_pulsado = true;
 
 // Retardo en segundos para parar el motor una vez se deja de pedalear.
 // Usar múltiplos de 0.25 --> 0.25 = 1/4 de segundo.
@@ -417,7 +417,7 @@ void setup() {
 	repeatTones(tono_inicial, 1, 3000, 90, 190);
 
 	// Si arrancamos con el freno pulsado.
-	if (frenopulsado == true) {	
+	if (freno_pulsado == true) {	
 		if (digitalRead(pin_freno) == LOW) {
 			// Activamos la ayuda desde parado a 6kmh.	
 			ayuda_salida = true;
