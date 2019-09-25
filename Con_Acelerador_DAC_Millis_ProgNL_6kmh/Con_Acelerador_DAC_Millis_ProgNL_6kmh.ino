@@ -368,12 +368,6 @@ void ayudaArranque() {
 	if (cadencia_en_asistencia) {
 		cadencia = cadencia_pedaleo;
 	}
-
-	// Si no está el modo crucero.
-	if (!modo_crucero) {
-		// Cortamos para adecuarnos a la normativa.
-		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
-	}
 }
 
 void validaMinAcelerador() {
