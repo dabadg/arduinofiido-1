@@ -293,7 +293,7 @@ void mandaAcelerador() {
 	// Anula crucero por debajo del nivel inicial del progresivo.
 	if (v_crucero < nivel_inicial_progresivo) {		
 		v_crucero = a0_valor_corte;	
-	}	
+	}
 
 	// Evita salidas demasiado bruscas.	
 	if (nivel_inicial_progresivo > a0_valor_suave) {	
