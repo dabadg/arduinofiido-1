@@ -1,6 +1,6 @@
 /* 
                     Versión Con Acelerador y DAC
-         Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.0
+               Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.0
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -92,7 +92,7 @@ const boolean modo_crucero = true;
 const boolean freno_anula_crucero = true;
 
 // Nivel al que se desea iniciar el progresivo. Aumentar si se desea
-// salir con mas tirón. >> NO PASAR DE 410, NI BAJAR DE 190 <<.	
+// salir con mas tirón. >> NO PASAR DE 410, NI BAJAR DE 190 <<.
 const float a0_valor_inicial_arranque_progresivo = 306; // 1.50.
 
 // Retardo para inciar progresivo tras parar pedales.
@@ -101,7 +101,7 @@ int retardo_inicio_progresivo = 10;
 
 // Suavidad de los progresivos, varía entre 1-10.
 // Al crecer se hacen más bruscos.
-float suavidad_progresivos = 3;
+float suavidad_progresivos = 5;
 
 // Suavidad de los autoprogresivos, varía entre 1-10.
 // Al crecer se hacen más bruscos.
