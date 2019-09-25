@@ -1,6 +1,6 @@
 /* 
-                    Versión Con Acelerador y DAC
-               Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.0
+                     Versión Con Acelerador y DAC
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.0.1
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
