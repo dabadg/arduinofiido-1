@@ -29,7 +29,7 @@ LEGALIZACIÓN ACELERADOR:
  * Si los pulsos obtenidos son menores que la cadencia espera
  * que se cumpla el retardo establecido y no funciona el acelerador.
 ------------------------------------------------------------------------
-AUTOPROGRESIVOS:
+AUTO PROGRESIVOS:
  * Si se deja de pedalear, el motor se para como de costumbre, pero si
  * continuamos pedaleando antes de transcurridos 10 segundos no inciará
  * el progresivo desde 0 si no que el motor continuará a una velocidad
@@ -332,7 +332,7 @@ void freno() {
 	paraMotor();
 
 	if (freno_anula_crucero == true) {
-		v_crucero = a0_valor_reposo;
+		v_crucero = a0_valor_corte;
 	}
 }
 
@@ -346,7 +346,7 @@ void ayudaArranque() {
 	}
 
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_reposo + 15 && p_pulsos < cadencia) {
+	while (analogRead(pin_acelerador) > a0_valor_minimo && p_pulsos < cadencia) {
 		contador_retardo_aceleracion++;
 
 		// Preparamos el auto_progresivo.
@@ -491,7 +491,7 @@ void loop() {
 		}
 
 		// Asistencia desde parado a 6 km/h mientras se use el acelerador.
-		if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_reposo + 15 && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor) {
+		if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_minimo && contador_retardo_aceleracion == 0 && contador_retardo_paro_motor >= retardo_paro_motor) {
 			ayudaArranque();
 		}
 
