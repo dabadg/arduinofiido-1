@@ -253,11 +253,11 @@ float aceleradorEnDac(float vl_acelerador) {
 
 void estableceCrucero(float vl_acelerador) {
 	// El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
-	if (vl_acelerador > a0_valor_suave && p_pulsos > 0) {
+	if (vl_acelerador > a0_valor_minimo && p_pulsos > 0) {
 		v_crucero = vl_acelerador;
 		crucero_actualizado = true;
 	// Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso.
-	} else if (vl_acelerador <= a0_valor_suave && crucero_actualizado) {
+	} else if (vl_acelerador <= a0_valor_minimo && crucero_actualizado) {
 		crucero_actualizado = false;
 		repeatTones(tono_inicial, 1, 3000, 190, 1);
 	}
@@ -346,7 +346,7 @@ void ayudaArranque() {
 	}
 
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_minimo + 15 && p_pulsos < cadencia) {
+	while (analogRead(pin_acelerador) > a0_valor_reposo + 15 && p_pulsos < cadencia) {
 		contador_retardo_aceleracion++;
 
 		// Preparamos el auto_progresivo.
