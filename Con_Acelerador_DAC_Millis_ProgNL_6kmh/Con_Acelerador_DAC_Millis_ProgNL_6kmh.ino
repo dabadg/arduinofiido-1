@@ -303,7 +303,7 @@ void mandaAcelerador() {
 	if (modo_crucero == true) {
 		// Progresivo no lineal.
 		fac_n = nivel_inicial_progresivo;
-		fac_m = (v_crucero - a0_valor_inicial_arranque_progresivo) / pow(retardo_aceleracion, fac_p);
+		fac_m = ((v_crucero + 60) - nivel_inicial_progresivo) / pow(retardo_aceleracion, fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
 		// Work around para volver del modo asistivo nativo de la bici.
