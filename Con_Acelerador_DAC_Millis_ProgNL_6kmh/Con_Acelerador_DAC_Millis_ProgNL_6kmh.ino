@@ -256,12 +256,17 @@ float aceleradorEnDac(float vl_acelerador) {
 
 void estableceCrucero(float vl_acelerador) {
   
-  if(!crucero_fijado){
+  if(crucero_fijado){
+    //if(v_crucero<=vl_acelerador){ // Si se supera el valor de crucero con el acelerador, se desactiva el crucero.
+    if(comparaConTolerancia(vl_acelerador, v_crucero, 20)){
+      anulaCrucero();
+    }
+  }else{ 
     // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
     if (vl_acelerador > a0_valor_minimo && p_pulsos > 0) {
       v_crucero = vl_acelerador;
       crucero_actualizado = true;
-    // Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso.
+    // Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso para fijar el crucero.
     } else if (vl_acelerador <= a0_valor_minimo && crucero_actualizado) {
       crucero_actualizado = false;
       crucero_fijado = true;
@@ -349,8 +354,9 @@ void freno() {
 
 void anulaCrucero(){
   v_crucero = a0_valor_corte;
+  crucero_actualizado = false;
   crucero_fijado = false;
-  repeatTones(tono_inicial, 3, 3000, 190, 1);
+  repeatTones(tono_inicial, 1, 2000, 190, 100);
 }
 
 void ayudaArranque() {
