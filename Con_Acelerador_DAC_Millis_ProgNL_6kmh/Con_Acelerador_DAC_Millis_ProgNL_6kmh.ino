@@ -303,13 +303,7 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador() {
-/*
-  // TODO Esto ya no vale con la variable crucero_fijado ya que se deja de reestablecer el valor de v_crucero constantemente por lo que la medida siempre será la fijada.
-  // Anula crucero por debajo del nivel inicial del progresivo.
-  if (v_crucero < nivel_inicial_progresivo) {   
-    anulaCrucero();
-  }
-*/
+
   // Evita salidas demasiado bruscas. 
   if (nivel_inicial_progresivo > a0_valor_suave) {  
     nivel_inicial_progresivo = a0_valor_suave;  
