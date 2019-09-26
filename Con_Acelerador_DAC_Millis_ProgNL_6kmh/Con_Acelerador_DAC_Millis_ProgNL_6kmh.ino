@@ -189,6 +189,7 @@ int pulsos = 0;
 boolean ayuda_salida = false;
 
 // Variable que almacena el estado de notificación de fijar crucero.
+float valor_fija_crucero = a0_valor_medio; // Valor en el que se empieza a fijar crucero. Cambiar si se quiere fijar crucero desde potencias inferiores.
 boolean crucero_actualizado = false;
 boolean crucero_fijado = false;
 
@@ -257,22 +258,22 @@ float aceleradorEnDac(float vl_acelerador) {
 void estableceCrucero(float vl_acelerador) {
   
   if(crucero_fijado){
-    //if(v_crucero<=vl_acelerador){ // Si se supera el valor de crucero con el acelerador, se desactiva el crucero.
-    if(comparaConTolerancia(vl_acelerador, v_crucero, 20)){
-      anulaCrucero();
+    if(v_crucero<=vl_acelerador){ // Si se supera el valor de crucero con el acelerador, se desactiva el crucero.
+      anulaCrucero(false);
     }
   }else{ 
     // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
     if (vl_acelerador > a0_valor_minimo && p_pulsos > 0) {
       v_crucero = vl_acelerador;
       crucero_actualizado = true;
-    // Si el acelerador está al mínimo en la siguiente vuelta, se emite un tono de aviso para fijar el crucero.
-    } else if (vl_acelerador <= a0_valor_minimo && crucero_actualizado) {
+    } else if (crucero_actualizado && v_crucero > valor_fija_crucero && // Si el crucero se ha actualizado por encima del nivel_medio de potencia                      
+                vl_acelerador <= a0_valor_minimo){  // y si detecta que el acelerador está por debajo del valor mínimo. Fija el crucero.
       crucero_actualizado = false;
       crucero_fijado = true;
       repeatTones(tono_inicial, 1, 3000, 190, 1);
-    }
+    }    
   }
+  
 }
 
 // Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
@@ -348,15 +349,17 @@ void freno() {
   // Anular la variable freno_anula_crucero ya que debería ser necesario salir del crucero al tocar el freno sin dar opción a configuración.
   //if (crucero_fijado) {
   if (crucero_fijado && freno_anula_crucero) {
-    anulaCrucero();
+    anulaCrucero(true);
   }
 }
 
-void anulaCrucero(){
+void anulaCrucero(boolean freno){
   v_crucero = a0_valor_corte;
   crucero_actualizado = false;
   crucero_fijado = false;
-  repeatTones(tono_inicial, 1, 2000, 190, 100);
+  if(!freno){
+    repeatTones(tono_inicial, 1, 2000, 190, 100);
+  }
 }
 
 void ayudaArranque() {
