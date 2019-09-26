@@ -263,7 +263,7 @@ void estableceCrucero(float vl_acelerador) {
     }
   }else{ 
     // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
-    if (vl_acelerador > a0_valor_minimo && p_pulsos > 0) {
+    if (vl_acelerador > valor_fija_crucero && p_pulsos > 0) {
       v_crucero = vl_acelerador;
       crucero_actualizado = true;
     } else if (crucero_actualizado && v_crucero > valor_fija_crucero && // Si el crucero se ha actualizado por encima del nivel_medio de potencia                      
