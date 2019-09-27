@@ -201,7 +201,6 @@ volatile int p_pulsos = 0;
 //======= Variables fijaCrucero =======================================
 float prev_v_acelerador = a0_valor_reposo; // Variable para calcular el valor medio de medidas del acelerador para selección del crucero.
 
-
 //======= FUNCIONES DE TONOS ===========================================
 
 //================== TONES ==================
@@ -260,18 +259,16 @@ float aceleradorEnDac(float vl_acelerador) {
   return vl_acelerador * 4096 / 1023;
 }
 
-int cancelacrucerott = 0;
 void estableceCrucero(float vl_acelerador) {
   
   if(crucero_fijado){
     // Si se supera el valor de crucero con el acelerador, se desactiva el crucero.
-    if(v_crucero <= vl_acelerador && cancelacrucerott++ > 5) {
-      anulaCrucero();
-    }
+    //if(v_crucero <= vl_acelerador) {
+    //  anulaCrucero();
+    //}
   }else{ 
-    cancelacrucerott=0;
     // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
-    if (vl_acelerador > valor_fija_crucero && p_pulsos > 0) {
+    if (vl_acelerador > a0_valor_minimo && p_pulsos > 0) {
     
       v_crucero = vl_acelerador;
       crucero_actualizado = true;
@@ -279,7 +276,7 @@ void estableceCrucero(float vl_acelerador) {
     // Si el crucero se ha actualizado por encima del nivel_medio de potencia y si detecta que el acelerador está por debajo del valor mínimo. Fija el crucero.
     } else if (crucero_actualizado && 
                v_crucero > valor_fija_crucero &&                       
-               vl_acelerador <= a0_valor_minimo) {
+               vl_acelerador <= a0_valor_reposo) {
                   
       crucero_actualizado = false;
       crucero_fijado = true;
