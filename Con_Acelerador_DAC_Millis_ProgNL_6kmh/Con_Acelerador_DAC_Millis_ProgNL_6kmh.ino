@@ -86,10 +86,6 @@ int retardo_aceleracion = 5;
 // False --> Manda señal del acelerador.
 const boolean modo_crucero = true;
 
-// (True) si se desea anular la velocidad de crucero al frenar.
-// Se recomienda activarlo para mayor seguridad.
-const boolean freno_anula_crucero = true;
-
 // Nivel al que se desea iniciar el progresivo. Aumentar si se desea
 // salir con mas tirón. >> NO PASAR DE 410, NI BAJAR DE 190 <<.
 const float a0_valor_inicial_arranque_progresivo = 306; // 1.50.
@@ -192,6 +188,8 @@ boolean ayuda_salida = false;
 float valor_fija_crucero = a0_valor_medio; // Valor en el que se empieza a fijar crucero. Cambiar si se quiere fijar crucero desde potencias inferiores.
 boolean crucero_actualizado = false;
 boolean crucero_fijado = false;
+unsigned const int segundos_anular_crucero_freno = 4;
+unsigned int brakeCounter;
 
 //======= Variables interrupción =======================================
 // Variable donde se suman los pulsos del sensor PAS.
@@ -259,7 +257,7 @@ void estableceCrucero(float vl_acelerador) {
   
   if(crucero_fijado){
     if(v_crucero<=vl_acelerador){ // Si se supera el valor de crucero con el acelerador, se desactiva el crucero.
-      anulaCrucero(false);
+      anulaCrucero();
     }
   }else{ 
     // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
@@ -337,23 +335,30 @@ void paraMotor() {
 void freno() {
   contador_retardo_inicio_progresivo = retardo_inicio_progresivo;
   bkp_contador_retardo_aceleracion = 0;
-
   paraMotor();
+}
 
-  // Anular la variable freno_anula_crucero ya que debería ser necesario salir del crucero al tocar el freno sin dar opción a configuración.
-  //if (crucero_fijado) {
-  if (crucero_fijado && freno_anula_crucero) {
-    anulaCrucero(true);
+void anulaCruceroConFreno(){
+  int vueltas = ((int) (segundos_anular_crucero_freno * 1000) / tiempo_cadencia);
+  
+  if (digitalRead(pin_freno) == LOW) {
+    brakeCounter++; 
+    if (crucero_fijado){
+      //repeatTones(tono_inicial, 1, brakeCounter * 1000, 90, 200);
+      if (brakeCounter >= vueltas)
+        anulaCrucero();
+    }
+  }else{
+    if(brakeCounter>0)
+      brakeCounter--;
   }
 }
 
-void anulaCrucero(boolean freno){
+void anulaCrucero(){
   v_crucero = a0_valor_corte;
   crucero_actualizado = false;
   crucero_fijado = false;
-  if(!freno){
-    repeatTones(tono_inicial, 1, 2000, 190, 100);
-  }
+  repeatTones(tono_inicial, 1, 2000, 190, 100);
 }
 
 void ayudaArranque() {
@@ -518,5 +523,7 @@ void loop() {
     p_pulsos = 0;
   }
 
+
+  anulaCruceroConFreno();
   mandaAcelerador();
 }
