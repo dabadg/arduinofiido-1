@@ -259,14 +259,8 @@ float aceleradorEnDac(float vl_acelerador) {
   return vl_acelerador * 4096 / 1023;
 }
 
-void estableceCrucero(float vl_acelerador) {
-  
-  if(crucero_fijado){
-    // Si se supera el valor de crucero con el acelerador, se desactiva el crucero.
-    //if(v_crucero <= vl_acelerador) {
-    //  anulaCrucero();
-    //}
-  }else{ 
+void estableceCrucero(float vl_acelerador) { 
+  if(!crucero_fijado){
     // El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre que esta sea superior al valor de referencia.
     if (vl_acelerador > a0_valor_minimo && p_pulsos > 0) {
     
@@ -275,15 +269,14 @@ void estableceCrucero(float vl_acelerador) {
       
     // Si el crucero se ha actualizado por encima del nivel_medio de potencia y si detecta que el acelerador está por debajo del valor mínimo. Fija el crucero.
     } else if (crucero_actualizado && 
-               v_crucero > valor_fija_crucero &&                       
+               v_crucero > valor_fija_crucero && 
                vl_acelerador <= a0_valor_reposo) {
-                  
+
       crucero_actualizado = false;
       crucero_fijado = true;
       repeatTones(tono_inicial, 1, 3000, 190, 1);
     }
   }
-  
 }
 
 // Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
