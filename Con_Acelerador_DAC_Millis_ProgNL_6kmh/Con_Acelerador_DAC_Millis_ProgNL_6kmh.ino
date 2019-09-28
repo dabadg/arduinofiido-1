@@ -163,8 +163,8 @@ float nivel_aceleracion = a0_valor_reposo;
 boolean ayuda_salida = false;
 
 // Valor en el que se empieza a fijar crucero. Cambiar si se quiere
-// fijar crucero desde potencias inferiores.
-float valor_fija_crucero = a0_valor_medio;
+// fijar crucero desde potencias inferiores o superiores.
+float valor_fija_crucero = a0_valor_suave;
 // Variable que almacena el estado de notificación de fijar crucero.
 boolean crucero_actualizado = false;
 boolean crucero_fijado = false;
