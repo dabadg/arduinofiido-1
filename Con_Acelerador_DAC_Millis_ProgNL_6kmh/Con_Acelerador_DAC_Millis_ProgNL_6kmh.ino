@@ -318,6 +318,13 @@ void freno() {
 	paraMotor();
 }
 
+void anulaCrucero() {
+	v_crucero = a0_valor_reposo;
+	crucero_actualizado = false;
+	crucero_fijado = false;
+	repeatTones(tono_inicial, 1, 2000, 190, 100);
+}
+
 void anulaCruceroConFreno() {
 	//((int) (segundos_anular_crucero_freno * 1000) / tiempo_cadencia);
 	// Calcular las vueltas de loop necesarias para anular el crucero.
@@ -336,13 +343,6 @@ void anulaCruceroConFreno() {
 				brakeCounter--;
 		}
 	}
-}
-
-void anulaCrucero() {
-	v_crucero = a0_valor_reposo;
-	crucero_actualizado = false;
-	crucero_fijado = false;
-	repeatTones(tono_inicial, 1, 2000, 190, 100);
 }
 
 void ayudaArranque() {
