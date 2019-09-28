@@ -127,7 +127,6 @@ const float a0_valor_max = 847.0;    // 4.13
 const int tiempo_act = 333;
 unsigned long tiempo1 = 0;
 unsigned long tiempo2 = 0;
-unsigned long tiempo3 = 0;
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
@@ -401,22 +400,17 @@ void setup() {
 	repeatTones(tono_inicial, 3, 3000, 90, 90);
 	// Arrancar tiempo de inicio.
 	tiempo1 = millis();
-	tiempo2 = millis();
 }
 
 void loop() {
-	tiempo3 = millis();
+	tiempo2 = millis();
 
 	v_acelerador = leeAcelerador();
 
-	if (tiempo3 > tiempo1 + 111) {
+	if (tiempo2 > tiempo1 + (unsigned long) tiempo_act) {
 		tiempo1 = millis();
-		estableceCrucero(v_acelerador);
-	}
-
-	if (tiempo3 > tiempo2 + (unsigned long) tiempo_act) {
-		tiempo2 = millis();
 		pulsos = p_pulsos;
+		estableceCrucero(v_acelerador);
 
 		// Si no se pedalea.
 		if (!pedaleo) {
@@ -464,4 +458,5 @@ void loop() {
 }
 
 // EOF
+
 
