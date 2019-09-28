@@ -371,8 +371,9 @@ void validaMinAcelerador() {
 	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
 	float l_acelerador_reposo=0;
 
+	// Tomamos 30 medidas para calcular la media.
 	for (int f=1; f <= 30; f++) {
-		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador); // Tomamos 30 medidas para calcular la media.
+		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador);
 	}
 
 	l_acelerador_reposo = l_acelerador_reposo / 30;
