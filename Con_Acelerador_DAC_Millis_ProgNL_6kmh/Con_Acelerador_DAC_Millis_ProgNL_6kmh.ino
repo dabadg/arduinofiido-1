@@ -127,7 +127,6 @@ const float a0_valor_max = 847.0;    // 4.13
 const int tiempo_act = 333;
 unsigned long tiempo1 = 0;
 unsigned long tiempo2 = 0;
-boolean act_cont = false;
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
@@ -146,7 +145,6 @@ float fac_n = 0;
 float fac_p = 1.056 - 0.056 * suavidad_progresivos;
 
 // Variables para auto_progresivos.
-float fac_s = 0;
 float fac_b = 0;
 float fac_a = 0;
 float fac_c = suavidad_autoprogresivos / 10.0;
@@ -335,8 +333,9 @@ void validaMinAcelerador() {
 	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
 	float l_acelerador_reposo;
 
+	// Tomamos 30 medidas para calcular la media.
 	for (int f=1; f <= 30; f++) {
-		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador); // Tomamos 30 medidas para calcular la media.
+		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador);
 	}
 
 	l_acelerador_reposo = l_acelerador_reposo / 30;
@@ -374,9 +373,9 @@ void setup() {
 	repeatTones(tono_inicial, 1, 3000, 90, 190);
 
 	// Si arrancamos con el freno pulsado.
-	if (freno_pulsado == true) {	
+	if (freno_pulsado == true) {
 		if (digitalRead(pin_freno) == LOW) {
-			// Activamos la ayuda desde parado a 6kmh.	
+			// Activamos la ayuda desde parado a 6kmh.
 			ayuda_salida = true;
 			delay(200);
 			// Tono aviso de modo con asistencia desde parado.
@@ -449,7 +448,7 @@ void loop() {
 		}
 
 		p_pulsos = 0;
-		
+
 		if (pulsos < 2) {
 			pedaleo = false;
 		}
