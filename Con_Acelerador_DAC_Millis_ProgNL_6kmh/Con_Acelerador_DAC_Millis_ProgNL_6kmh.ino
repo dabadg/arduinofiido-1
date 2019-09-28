@@ -128,15 +128,11 @@ const float a0_valor_max = 847.0;    // 4.13
 const int tiempo_act = 333;
 unsigned long tiempo1 = 0;
 unsigned long tiempo2 = 0;
-boolean act_cont = false;
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
 byte a_pulsos = 0;
 boolean pedaleo = false;
-
-// Backup voltaje.
-float bkp_voltaje = a0_valor_reposo;
 
 // Contadores de paro, aceleración y auto_progresivo.
 long contador_retardo_aceleracion = 0;
@@ -150,7 +146,6 @@ float fac_n = 0;
 float fac_p = 1.056 - 0.056 * suavidad_progresivos;
 
 // Variables para auto_progresivos.
-float fac_s = 0;
 float fac_b = 0;
 float fac_a = 0;
 float fac_c = suavidad_autoprogresivos / 10.0;
@@ -166,7 +161,6 @@ float nivel_aceleracion = a0_valor_reposo;
 boolean ayuda_salida = false;
 
 // Variable que almacena el estado de notificación de fijar crucero.
-float valor_fija_crucero = a0_valor_6kmh; // Valor en el que se empieza a fijar crucero. Cambiar si se quiere fijar crucero desde potencias inferiores.
 boolean crucero_actualizado = false;
 boolean crucero_fijado = false;
 unsigned const int segundos_anular_crucero_freno = 4;
@@ -175,9 +169,6 @@ unsigned int brakeCounter;
 //======= Variables interrupción =======================================
 // Variable donde se suman los pulsos del sensor PAS.
 volatile byte p_pulsos = 0;
-
-//======= Variables fijaCrucero =======================================
-float prev_v_acelerador = a0_valor_reposo; // Variable para calcular el valor medio de medidas del acelerador para selección del crucero.
 
 //======= FUNCIONES DE TONOS ===========================================
 
@@ -252,7 +243,7 @@ void estableceCrucero(float vl_acelerador) {
 
 			// Si el crucero se ha actualizado por encima del nivel_medio de potencia y si detecta que el acelerador está por debajo del valor mínimo. Fija el crucero.
 		} else if (crucero_actualizado &&
-				v_crucero > valor_fija_crucero &&
+				v_crucero > a0_valor_6kmh &&
 				vl_acelerador <= a0_valor_reposo) {
 
 			crucero_actualizado = false;
