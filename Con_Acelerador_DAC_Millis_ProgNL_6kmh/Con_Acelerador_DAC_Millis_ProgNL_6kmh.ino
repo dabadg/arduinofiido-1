@@ -340,6 +340,7 @@ void ayudaArranque() {
 	while (analogRead(pin_acelerador) > a0_valor_minimo && !pedaleo) {
 		contador_retardo_aceleracion++;
 		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+		nivel_aceleracion = v_acelerador;
 	}
 
 	// A la segunda interrupción, se activa pedaleo.
