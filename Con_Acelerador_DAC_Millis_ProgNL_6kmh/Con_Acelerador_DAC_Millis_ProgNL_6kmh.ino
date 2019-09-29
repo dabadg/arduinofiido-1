@@ -129,6 +129,8 @@ unsigned long tiempo2 = 0;
 byte pulsos = 0;
 byte a_pulsos = 0;
 boolean pedaleo = false;
+// A la segunda interrupción, se activa pedaleo.
+unsigned int interrupciones_pedaleo = 1;
 
 // Contadores de paro, aceleración y auto_progresivo.
 long contador_retardo_aceleracion = 0;
@@ -219,7 +221,7 @@ void pedal() {
 	p_pulsos++;
 	a_pulsos++;
 
-	if (a_pulsos >= 1) {
+	if (a_pulsos >= interrupciones_pedaleo) {
 		pedaleo = true;
 		a_pulsos = 0;
 	}
@@ -330,6 +332,9 @@ void anulaCruceroConFreno() {
 void ayudaArranque() {
 	// Fijamos valor de crucero a 6 km/h
 	v_crucero = a0_valor_6kmh;
+	
+	// A la tercera interrupción, se activa pedaleo.
+	interrupciones_pedaleo = 2;
 
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo && !pedaleo) {
@@ -349,6 +354,9 @@ void ayudaArranque() {
 			mandaAcelerador();
 		}
 	}
+
+	// A la segunda interrupción, se activa pedaleo.
+	interrupciones_pedaleo = 1;
 }
 
 void validaMinAcelerador() {
