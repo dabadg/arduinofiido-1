@@ -23,6 +23,9 @@ VERSIÓN CRUCERO:
  * El acelerador da un voltaje variable entre 0.85 y 3.9
  * Se puede configurar que el freno anule el crucero.
  * Sólo se fija el valor si pedaleamos.
+ * Con toque corto del freno no se anula crucero, con toque largo, sí.
+ * También se puede anular el valor del crucero con el acelerador,
+ * fijando un valor de crucero muy pequeño.
 ------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
  * Básicamente lo que hace es detectar pulsos mediante una
