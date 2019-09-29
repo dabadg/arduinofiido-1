@@ -372,7 +372,7 @@ void anulaCruceroConFreno() {
 		brakeCounter++;
 		if (crucero_fijado) {
 			repeatTones(cnf.buzzer_activo, 1, brakeCounter * 1000, 90, 200);
-			if (brakeCounter >= pulsos_liberar_crucero)
+			if (brakeCounter >= cnf.pulsos_liberar_crucero)
 				anulaCrucero();
 		}
 	} else {
