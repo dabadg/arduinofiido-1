@@ -73,13 +73,9 @@ struct ConfigContainer {
 	// parado a 6 km/h arrancando con el freno pulsado.
 	boolean freno_pulsado = true;
 	
-	// Comportamiento del valor de crucero durante la asistencia de
-	// 6 km/h desde parado. Valores:
-	// 	0 --> No se hace nada en este aspecto.
-	// 	1 --> Se fija un valor de crucero de 6 km/h que puede ser
-	// 	utilizado como un "modo peatonal".
-	// 	2 --> Se corta crucero, si lo hubiera.
-	int crucero_asistencia_6kmh = 1;
+	// (True) si se desea que cuando se use la asistencia de 6km/h
+	// desde parado se anule el valor de crucero.
+	boolean anula_crucero_en_asistencia = true;
 
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
@@ -350,10 +346,7 @@ void ayudaArranque() {
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
 
-	// Comportamiento del valor de crucero.
-	if (cnf.crucero_asistencia_6kmh == 2) {
-		v_crucero = a0_valor_6kmh;
-	} else if (cnf.crucero_asistencia_6kmh == 3) {
+	if (cnf.anula_crucero_en_asistencia) {
 		anulaCrucero();
 	}
 
