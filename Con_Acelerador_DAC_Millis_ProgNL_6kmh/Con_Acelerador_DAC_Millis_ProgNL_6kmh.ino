@@ -88,6 +88,14 @@ struct ConfigContainer {
 	// False --> Manda señal del acelerador.
 	boolean modo_crucero = true;
 
+	// True - Establece crucero por tiempo
+	// False - Establece crucero por liberaciónd e acelerador
+	boolean establece_crucero_por_tiempo = true;
+	// Cantidad de pasadas para fijar el crucero
+	int pulsos_fijar_crucero=10;
+	// Cantidad de pasadas con el freno pulsado para liberar el crucero.
+	int pulsos_liberar_crucero=4;
+
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
 	unsigned int retardo_inicio_progresivo = 10;
@@ -179,6 +187,8 @@ boolean crucero_actualizado = false;
 boolean crucero_fijado = false;
 //unsigned const int segundos_anular_crucero_freno = 4;
 unsigned int brakeCounter;
+float v_crucero_prev; // Almacena la velocidad de crucero del loop anterior
+unsigned int crucero_prev_counter=0; // Almacena la cantidad de loops que lleva la velocidad en el mismo valor
 
 //======= Variables interrupción =======================================
 // Variable donde se suman los pulsos del sensor PAS.
@@ -233,6 +243,12 @@ void repeatTones(boolean trigger, int steps, int frequency, int duration, int de
 
 //======= FUNCIONES ====================================================
 
+// Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
+// valor2-tolerancia > valor < valor2+tolerancia
+boolean comparaConTolerancia(float valor, float valor2, float toleranciaValor2) {
+	return (valor > (valor2 - toleranciaValor2)) && (valor < (valor2 + toleranciaValor2));
+}
+
 void pedal() {
 	p_pulsos++;
 	a_pulsos++;
@@ -263,10 +279,32 @@ void estableceCrucero(float vl_acelerador) {
 		}
 }
 
-// Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
-// valor2-tolerancia > valor < valor2+tolerancia
-boolean comparaConTolerancia(float valor, float valor2, float toleranciaValor2) {
-	return (valor > (valor2 - toleranciaValor2)) && (valor < (valor2 + toleranciaValor2));
+void estableceCruceroV2(float vl_acelerador) {
+
+		// El crucero se actualiza mientras se esté pedaleando con la
+		// lectura del acelerador, siempre que esta sea superior al valor de referencia.
+		if (pedaleo && vl_acelerador > a0_valor_minimo) {
+			v_crucero = vl_acelerador;
+			crucero_actualizado = true;
+			v_crucero_prev = vl_acelerador;
+		}
+
+		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
+		// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
+		// en caso contrario, decrementamos el contador
+		float media_con_vcrucero_prev = (v_crucero_prev + vl_acelerador) / 2;
+		if (comparaConTolerancia(media_con_vcrucero_prev, vl_acelerador, 10.0)) {
+			crucero_prev_counter++;
+			// Si el contador de crucero ha llegado a su tope, se fija el crucero.
+			if (crucero_actualizado && crucero_prev_counter > cnf.pulsos_fijar_crucero) {
+				crucero_actualizado = false;
+				crucero_fijado = true;
+				crucero_prev_counter=0;
+				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
+			}
+		} else {
+				crucero_prev_counter=0;
+		}
 }
 
 float leeAcelerador() {
@@ -329,15 +367,12 @@ void anulaCrucero() {
 }
 
 void anulaCruceroConFreno() {
-	unsigned int vueltas = 4;
-	//((int) (segundos_anular_crucero_freno * 1000) / tiempo_act);
-	// Calcular las vueltas de loop necesarias para anular el crucero.
 
 	if (digitalRead(pin_freno) == LOW) {
 		brakeCounter++;
 		if (crucero_fijado) {
 			repeatTones(cnf.buzzer_activo, 1, brakeCounter * 1000, 90, 200);
-			if (brakeCounter >= vueltas)
+			if (brakeCounter >= pulsos_liberar_crucero)
 				anulaCrucero();
 		}
 	} else {
@@ -451,8 +486,11 @@ void loop() {
 	if (tiempo2 > tiempo1 + (unsigned long) tiempo_act) {
 		tiempo1 = millis();
 		pulsos = p_pulsos;
-		estableceCrucero(v_acelerador);
-
+		if(cnf.establece_crucero_por_tiempo) {
+			estableceCruceroV2(v_acelerador);
+		}else{
+			estableceCrucero(v_acelerador);
+		}
 		// Si no se pedalea.
 		if (!pedaleo) {
 			contador_retardo_inicio_progresivo++;
