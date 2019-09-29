@@ -100,20 +100,23 @@ struct ConfigContainer {
 	// Al crecer se hacen más bruscos.
 	float suavidad_autoprogresivos = 5.0;
 
-	// Dirección del bus I2C [DAC] (0x60) si está soldado, si no (0x62).
+	// Dirección del bus I2C [DAC] (0x60) si está soldado,
+	// si no (0x62).
 	int dir_dac = 0x60;
 
-	// Constante que habilita los tonos de inicialización del sistema.
-	// Recomendado poner a True si se tiene zumbador en el pin 11.
+	// Constante que habilita los tonos de inicialización del
+	// sistema. Recomendado poner a True si se tiene zumbador en el
+	// pin 11.
 	boolean buzzer_activo = true;
-}
-
-ConfigContainer cnf;
+	//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===========
+};
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
 #include <Adafruit_MCP4725.h>
 Adafruit_MCP4725 dac;
+
+ConfigContainer cnf;
 
 //======= PINES ========================================================
 const int pin_acelerador = A0; // Pin acelerador.
@@ -323,7 +326,7 @@ void anulaCrucero() {
 	v_crucero = a0_valor_reposo;
 	crucero_actualizado = false;
 	crucero_fijado = false;
-	repeatTones(buzzer_activo, 1, 2000, 190, 100);
+	repeatTones(cnf.buzzer_activo, 1, 2000, 190, 100);
 }
 
 void anulaCruceroConFreno() {
@@ -334,7 +337,7 @@ void anulaCruceroConFreno() {
 	if (digitalRead(pin_freno) == LOW) {
 		brakeCounter++;
 		if (crucero_fijado) {
-			repeatTones(buzzer_activo, 1, brakeCounter * 1000, 90, 200);
+			repeatTones(cnf.buzzer_activo, 1, brakeCounter * 1000, 90, 200);
 			if (brakeCounter >= vueltas)
 				anulaCrucero();
 		}
@@ -409,7 +412,7 @@ void setup() {
 	validaMinAcelerador();
 
 	// Tono aviso de inicio a la espera de frenadas (al encender bici).
-	repeatTones(buzzer_activo, 1, 3000, 90, 190);
+	repeatTones(cnf.buzzer_activo, 1, 3000, 90, 190);
 
 	// Si arrancamos con el freno pulsado.
 	if (cnf.freno_pulsado == true) {
@@ -418,7 +421,7 @@ void setup() {
 			ayuda_salida = true;
 			delay(200);
 			// Tono aviso de modo con asistencia desde parado.
-			repeatTones(buzzer_activo, 2, 2900, 90, 200);
+			repeatTones(cnf.buzzer_activo, 2, 2900, 90, 200);
 			delay(200);
 		}
 	}
