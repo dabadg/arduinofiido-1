@@ -104,11 +104,10 @@ struct ConfigContainer {
 	// si no (0x62).
 	int dir_dac = 0x60;
 
-	// Constante que habilita los tonos de inicialización del
-	// sistema. Recomendado poner a True si se tiene zumbador en el
-	// pin 11.
+	// Constante que habilita los tonos de inicialización del sistema.
+	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
-	//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===========
+	//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===============
 };
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
