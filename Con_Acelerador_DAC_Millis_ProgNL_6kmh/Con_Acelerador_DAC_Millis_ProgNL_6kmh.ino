@@ -74,12 +74,12 @@ struct ConfigContainer {
 	boolean freno_pulsado = true;
 	
 	// Comportamiento del valor de crucero durante la asistencia de
-	// 6 km/h desde parado.
-	// 0 --> No se hace nada en este aspecto.
-	// 1 --> Se fija un valor de crucero de 6 km/h que puede ser
-	// utilizado como un "modo peatonal".
-	// 2 --> Se corta crucero, si lo hubiera.
-	int crucero_asistencia_6kmh = 0;
+	// 6 km/h desde parado. Valores:
+	// 	0 --> No se hace nada en este aspecto.
+	// 	1 --> Se fija un valor de crucero de 6 km/h que puede ser
+	// 	utilizado como un "modo peatonal".
+	// 	2 --> Se corta crucero, si lo hubiera.
+	int crucero_asistencia_6kmh = 1;
 
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
