@@ -25,7 +25,8 @@ VERSIÓN CRUCERO:
  * Sólo se fija el valor si pedaleamos.
  * Con toque corto del freno no se anula crucero, con toque largo, sí.
  * También se puede anular el valor del crucero con el acelerador,
- * fijando un valor de crucero muy pequeño.
+ * abriendo un poco de gas y desacelerando hasta el final sin soltar
+ * de golpe.
 ------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
  * Básicamente lo que hace es detectar pulsos mediante una
@@ -335,7 +336,7 @@ void anulaCruceroConFreno() {
 
 void ayudaArranque() {
 	// Fijamos valor de crucero a 6 km/h
-	v_crucero = a0_valor_6kmh;
+	//v_crucero = a0_valor_6kmh;
 	
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
@@ -345,18 +346,18 @@ void ayudaArranque() {
 		contador_retardo_aceleracion++;
 
 		// Preparamos el auto_progresivo.
-		contador_retardo_inicio_progresivo = 0;
-		auto_progresivo = true;
+		//contador_retardo_inicio_progresivo = 0;
+		//auto_progresivo = true;
 
 		// Si no está el modo crucero.
-		if (!modo_crucero) {
+		//if (!modo_crucero) {
 			// Mandamos el voltaje directamente al DAC de 6 km/h.
 			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 		// Si lo está.
-		} else {
+		//} else {
 			// Llamamos a a la función con el crucero de 6 km/h ya fijado.
-			mandaAcelerador();
-		}
+			//mandaAcelerador();
+		//}
 	}
 
 	// A la segunda interrupción, se activa pedaleo.
