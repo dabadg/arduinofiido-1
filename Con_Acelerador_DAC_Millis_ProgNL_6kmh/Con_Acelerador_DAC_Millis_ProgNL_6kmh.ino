@@ -301,6 +301,7 @@ void paraMotor() {
 void freno() {
 	contador_retardo_inicio_progresivo = retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
+	interrupciones_pedaleo = 1;
 	paraMotor();
 }
 
@@ -324,7 +325,7 @@ void anulaCruceroConFreno() {
 				anulaCrucero();
 		}
 	} else {
-		if(brakeCounter > 0)
+		if (brakeCounter > 0)
 			brakeCounter--;
 	}
 }
@@ -451,6 +452,7 @@ void loop() {
 
 			if (contador_retardo_aceleracion > 4) {
 				bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
+				interrupciones_pedaleo = 2;
 			}
 
 			paraMotor();
@@ -463,6 +465,7 @@ void loop() {
 
 				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
 				auto_progresivo = false;
+				interrupciones_pedaleo = 1;
 			} else {
 				auto_progresivo = false;
 			}
