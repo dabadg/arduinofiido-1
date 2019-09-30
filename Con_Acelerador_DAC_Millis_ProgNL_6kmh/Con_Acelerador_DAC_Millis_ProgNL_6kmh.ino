@@ -90,7 +90,7 @@ struct ConfigContainer {
 	// 8 * 333 = 2664 ms.
 	int pulsos_fijar_crucero = 9;
 
-	// Cantidad de pasadas con el freno pulsado para liberar el crucero.
+	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 6 * 333 = 1998 ms.
 	int pulsos_liberar_crucero = 6;
 
@@ -110,10 +110,9 @@ struct ConfigContainer {
 	// si no (0x62).
 	int dir_dac = 0x60;
 
-	// Constante que habilita los tonos de inicialización del sistema.
+	// Habilita los tonos de inicialización del sistema.
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
-	//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===============
 };
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
@@ -267,7 +266,7 @@ float aceleradorEnDac(float vl_acelerador) {
 void estableceCrucero(float vl_acelerador) {
 		// El crucero se actualiza mientras se esté pedaleando con la
 		// lectura del acelerador, siempre que esta sea superior al valor de referencia.
-		if ( pedaleo && vl_acelerador > a0_valor_minimo) {
+		if (pedaleo && vl_acelerador > a0_valor_minimo) {
 			v_crucero = vl_acelerador;
 			crucero_actualizado = true;
 		// Si el crucero se ha actualizado por encima de 2.00 v y si
@@ -458,10 +457,10 @@ void setup() {
 		}
 	}
 
-	// inicializamos tiempos de fijar y liberar crucero.
-	// ex: 3000ms / 333 = 9 loops
+	// Inicializamos tiempos de fijar y liberar crucero.
+	// Ex: 3000ms / 333 = 9 loops.
 	cnf.pulsos_fijar_crucero = (int) 3000 / tiempo_act;
-	// ex: 2000ms / 333 = 6 loops
+	// Ex: 2000ms / 333 = 6 loops.
 	cnf.pulsos_liberar_crucero = (int) 2000 / tiempo_act;
 
 	// Ajusta configuración.
