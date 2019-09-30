@@ -355,7 +355,6 @@ void freno() {
 	bkp_contador_retardo_aceleracion = 0;
 	interrupciones_pedaleo = 1;
 	paraMotor();
-	anulaCrucero();
 }
 
 void anulaCrucero() {
@@ -498,7 +497,7 @@ void loop() {
 			estableceCrucero(v_acelerador);
 		}
 
-		//anulaCruceroConFreno();
+		anulaCruceroConFreno();
 
 		// Si no se pedalea.
 		if (!pedaleo) {
