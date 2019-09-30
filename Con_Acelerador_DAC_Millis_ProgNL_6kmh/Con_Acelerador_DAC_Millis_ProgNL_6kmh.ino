@@ -41,10 +41,10 @@ AUTO PROGRESIVOS:
  * progresivo desde cero.
 ------------------------------------------------------------------------
 ASISTENCIA A 6 KM/H DESDE PARADO:
- * Si no se pedalea y mientras el acelerador esté accionado, se fija un
- * crucero de 6 km/h, ajustándose a la normativa.
- * Si se suelta el acelerador --> deja de asistir. Al recuperar el
- * el pedaleo se aprovecha este crucero para modo peatonal.
+ * Si no se pedalea y mientras el acelerador esté accionado, se asiste a
+ * 6 km/h, ajustándose a la normativa.
+ * Si se suelta el acelerador --> deja de asistir y cortamos valor de
+ * de crucero, si lo hubiera.
  * Si se comienza a pedalear sin dejar de accionar el acelerador --> se
  * sale a la velocidad con la que vayamos regulando con el acelerador.
 ------------------------------------------------------------------------
@@ -154,9 +154,9 @@ boolean pedaleo = false;
 unsigned int interrupciones_pedaleo = 1;
 
 // Contadores de paro, aceleración y auto_progresivo.
-long contador_retardo_aceleracion = 0;
+int contador_retardo_aceleracion = 0;
 unsigned long contador_retardo_inicio_progresivo = 0;
-long bkp_contador_retardo_aceleracion = 0;
+int bkp_contador_retardo_aceleracion = 0;
 boolean auto_progresivo = false;
 
 // Variables progresivos.
@@ -385,14 +385,9 @@ void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo && !pedaleo) {
 		contador_retardo_aceleracion++;
-
-		// Preparamos el auto_progresivo.
-		contador_retardo_inicio_progresivo = 0;
-		auto_progresivo = true;
-
 		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 	}
-	
+
 	if (pedaleo) {
 		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 	} else {
