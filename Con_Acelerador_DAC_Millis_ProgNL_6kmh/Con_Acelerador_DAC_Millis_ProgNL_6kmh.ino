@@ -381,11 +381,7 @@ void anulaCruceroConFreno() {
 
 void ayudaArranque() {
 	// Fijamos valor de crucero a 6 km/h.
-	if (cnf.establece_crucero_por_tiempo) {
-		estableceCruceroV2(a0_valor_6kmh);
-	} else {
-		estableceCrucero(a0_valor_6kmh);
-	}
+	v_crucero = a0_valor_6kmh;
 
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
@@ -411,6 +407,13 @@ void ayudaArranque() {
 
 	// A la segunda interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 1;
+
+	// Modo peatonal
+	if (cnf.establece_crucero_por_tiempo) {
+		estableceCruceroV2(a0_valor_6kmh);
+	} else {
+		estableceCrucero(a0_valor_6kmh);
+	}
 }
 
 void validaMinAcelerador() {
