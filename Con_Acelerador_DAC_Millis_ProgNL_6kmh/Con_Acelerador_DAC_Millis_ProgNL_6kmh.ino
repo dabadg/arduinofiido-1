@@ -353,13 +353,41 @@ void ayudaArranque() {
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo && !pedaleo) {
 		contador_retardo_aceleracion++;
+
+		// Preparamos el auto_progresivo.
+		contador_retardo_inicio_progresivo = 0;
+		auto_progresivo = true;
+
 		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-		nivel_aceleracion = v_acelerador;
 	}
 
 	// A la segunda interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 1;
 }
+
+/*void ayudaArranque() {
+	// Fijamos valor de crucero a 6 km/h
+	v_crucero = a0_valor_6kmh;
+
+	// Mientras aceleramos y no pedaleamos.
+	while (analogRead(pin_acelerador) > a0_valor_minimo && !pedaleo) {
+		contador_retardo_aceleracion++;
+
+		// Preparamos el auto_progresivo.
+		contador_retardo_inicio_progresivo = 0;
+		auto_progresivo = true;
+
+		// Si no está el modo crucero.
+		if (!modo_crucero) {
+			// Mandamos el voltaje directamente al DAC de 6 km/h.
+			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+		// Si lo está.
+		} else {
+			// Llamamos a a la función con el crucero de 6 km/h ya fijado.
+			mandaAcelerador();
+		}
+	}
+}*/
 
 void validaMinAcelerador() {
 	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
