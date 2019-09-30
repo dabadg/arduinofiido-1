@@ -87,12 +87,12 @@ struct ConfigContainer {
 	boolean establece_crucero_por_tiempo = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// 6 * 333 = 1998 ms.
-	int pulsos_fijar_crucero = 6;
+	// 8 * 333 = 2664 ms.
+	int pulsos_fijar_crucero = 9;
 
 	// Cantidad de pasadas con el freno pulsado para liberar el crucero.
-	// 4 * 333 = 1332 ms.
-	int pulsos_liberar_crucero = 4;
+	// 6 * 333 = 1998 ms.
+	int pulsos_liberar_crucero = 6;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
@@ -267,7 +267,7 @@ float aceleradorEnDac(float vl_acelerador) {
 void estableceCrucero(float vl_acelerador) {
 		// El crucero se actualiza mientras se esté pedaleando con la
 		// lectura del acelerador, siempre que esta sea superior al valor de referencia.
-		if (vl_acelerador > a0_valor_minimo && pedaleo) {
+		if ( pedaleo && vl_acelerador > a0_valor_minimo) {
 			v_crucero = vl_acelerador;
 			crucero_actualizado = true;
 		// Si el crucero se ha actualizado por encima de 2.00 v y si
@@ -359,10 +359,12 @@ void freno() {
 }
 
 void anulaCrucero() {
-	v_crucero = a0_valor_reposo;
-	crucero_actualizado = false;
-	crucero_fijado = false;
-	repeatTones(cnf.buzzer_activo, 1, 2000, 190, 100);
+	if (crucero_fijado) {
+		v_crucero = a0_valor_reposo;
+		crucero_actualizado = false;
+		crucero_fijado = false;
+		repeatTones(cnf.buzzer_activo, 1, 2000, 190, 100);
+	}
 }
 
 void anulaCruceroConFreno() {
@@ -384,7 +386,7 @@ void ayudaArranque() {
 	interrupciones_pedaleo = 2;
 
 	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_minimo && !pedaleo) {
+	while (!pedaleo && analogRead(pin_acelerador) > a0_valor_minimo) {
 		contador_retardo_aceleracion++;
 		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 	}
@@ -456,6 +458,12 @@ void setup() {
 		}
 	}
 
+	// inicializamos tiempos de fijar y liberar crucero.
+	// ex: 3000ms / 333 = 9 loops
+	cnf.pulsos_fijar_crucero = (int) 3000 / tiempo_act;
+	// ex: 2000ms / 333 = 6 loops
+	cnf.pulsos_liberar_crucero = (int) 2000 / tiempo_act;
+
 	// Ajusta configuración.
 	cnf.retardo_aceleracion = cnf.retardo_aceleracion * (1000 / tiempo_act);
 	cnf.retardo_inicio_progresivo = cnf.retardo_inicio_progresivo * (1000 / tiempo_act);
@@ -487,8 +495,6 @@ void loop() {
 		} else {
 			estableceCrucero(v_acelerador);
 		}
-
-		anulaCruceroConFreno();
 
 		// Si no se pedalea.
 		if (!pedaleo) {
@@ -534,6 +540,7 @@ void loop() {
 		}
 	}
 
+	anulaCruceroConFreno();
 	mandaAcelerador();
 }
 
