@@ -1,6 +1,6 @@
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 RC5
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 Develop
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -133,7 +133,7 @@ const int pin_piezo = 11; // Pin del zumbador.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
 //const float a0_valor_corte = 216.0;  // 1.05
 const float a0_valor_minimo = 235.0; // 1.15
-//const float a0_valor_suave = 410.0;  // 2.00
+const float a0_valor_suave = 410.0;  // 2.00
 const float a0_valor_6kmh = 450.0;   // 2.19
 //const float a0_valor_medio = 550.0;  // 2.68
 const float a0_valor_alto = 798.0;   // 3.90
@@ -267,9 +267,9 @@ void estableceCrucero(float vl_acelerador) {
 		if (vl_acelerador > a0_valor_minimo && pedaleo) {
 			v_crucero = vl_acelerador;
 			crucero_actualizado = true;
-		// Si el crucero se ha actualizado por encima de 2.19 v y si
+		// Si el crucero se ha actualizado por encima de 2.00 v y si
 		// detecta que el acelerador está por debajo del valor mínimo, fija el crucero.
-		} else if (crucero_actualizado && v_crucero > a0_valor_6kmh && vl_acelerador <= a0_valor_reposo) {
+		} else if (crucero_actualizado && v_crucero > a0_valor_suave && vl_acelerador <= a0_valor_reposo) {
 			crucero_actualizado = false;
 			crucero_fijado = true;
 			repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
@@ -353,6 +353,7 @@ void freno() {
 	bkp_contador_retardo_aceleracion = 0;
 	interrupciones_pedaleo = 1;
 	paraMotor();
+	anulaCrucero();
 }
 
 void anulaCrucero() {
@@ -539,7 +540,7 @@ void loop() {
 		}
 	}
 
-	anulaCruceroConFreno();
+	//anulaCruceroConFreno();
 	mandaAcelerador();
 }
 
