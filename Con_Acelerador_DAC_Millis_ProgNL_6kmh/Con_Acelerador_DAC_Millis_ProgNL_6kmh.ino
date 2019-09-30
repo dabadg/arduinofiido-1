@@ -83,7 +83,7 @@ struct ConfigContainer {
 
 	// True - Establece crucero por tiempo.
 	// False - Establece crucero por liberación de acelerador.
-	boolean establece_crucero_por_tiempo = false;
+	boolean establece_crucero_por_tiempo = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	int pulsos_fijar_crucero = 10;
@@ -352,7 +352,7 @@ void freno() {
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
 	interrupciones_pedaleo = 1;
-	anulaCrucero();
+	//anulaCrucero();
 	paraMotor();
 }
 
