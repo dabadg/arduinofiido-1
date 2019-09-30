@@ -83,7 +83,7 @@ struct ConfigContainer {
 
 	// True - Establece crucero por tiempo.
 	// False - Establece crucero por liberación de acelerador.
-	boolean establece_crucero_por_tiempo = true;
+	boolean establece_crucero_por_tiempo = false;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	int pulsos_fijar_crucero = 10;
