@@ -1,6 +1,6 @@
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 RC4
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 RC5
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -41,9 +41,10 @@ AUTO PROGRESIVOS:
  * progresivo desde cero.
 ------------------------------------------------------------------------
 ASISTENCIA A 6 KM/H DESDE PARADO:
- * Si no se pedalea y mientras el acelerador esté accionado, se asiste
- * a 6 km/h, ajustándose a la normativa.
- * Si se suelta el acelerador --> deja de asistir.
+ * Si no se pedalea y mientras el acelerador esté accionado, se fija un
+ * crucero de 6 km/h, ajustándose a la normativa.
+ * Si se suelta el acelerador --> deja de asistir. Al recuperar el
+ * el pedaleo se aprovecha este crucero para modo peatonal.
  * Si se comienza a pedalear sin dejar de accionar el acelerador --> se
  * sale a la velocidad con la que vayamos regulando con el acelerador.
 ------------------------------------------------------------------------
@@ -360,7 +361,6 @@ void anulaCrucero() {
 }
 
 void anulaCruceroConFreno() {
-
 	if (digitalRead(pin_freno) == LOW) {
 		brakeCounter++;
 		if (crucero_fijado) {
