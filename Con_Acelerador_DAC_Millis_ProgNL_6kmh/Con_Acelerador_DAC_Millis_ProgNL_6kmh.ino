@@ -86,10 +86,12 @@ struct ConfigContainer {
 	boolean establece_crucero_por_tiempo = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
+	// A mayor número, más tiempo para fijarlo.
 	int pulsos_fijar_crucero = 10;
 
 	// Cantidad de pasadas con el freno pulsado para liberar el crucero.
-	int pulsos_liberar_crucero = 4;
+	// A mayor número, más tiempo para liberarlo.
+	int pulsos_liberar_crucero = 6;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
