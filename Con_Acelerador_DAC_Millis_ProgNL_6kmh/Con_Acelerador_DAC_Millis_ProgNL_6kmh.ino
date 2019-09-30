@@ -381,10 +381,11 @@ void anulaCruceroConFreno() {
 
 void ayudaArranque() {
 	// Fijamos valor de crucero a 6 km/h.
-	v_crucero = a0_valor_6kmh;
-	crucero_actualizado = false;
-	crucero_fijado = true;
-	repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
+	if (cnf.establece_crucero_por_tiempo) {
+		estableceCruceroV2(a0_valor_6kmh);
+	} else {
+		estableceCrucero(a0_valor_6kmh);
+	}
 
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
