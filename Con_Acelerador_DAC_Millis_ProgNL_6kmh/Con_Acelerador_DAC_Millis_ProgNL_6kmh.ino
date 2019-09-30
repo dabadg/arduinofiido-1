@@ -379,9 +379,6 @@ void anulaCruceroConFreno() {
 }
 
 void ayudaArranque() {
-	// Fijamos valor de crucero a 6 km/h.
-	v_crucero = a0_valor_6kmh;
-
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
 
@@ -393,15 +390,13 @@ void ayudaArranque() {
 		contador_retardo_inicio_progresivo = 0;
 		auto_progresivo = true;
 
-		// Si no está el modo crucero.
-		if (!cnf.modo_crucero) {
-			// Mandamos el voltaje directamente al DAC de 6 km/h.
-			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-		// Si lo está.
-		} else {
-			// Llamamos a a la función con el crucero de 6 km/h ya fijado.
-			mandaAcelerador();
-		}
+		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+	}
+	
+	if (pedaleo) {
+		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+	} else {
+		anulaCrucero();
 	}
 
 	// A la segunda interrupción, se activa pedaleo.
