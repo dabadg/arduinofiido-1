@@ -180,10 +180,12 @@ boolean ayuda_salida = false;
 // Variable que almacena el estado de notificación de fijar crucero.
 boolean crucero_actualizado = false;
 boolean crucero_fijado = false;
-//unsigned const int segundos_anular_crucero_freno = 4;
 unsigned int brakeCounter;
-float v_crucero_prev; // Almacena la velocidad de crucero del loop anterior
-unsigned int crucero_prev_counter=0; // Almacena la cantidad de loops que lleva la velocidad en el mismo valor
+// Almacena la velocidad de crucero del loop anterior.
+float v_crucero_prev;
+// Almacena la cantidad de loops que lleva la velocidad en el mismo
+// valor.
+unsigned int crucero_prev_counter = 0;
 
 //======= Variables interrupción =======================================
 // Variable donde se suman los pulsos del sensor PAS.
@@ -293,11 +295,11 @@ void estableceCruceroV2(float vl_acelerador) {
 			if (crucero_actualizado && crucero_prev_counter > cnf.pulsos_fijar_crucero) {
 				crucero_actualizado = false;
 				crucero_fijado = true;
-				crucero_prev_counter=0;
+				crucero_prev_counter = 0;
 				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 			}
 		} else {
-				crucero_prev_counter=0;
+				crucero_prev_counter = 0;
 		}
 }
 
@@ -487,11 +489,12 @@ void loop() {
 	if (tiempo2 > tiempo1 + (unsigned long) tiempo_act) {
 		tiempo1 = millis();
 		pulsos = p_pulsos;
-		if(cnf.establece_crucero_por_tiempo) {
+		if (cnf.establece_crucero_por_tiempo) {
 			estableceCruceroV2(v_acelerador);
-		}else{
+		} else {
 			estableceCrucero(v_acelerador);
 		}
+
 		// Si no se pedalea.
 		if (!pedaleo) {
 			contador_retardo_inicio_progresivo++;
