@@ -1,6 +1,6 @@
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 RC6
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 Develop
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -83,14 +83,12 @@ struct ConfigContainer {
 
 	// True - Establece crucero por tiempo.
 	// False - Establece crucero por liberación de acelerador.
-	boolean establece_crucero_por_tiempo = true;
+	boolean establece_crucero_por_tiempo = false;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// A mayor número, más tiempo para fijarlo.
 	int pulsos_fijar_crucero = 10;
 
 	// Cantidad de pasadas con el freno pulsado para liberar el crucero.
-	// A mayor número, más tiempo para liberarlo.
 	int pulsos_liberar_crucero = 4;
 
 	// Retardo para inciar progresivo tras parar pedales.
@@ -112,7 +110,6 @@ struct ConfigContainer {
 	// Constante que habilita los tonos de inicialización del sistema.
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
-
 	//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===============
 };
 
@@ -356,6 +353,7 @@ void freno() {
 	bkp_contador_retardo_aceleracion = 0;
 	interrupciones_pedaleo = 1;
 	paraMotor();
+	anulaCrucero();
 }
 
 void anulaCrucero() {
@@ -492,14 +490,11 @@ void loop() {
 	if (tiempo2 > tiempo1 + (unsigned long) tiempo_act) {
 		tiempo1 = millis();
 		pulsos = p_pulsos;
-
 		if (cnf.establece_crucero_por_tiempo) {
 			estableceCruceroV2(v_acelerador);
 		} else {
 			estableceCrucero(v_acelerador);
 		}
-	
-		anulaCruceroConFreno();
 
 		// Si no se pedalea.
 		if (!pedaleo) {
@@ -545,6 +540,7 @@ void loop() {
 		}
 	}
 
+	//anulaCruceroConFreno();
 	mandaAcelerador();
 }
 
