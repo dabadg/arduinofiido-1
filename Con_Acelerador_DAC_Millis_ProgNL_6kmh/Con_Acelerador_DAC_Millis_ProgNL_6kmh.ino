@@ -91,7 +91,7 @@ struct ConfigContainer {
 
 	// Cantidad de pasadas con el freno pulsado para liberar el crucero.
 	// 4 * 333 = 1332 ms.
-	int pulsos_liberar_crucero = 4;.
+	int pulsos_liberar_crucero = 4;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
