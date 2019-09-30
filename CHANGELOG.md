@@ -1,5 +1,20 @@
+CHANGELOG 2.0.1 --> 2.1:
+- Nuevo concepto de detección de pulsos (chusquete):
+  - Se activa pedaleo por interrupciones de pedal.
+  - Se desactiva por cadencia.
+- Añadido crucero tipo "monopatín" (dabadg).
+  - Fija crucero mantiendo el acelerador en la misma posición cada n segundos.
+- El freno anula el valor de crucero si se tiene pulsado n segundos (dabadg).
+  - Toque corte, no anula crucero.
+  - Toque más largo, lo anula.
+- Eliminado modo peatonal en asistencia desde parado a 6 km/h.
+- Interrupciones dinámicas para activar pedaleo en autopregresivos y asistencia desde parado a 6 km/h.
+- Eliminado retardo paro motor.
+- Optimizaciones y correcciones.
+
 CHANGELOG 1.9 --> 2.0.1:
-- Mejorado asistido a 6km/h
+- Eliminado desacelera al parar de pedalear.
+- Mejorado asistido a 6km/h.
   - Depende de la cadencia si se sale pedalenado.
   - No hay bajón de potencia en el proceso.
   - Modo peatonal.
