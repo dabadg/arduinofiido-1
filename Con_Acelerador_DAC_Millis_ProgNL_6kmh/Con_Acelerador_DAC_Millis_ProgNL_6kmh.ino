@@ -30,7 +30,8 @@ VERSIÓN CRUCERO:
 ------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
  * Básicamente lo que hace es detectar pulsos mediante una
- * interrupción en el pin (pin_pedal).
+ * interrupción en el pin (pin_pedal). Si no se pedalea, no asiste el
+ * acelerador.
 ------------------------------------------------------------------------
 AUTO PROGRESIVOS:
  * Si se deja de pedalear, el motor se para como de costumbre, pero si
