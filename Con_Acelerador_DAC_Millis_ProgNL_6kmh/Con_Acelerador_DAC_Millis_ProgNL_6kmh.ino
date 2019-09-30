@@ -91,7 +91,7 @@ struct ConfigContainer {
 
 	// Cantidad de pasadas con el freno pulsado para liberar el crucero.
 	// A mayor número, más tiempo para liberarlo.
-	int pulsos_liberar_crucero = 6;
+	int pulsos_liberar_crucero = 4;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
@@ -407,13 +407,6 @@ void ayudaArranque() {
 
 	// A la segunda interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 1;
-
-	// Modo peatonal
-	if (cnf.establece_crucero_por_tiempo) {
-		estableceCruceroV2(a0_valor_6kmh);
-	} else {
-		estableceCrucero(a0_valor_6kmh);
-	}
 }
 
 void validaMinAcelerador() {
