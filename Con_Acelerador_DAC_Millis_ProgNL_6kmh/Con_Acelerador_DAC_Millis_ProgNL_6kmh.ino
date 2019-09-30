@@ -307,7 +307,7 @@ float leeAcelerador() {
 	float cl_acelerador = 0;
 
 	// Leemos nivel de acelerador tomando 30 medidas.
-	for (int f=1; f <= 30; f++) {
+	for (int f = 1; f <= 30; f++) {
 		cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
 	}
 
@@ -352,8 +352,8 @@ void freno() {
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
 	interrupciones_pedaleo = 1;
-	paraMotor();
 	anulaCrucero();
+	paraMotor();
 }
 
 void anulaCrucero() {
@@ -490,11 +490,14 @@ void loop() {
 	if (tiempo2 > tiempo1 + (unsigned long) tiempo_act) {
 		tiempo1 = millis();
 		pulsos = p_pulsos;
+
 		if (cnf.establece_crucero_por_tiempo) {
 			estableceCruceroV2(v_acelerador);
 		} else {
 			estableceCrucero(v_acelerador);
 		}
+	
+		anulaCruceroConFreno();
 
 		// Si no se pedalea.
 		if (!pedaleo) {
