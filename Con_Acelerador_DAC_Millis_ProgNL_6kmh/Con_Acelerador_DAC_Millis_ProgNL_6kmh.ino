@@ -1,6 +1,6 @@
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 Develop
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 RC6
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -110,6 +110,7 @@ struct ConfigContainer {
 	// Constante que habilita los tonos de inicialización del sistema.
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
+
 	//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===============
 };
 
@@ -352,7 +353,6 @@ void freno() {
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
 	interrupciones_pedaleo = 1;
-	//anulaCrucero();
 	paraMotor();
 }
 
@@ -543,7 +543,6 @@ void loop() {
 		}
 	}
 
-	//anulaCruceroConFreno();
 	mandaAcelerador();
 }
 
