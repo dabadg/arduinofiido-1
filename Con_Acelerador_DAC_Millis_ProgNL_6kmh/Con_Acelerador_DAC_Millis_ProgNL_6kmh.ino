@@ -126,7 +126,7 @@ const int pin_piezo = 11; // Pin del zumbador.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
 //const float a0_valor_corte = 216.0;  // 1.05
 const float a0_valor_minimo = 235.0; // 1.15
-const float a0_valor_suave = 410.0;  // 2.00
+//const float a0_valor_suave = 410.0;  // 2.00
 const float a0_valor_6kmh = 450.0;   // 2.19
 //const float a0_valor_medio = 550.0;  // 2.68
 const float a0_valor_alto = 798.0;   // 3.90
@@ -145,9 +145,9 @@ boolean pedaleo = false;
 unsigned int interrupciones_pedaleo = 1;
 
 // Contadores de paro, aceleración y auto_progresivo.
-int contador_retardo_aceleracion = 0;
+long contador_retardo_aceleracion = 0;
 unsigned long contador_retardo_inicio_progresivo = 0;
-int bkp_contador_retardo_aceleracion = 0;
+long bkp_contador_retardo_aceleracion = 0;
 boolean auto_progresivo = false;
 
 // Variables progresivos.
@@ -250,9 +250,9 @@ void estableceCrucero(float vl_acelerador) {
 		if (vl_acelerador > a0_valor_minimo && pedaleo) {
 			v_crucero = vl_acelerador;
 			crucero_actualizado = true;
-		// Si el crucero se ha actualizado por encima de 2.00 v y si
+		// Si el crucero se ha actualizado por encima de 2.19 v y si
 		// detecta que el acelerador está por debajo del valor mínimo, fija el crucero.
-		} else if (crucero_actualizado && v_crucero > a0_valor_suave && vl_acelerador <= a0_valor_reposo) {
+		} else if (crucero_actualizado && v_crucero > a0_valor_6kmh && vl_acelerador <= a0_valor_reposo) {
 			crucero_actualizado = false;
 			crucero_fijado = true;
 			repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
@@ -343,31 +343,11 @@ void anulaCruceroConFreno() {
 }
 
 void ayudaArranque() {
+	// Fijamos valor de crucero a 6 km/h.
+	v_crucero = a0_valor_6kmh;
+
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
-
-	if (cnf.anula_crucero_en_asistencia) {
-		anulaCrucero();
-	}
-
-	// Mientras aceleramos y no pedaleamos.
-	while (analogRead(pin_acelerador) > a0_valor_minimo && !pedaleo) {
-		contador_retardo_aceleracion++;
-
-		// Preparamos el auto_progresivo.
-		contador_retardo_inicio_progresivo = 0;
-		auto_progresivo = true;
-
-		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-	}
-
-	// A la segunda interrupción, se activa pedaleo.
-	interrupciones_pedaleo = 1;
-}
-
-/*void ayudaArranque() {
-	// Fijamos valor de crucero a 6 km/h
-	v_crucero = a0_valor_6kmh;
 
 	// Mientras aceleramos y no pedaleamos.
 	while (analogRead(pin_acelerador) > a0_valor_minimo && !pedaleo) {
@@ -378,7 +358,7 @@ void ayudaArranque() {
 		auto_progresivo = true;
 
 		// Si no está el modo crucero.
-		if (!modo_crucero) {
+		if (!cnf.modo_crucero) {
 			// Mandamos el voltaje directamente al DAC de 6 km/h.
 			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 		// Si lo está.
@@ -387,7 +367,10 @@ void ayudaArranque() {
 			mandaAcelerador();
 		}
 	}
-}*/
+
+	// A la segunda interrupción, se activa pedaleo.
+	interrupciones_pedaleo = 1;
+}
 
 void validaMinAcelerador() {
 	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
