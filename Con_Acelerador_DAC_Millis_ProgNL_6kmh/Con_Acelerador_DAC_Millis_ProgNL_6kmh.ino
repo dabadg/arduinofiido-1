@@ -414,7 +414,7 @@ void validaMinAcelerador() {
 	float l_acelerador_reposo = 0;
 
 	// Tomamos 30 medidas para calcular la media.
-	for (int f=1; f <= 30; f++) {
+	for (int f = 1; f <= 30; f++) {
 		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador);
 	}
 
@@ -496,6 +496,8 @@ void loop() {
 			estableceCrucero(v_acelerador);
 		}
 
+		//anulaCruceroConFreno();
+
 		// Si no se pedalea.
 		if (!pedaleo) {
 			contador_retardo_inicio_progresivo++;
@@ -540,7 +542,6 @@ void loop() {
 		}
 	}
 
-	//anulaCruceroConFreno();
 	mandaAcelerador();
 }
 
