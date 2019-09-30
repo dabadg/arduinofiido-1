@@ -1,6 +1,6 @@
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 RC3
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1 RC4
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -72,10 +72,6 @@ struct ConfigContainer {
 	// (True) si se desea activar la posibilidad de acelerar desde
 	// parado a 6 km/h arrancando con el freno pulsado.
 	boolean freno_pulsado = true;
-	
-	// (True) si se desea que cuando se use la asistencia de 6km/h
-	// desde parado se anule el valor de crucero.
-	boolean anula_crucero_en_asistencia = true;
 
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
@@ -84,13 +80,15 @@ struct ConfigContainer {
 	// False --> Manda señal del acelerador.
 	boolean modo_crucero = true;
 
-	// True - Establece crucero por tiempo
-	// False - Establece crucero por liberaciónd e acelerador
+	// True - Establece crucero por tiempo.
+	// False - Establece crucero por liberación de acelerador.
 	boolean establece_crucero_por_tiempo = true;
-	// Cantidad de pasadas para fijar el crucero
-	int pulsos_fijar_crucero=10;
+
+	// Cantidad de pasadas para fijar el crucero por tiempo.
+	int pulsos_fijar_crucero = 10;
+
 	// Cantidad de pasadas con el freno pulsado para liberar el crucero.
-	int pulsos_liberar_crucero=4;
+	int pulsos_liberar_crucero = 4;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
@@ -276,7 +274,6 @@ void estableceCrucero(float vl_acelerador) {
 }
 
 void estableceCruceroV2(float vl_acelerador) {
-
 		// El crucero se actualiza mientras se esté pedaleando con la
 		// lectura del acelerador, siempre que esta sea superior al valor de referencia.
 		if (pedaleo && vl_acelerador > a0_valor_minimo) {
@@ -287,7 +284,7 @@ void estableceCruceroV2(float vl_acelerador) {
 
 		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
 		// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
-		// en caso contrario, decrementamos el contador
+		// En caso contrario, decrementamos el contador.
 		float media_con_vcrucero_prev = (v_crucero_prev + vl_acelerador) / 2;
 		if (comparaConTolerancia(media_con_vcrucero_prev, vl_acelerador, 10.0)) {
 			crucero_prev_counter++;
