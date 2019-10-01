@@ -287,6 +287,10 @@ void estableceCrucero(float vl_acelerador) {
 }
 
 void estableceCruceroV2(float vl_acelerador) {
+
+		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
+		float media_con_vcrucero_prev = (v_crucero_prev + vl_acelerador) / 2;
+
 		// El crucero se actualiza mientras se esté pedaleando con la
 		// lectura del acelerador, siempre que esta sea superior al valor de referencia.
 		if (pedaleo && vl_acelerador > a0_valor_minimo) {
@@ -295,17 +299,16 @@ void estableceCruceroV2(float vl_acelerador) {
 			v_crucero_prev = vl_acelerador;
 		}
 
-		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
 		// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
 		// En caso contrario, decrementamos el contador.
-		float media_con_vcrucero_prev = (v_crucero_prev + vl_acelerador) / 2;
-		if (comparaConTolerancia(media_con_vcrucero_prev, vl_acelerador, 10.0)) {
+		if (comparaConTolerancia(vl_acelerador, media_con_vcrucero_prev, 10.0)) {
 			crucero_prev_counter++;
 			// Si el contador de crucero ha llegado a su tope, se fija el crucero.
-			if (crucero_actualizado && crucero_prev_counter > cnf.pulsos_fijar_crucero) {
+			if (crucero_actualizado && crucero_prev_counter == cnf.pulsos_fijar_crucero) {
 				crucero_actualizado = false;
 				crucero_fijado = true;
-				crucero_prev_counter = 0;
+				v_crucero = vl_acelerador;
+				v_crucero_prev = vl_acelerador;
 				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 			}
 		} else {
@@ -326,7 +329,7 @@ void anulaCruceroConFreno() {
 	if (digitalRead(pin_freno) == LOW) {
 		brakeCounter++;
 		if (crucero_fijado) {
-			repeatTones(cnf.buzzer_activo, 1, brakeCounter * 1000, 90, 200);
+			repeatTones(cnf.buzzer_activo, 1, (3000 + (brakeCounter * 20)), 90, 200);
 			if (brakeCounter >= cnf.pulsos_liberar_crucero)
 				anulaCrucero();
 		}
