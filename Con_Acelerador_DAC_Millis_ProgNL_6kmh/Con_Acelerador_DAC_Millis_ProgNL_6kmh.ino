@@ -411,13 +411,11 @@ void ayudaArranque() {
 
 	// Mientras aceleramos y no pedaleamos.
 	while (!pedaleo && analogRead(pin_acelerador) > a0_valor_minimo) {
-		contador_retardo_aceleracion++;
+		contador_retardo_aceleracion=6;
 		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 	}
 
-	if (pedaleo) {
-		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-	} else {
+	if (!pedaleo) {
 		anulaCrucero();
 	}
 
