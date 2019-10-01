@@ -465,12 +465,6 @@ void setup() {
 		}
 	}
 
-	// Inicializamos tiempos de fijar y liberar crucero.
-	// Ex: 3000ms / 333 = 9 loops.
-	cnf.pulsos_fijar_crucero = (int) 3000 / tiempo_act;
-	// Ex: 2000ms / 333 = 6 loops.
-	cnf.pulsos_liberar_crucero = (int) 2000 / tiempo_act;
-
 	// Ajusta configuración.
 	cnf.retardo_aceleracion = cnf.retardo_aceleracion * (1000 / tiempo_act);
 	cnf.retardo_inicio_progresivo = cnf.retardo_inicio_progresivo * (1000 / tiempo_act);
