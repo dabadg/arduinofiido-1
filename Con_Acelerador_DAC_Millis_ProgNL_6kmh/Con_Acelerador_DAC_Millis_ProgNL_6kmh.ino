@@ -244,11 +244,20 @@ void repeatTones(boolean trigger, int steps, int frequency, int duration, int de
 
 //======= FUNCIONES ====================================================
 
+// --------- Utilidades
+
 // Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
 // valor2-tolerancia > valor < valor2+tolerancia
-boolean comparaConTolerancia(float valor, float valor2, float toleranciaValor2) {
-	return (valor > (valor2 - toleranciaValor2)) && (valor < (valor2 + toleranciaValor2));
+boolean comparaConTolerancia(float valor, float valorReferencia, float toleranciaValor2) {
+	return (valor > (valorReferencia - toleranciaValor2)) && (valor < (valorReferencia + toleranciaValor2));
 }
+
+// Pasamos de escala acelerador -> DAC.
+float aceleradorEnDac(float vl_acelerador) {
+	return vl_acelerador * 4096 / 1023;
+}
+
+// --------- Pedal
 
 void pedal() {
 	p_pulsos++;
@@ -260,10 +269,7 @@ void pedal() {
 	}
 }
 
-// Pasamos de escala acelerador -> DAC.
-float aceleradorEnDac(float vl_acelerador) {
-	return vl_acelerador * 4096 / 1023;
-}
+// --------- Crucero
 
 void estableceCrucero(float vl_acelerador) {
 		// El crucero se actualiza mientras se esté pedaleando con la
@@ -307,6 +313,54 @@ void estableceCruceroV2(float vl_acelerador) {
 		}
 }
 
+void anulaCrucero() {
+	if (crucero_fijado) {
+		v_crucero = a0_valor_reposo;
+		crucero_actualizado = false;
+		crucero_fijado = false;
+		repeatTones(cnf.buzzer_activo, 1, 2000, 190, 100);
+	}
+}
+
+void anulaCruceroConFreno() {
+	if (digitalRead(pin_freno) == LOW) {
+		brakeCounter++;
+		if (crucero_fijado) {
+			repeatTones(cnf.buzzer_activo, 1, brakeCounter * 1000, 90, 200);
+			if (brakeCounter >= cnf.pulsos_liberar_crucero)
+				anulaCrucero();
+		}
+	} else {
+		if (brakeCounter > 0)
+			brakeCounter--;
+	}
+}
+
+// --------- Acelerador
+
+void validaMinAcelerador() {
+	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
+	// En caso de no tener acelerador, mantenemos valor por defecto.
+	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
+	float l_acelerador_reposo = 0;
+
+	// Tomamos 30 medidas para calcular la media.
+	for (int f = 1; f <= 30; f++) {
+		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador);
+	}
+
+	l_acelerador_reposo = l_acelerador_reposo / 30;
+
+	// Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
+	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
+		a0_valor_reposo = l_acelerador_reposo;
+	} else {
+		SOS_TONE();
+	}
+	delay(100);
+}
+
+
 float leeAcelerador() {
 	float cl_acelerador = 0;
 
@@ -348,40 +402,6 @@ void mandaAcelerador() {
 	dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
 }
 
-void paraMotor() {
-	contador_retardo_aceleracion = 0;
-}
-
-void freno() {
-	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
-	bkp_contador_retardo_aceleracion = 0;
-	interrupciones_pedaleo = 1;
-	paraMotor();
-}
-
-void anulaCrucero() {
-	if (crucero_fijado) {
-		v_crucero = a0_valor_reposo;
-		crucero_actualizado = false;
-		crucero_fijado = false;
-		repeatTones(cnf.buzzer_activo, 1, 2000, 190, 100);
-	}
-}
-
-void anulaCruceroConFreno() {
-	if (digitalRead(pin_freno) == LOW) {
-		brakeCounter++;
-		if (crucero_fijado) {
-			repeatTones(cnf.buzzer_activo, 1, brakeCounter * 1000, 90, 200);
-			if (brakeCounter >= cnf.pulsos_liberar_crucero)
-				anulaCrucero();
-		}
-	} else {
-		if (brakeCounter > 0)
-			brakeCounter--;
-	}
-}
-
 void ayudaArranque() {
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
@@ -402,26 +422,17 @@ void ayudaArranque() {
 	interrupciones_pedaleo = 1;
 }
 
-void validaMinAcelerador() {
-	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
-	// En caso de no tener acelerador, mantenemos valor por defecto.
-	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
-	float l_acelerador_reposo = 0;
+// --------- Generales
 
-	// Tomamos 30 medidas para calcular la media.
-	for (int f = 1; f <= 30; f++) {
-		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador);
-	}
+void paraMotor() {
+	contador_retardo_aceleracion = 0;
+}
 
-	l_acelerador_reposo = l_acelerador_reposo / 30;
-
-	// Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
-	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
-		a0_valor_reposo = l_acelerador_reposo;
-	} else {
-		SOS_TONE();
-	}
-	delay(100);
+void freno() {
+	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
+	bkp_contador_retardo_aceleracion = 0;
+	interrupciones_pedaleo = 1;
+	paraMotor();
 }
 
 void setup() {
