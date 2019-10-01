@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#include <Adafruit_MCP4725.h>
 /* 
                      Versión Con Acelerador y DAC
               Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1
@@ -117,7 +119,7 @@ struct ConfigContainer {
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
-#include <Adafruit_MCP4725.h>
+
 Adafruit_MCP4725 dac;
 
 ConfigContainer cnf;
