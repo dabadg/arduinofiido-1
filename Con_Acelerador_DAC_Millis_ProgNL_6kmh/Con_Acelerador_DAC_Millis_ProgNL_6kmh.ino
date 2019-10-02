@@ -90,12 +90,12 @@ struct ConfigContainer {
 	boolean establece_crucero_por_tiempo = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// 8 * 333 = 2664 ms.
-	int pulsos_fijar_crucero = 9;
+	// 10 * 333 = 3663 ms.
+	int pulsos_fijar_crucero = 11;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// 6 * 333 = 1998 ms.
-	int pulsos_liberar_crucero = 6;
+	// 9 * 333 = 2997 ms.
+	int pulsos_liberar_crucero = 9;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
@@ -319,7 +319,7 @@ void anulaCrucero() {
 void anulaCruceroConFreno() {
 	if (digitalRead(pin_freno) == LOW) {
 		contador_freno_anulacion_crucero++;
-		if (crucero_fijado && contador_freno_anulacion_crucero%2==0) {
+		if (crucero_fijado && contador_freno_anulacion_crucero % 2 == 0) {
 			repeatTones(cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
 			if (contador_freno_anulacion_crucero >= cnf.pulsos_liberar_crucero)
 				anulaCrucero();
@@ -498,6 +498,8 @@ void loop() {
 			estableceCruceroPorCorteAcelerador(v_acelerador);
 		}
 
+		anulaCruceroConFreno();
+
 		// Si no se pedalea.
 		if (!pedaleo) {
 			contador_retardo_inicio_progresivo++;
@@ -542,7 +544,6 @@ void loop() {
 		}
 	}
 
-	anulaCruceroConFreno();
 	mandaAcelerador(v_acelerador);
 }
 
