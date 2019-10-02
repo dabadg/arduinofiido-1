@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_MCP4725.h>
+#include <EEPROM.h>
+
 /* 
                      Versión Con Acelerador y DAC
               Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1
@@ -89,12 +91,12 @@ struct ConfigContainer {
 	boolean establece_crucero_por_tiempo = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// 8 * 333 = 2664 ms.
+	// 9 * 333 = 2997 ms.
 	int pulsos_fijar_crucero = 9;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// 6 * 333 = 1998 ms.
-	int pulsos_liberar_crucero = 6;
+	// 9 * 333 = 2997 ms.
+	int pulsos_liberar_crucero = 9;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
@@ -263,6 +265,7 @@ void pedal() {
 	p_pulsos++;
 	a_pulsos++;
 
+	// Activamos pedaleo por interrupciones.
 	if (a_pulsos >= interrupciones_pedaleo) {
 		pedaleo = true;
 		a_pulsos = 0;
@@ -321,10 +324,11 @@ void anulaCrucero() {
 void anulaCruceroConFreno() {
 	if (digitalRead(pin_freno) == LOW) {
 		contador_freno_anulacion_crucero++;
-		if (crucero_fijado && contador_freno_anulacion_crucero%2==0) {
+		if (crucero_fijado && contador_freno_anulacion_crucero % 2 == 0) {
 			repeatTones(cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
-			if (contador_freno_anulacion_crucero >= cnf.pulsos_liberar_crucero)
+			if (contador_freno_anulacion_crucero >= cnf.pulsos_liberar_crucero) {
 				anulaCrucero();
+			}
 		}
 	} else {
 		if (contador_freno_anulacion_crucero > 0)
@@ -377,35 +381,22 @@ float leeAcelerador() {
 	return cl_acelerador;
 }
 
-void mandaAcelerador(float vf_acelerador) {
-	//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador está en reposo.
-	if (cnf.modo_crucero == true && crucero_fijado && vf_acelerador <= a0_valor_reposo) {
-		// Progresivo no lineal.
-		fac_n = a0_valor_reposo + 60;
-		fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
-		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
-
-		if (nivel_aceleracion < a0_valor_reposo) {
-			nivel_aceleracion = a0_valor_reposo;
-		} else if (nivel_aceleracion > v_crucero) {
-			nivel_aceleracion = v_crucero;
-		}
-
-	} else if(pedaleo){ // Si se interactua con el acelerador, este prevalece sobre el crucero.
-		nivel_aceleracion = vf_acelerador;
-	}
-
-	dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
-}
+//git commit -m "Unificada ayuda al arranque dentro del método mandaAcelerador. Mejoramos el rendimiento al sacarlo al loop principal y darle más capacidad de respuesta."
 
 void ayudaArranque() {
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
 
+	boolean while_init = true;
 	// Mientras aceleramos y no pedaleamos.
 	while (!pedaleo && analogRead(pin_acelerador) > a0_valor_minimo) {
-		contador_retardo_aceleracion=6;
-		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+		if(while_init){
+			// Fijamos nivel de aceleración.
+			contador_retardo_aceleracion = 6;
+			// Mandamos 6 km/h directamente al DAC. // Porque no dar hasta 6km al dac, permitiendo seleccionar la potencia manualmente?
+			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+			while_init=false;
+		}
 	}
 
 	// Cancelamos el crucero si existía en caso de no pedalear y haber soltado el acelerador.
@@ -415,6 +406,32 @@ void ayudaArranque() {
 
 	// A la segunda interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 1;
+}
+
+void mandaAcelerador(float vf_acelerador) {
+	// Asistencia desde parado a 6 km/h mientras se use el acelerador.
+	if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_minimo && contador_retardo_aceleracion == 0) {
+		ayudaArranque();
+	} else {
+		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador está en reposo.
+		if (cnf.modo_crucero == true && crucero_fijado && vf_acelerador <= a0_valor_reposo) {
+			// Progresivo no lineal.
+			fac_n = a0_valor_reposo + 60;
+			fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
+			nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
+
+			if (nivel_aceleracion < a0_valor_reposo) {
+				nivel_aceleracion = a0_valor_reposo;
+			} else if (nivel_aceleracion > v_crucero) {
+				nivel_aceleracion = v_crucero;
+			}
+
+		} else if(pedaleo){ // Si se interactua con el acelerador, este prevalece sobre el crucero.
+			nivel_aceleracion = vf_acelerador;
+		}
+
+		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
+	}
 }
 
 // --------- Generales
@@ -431,10 +448,19 @@ void freno() {
 }
 
 void setup() {
+
+	// Inicia serial:
+	//Serial.begin(19200);
+
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
 	// Fija voltaje inicial en Dac (0.85v).
 	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
+
+	// Lee configuración desde la eeprom.
+	//const byte EEPROM_INIT_ADDRESS = 11; // Posición de memoria que almacena los datos de modo.
+	//EEPROM.get(EEPROM_INIT_ADDRESS, cnf); // Captura los valores desde la eeprom
+
 
 	// Configura pines.
 	pinMode(pin_piezo, OUTPUT);
@@ -500,6 +526,7 @@ void loop() {
 
 		// Si no se pedalea.
 		if (!pedaleo) {
+
 			contador_retardo_inicio_progresivo++;
 			auto_progresivo = true;
 
@@ -511,6 +538,7 @@ void loop() {
 			paraMotor();
 		// Si se pedalea.
 		} else {
+
 			if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
 				if (bkp_contador_retardo_aceleracion > cnf.retardo_aceleracion) {
 					bkp_contador_retardo_aceleracion = cnf.retardo_aceleracion;
@@ -530,13 +558,9 @@ void loop() {
 			}
 		}
 
-		// Asistencia desde parado a 6 km/h mientras se use el acelerador.
-		if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_minimo && contador_retardo_aceleracion == 0) {
-			ayudaArranque();
-		}
-
 		p_pulsos = 0;
 
+		// Desactivamos pedaleo por cadencia.
 		if (pulsos < 2) {
 			pedaleo = false;
 		}
