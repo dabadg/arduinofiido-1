@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Adafruit_MCP4725.h>
+
 /* 
                      Versión Con Acelerador y DAC
               Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1
@@ -118,7 +119,6 @@ struct ConfigContainer {
 };
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
-
 
 Adafruit_MCP4725 dac;
 
@@ -288,7 +288,6 @@ void estableceCruceroPorCorteAcelerador(float vl_acelerador) {
 }
 
 void estableceCruceroPorTiempo(float vl_acelerador) {
-
 		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
 		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
 
@@ -303,7 +302,6 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 				v_crucero = vl_acelerador;
 				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 			}
-
 		} else {
 				contador_crucero_mismo_valor = 0;
 		}
@@ -378,7 +376,7 @@ float leeAcelerador() {
 }
 
 void mandaAcelerador(float vf_acelerador) {
-	//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador está en reposo.
+	// El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador está en reposo.
 	if (cnf.modo_crucero == true && crucero_fijado && vf_acelerador <= a0_valor_reposo) {
 		// Progresivo no lineal.
 		fac_n = a0_valor_reposo + 60;
@@ -390,8 +388,8 @@ void mandaAcelerador(float vf_acelerador) {
 		} else if (nivel_aceleracion > v_crucero) {
 			nivel_aceleracion = v_crucero;
 		}
-
-	} else if(pedaleo){ // Si se interactua con el acelerador, este prevalece sobre el crucero.
+	// Si se interactua con el acelerador, este prevalece sobre el crucero.
+	} else if (pedaleo) {
 		nivel_aceleracion = vf_acelerador;
 	}
 
@@ -404,7 +402,9 @@ void ayudaArranque() {
 
 	// Mientras aceleramos y no pedaleamos.
 	while (!pedaleo && analogRead(pin_acelerador) > a0_valor_minimo) {
-		contador_retardo_aceleracion=6;
+		// Fijamos nivel de aceleración.
+		contador_retardo_aceleracion = 6;
+		// Mandamos 6 km/h directamente al DAC.
 		dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 	}
 
