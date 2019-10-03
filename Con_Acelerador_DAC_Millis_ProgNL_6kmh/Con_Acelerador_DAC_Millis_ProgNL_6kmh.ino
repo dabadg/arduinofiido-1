@@ -381,8 +381,6 @@ float leeAcelerador() {
 	return cl_acelerador;
 }
 
-//git commit -m "Unificada ayuda al arranque dentro del método mandaAcelerador. Mejoramos el rendimiento al sacarlo al loop principal y darle más capacidad de respuesta."
-
 void ayudaArranque() {
 	// A la tercera interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 2;
