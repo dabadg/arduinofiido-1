@@ -408,12 +408,16 @@ void ayudaArranque() {
 		}
 	}
 
+	// Anulamos el nivel de aceleración.
+	nivel_aceleracion = a0_valor_reposo;
+
 	// A la segunda interrupción, se activa pedaleo.
 	// interrupciones_pedaleo = 1;
 
 	// Cancelamos el crucero si existía en caso de no pedalear y haber soltado el acelerador.
 	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
 		anulaCrucero();
+
 }
 
 void mandaAcelerador(float vf_acelerador) {
@@ -539,8 +543,6 @@ void loop() {
 		tiempo1 = millis();
 		pulsos = p_pulsos;
 
-		anulaCruceroConFreno();
-
 		// Si no se pedalea.
 		if (!pedaleo) {
 
@@ -583,6 +585,7 @@ void loop() {
 		}
 	}
 
+	anulaCruceroConFreno();
 	mandaAcelerador(v_acelerador);
 }
 
