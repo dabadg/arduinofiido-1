@@ -2,9 +2,11 @@
 #include <Adafruit_MCP4725.h>
 #include <EEPROM.h>
 
+const char version = "2.1.2";
+
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1.2
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -457,6 +459,7 @@ void setup() {
 
 	// Inicia serial:
 	//Serial.begin(19200);
+	//Serial.println(version);
 
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
