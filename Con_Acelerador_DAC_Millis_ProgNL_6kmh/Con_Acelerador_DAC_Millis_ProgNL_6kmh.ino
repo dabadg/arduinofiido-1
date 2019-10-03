@@ -117,6 +117,12 @@ struct ConfigContainer {
 	// Habilita los tonos de inicialización del sistema.
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
+
+	// True --> Mantiene valor de crucero antes de entrar a la
+	// asistencia de 6km/h desde parado si soltamos acelerador y
+	// no pedaleamos.
+	// False --> en esta situación anula el valor de crucero.
+	boolean valor_crucero_en_asistencia = false;
 };
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
@@ -139,7 +145,7 @@ const int pin_piezo = 11; // Pin del zumbador.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
 //const float a0_valor_corte = 216.0;  // 1.05
 const float a0_valor_minimo = 235.0; // 1.15
-const float a0_valor_suave = 410.0;  // 2.00
+const float a0_valor_suave = 307.0;  // 1.50
 const float a0_valor_6kmh = 450.0;   // 2.19
 //const float a0_valor_medio = 550.0;  // 2.68
 const float a0_valor_alto = 798.0;   // 3.90
@@ -149,6 +155,7 @@ const float a0_valor_max = 847.0;    // 4.13
 const int tiempo_act = 333;
 unsigned long tiempo1 = 0;
 unsigned long tiempo2 = 0;
+unsigned long tiempo3 = 0;
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
@@ -190,7 +197,7 @@ float vl_acelerador_prev;
 // Almacena la cantidad de loops que lleva la velocidad en el mismo
 // valor.
 unsigned int contador_crucero_mismo_valor = 0;
-
+// Cantidad de loops para cortar crucero con freno.
 unsigned int contador_freno_anulacion_crucero;
 
 //======= Variables interrupción =======================================
@@ -387,28 +394,29 @@ void ayudaArranque() {
 
 	boolean while_init = true;
 	// Mientras aceleramos y no pedaleamos.
-	while (!pedaleo && analogRead(pin_acelerador) > a0_valor_minimo) {
+	while (!pedaleo && analogRead(pin_acelerador) > a0_valor_suave) {
 		if(while_init){
-			// Fijamos nivel de aceleración.
-			contador_retardo_aceleracion = 6;
 			// Mandamos 6 km/h directamente al DAC. // Porque no dar hasta 6km al dac, permitiendo seleccionar la potencia manualmente?
 			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-			while_init=false;
+			// Fijamos nivel de aceleración.
+			nivel_aceleracion = a0_valor_6kmh;
+			// Ajustamos contador para cálculo del progresivo.
+			contador_retardo_aceleracion = 5;
+			while_init = false;
 		}
 	}
 
-	// Cancelamos el crucero si existía en caso de no pedalear y haber soltado el acelerador.
-	if (!pedaleo) {
-		anulaCrucero();
-	}
-
 	// A la segunda interrupción, se activa pedaleo.
-	interrupciones_pedaleo = 1;
+	// interrupciones_pedaleo = 1;
+
+	// Cancelamos el crucero si existía en caso de no pedalear y haber soltado el acelerador.
+	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
+		anulaCrucero();
 }
 
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador.
-	if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_minimo && contador_retardo_aceleracion == 0) {
+	if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
 		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador está en reposo.
@@ -505,6 +513,7 @@ void setup() {
 	repeatTones(cnf.buzzer_activo, 3, 3000, 90, 90);
 	// Arrancar tiempo de inicio.
 	tiempo1 = millis();
+	tiempo3 = millis();
 }
 
 void loop() {
@@ -512,15 +521,22 @@ void loop() {
 
 	float v_acelerador = leeAcelerador();
 
-	if (tiempo2 > tiempo1 + (unsigned long) tiempo_act) {
-		tiempo1 = millis();
-		pulsos = p_pulsos;
-
+	// Si han pasado 100 ms.
+	if (tiempo2 > tiempo3 + 100) {
+		tiempo3 = millis();
 		if (cnf.establece_crucero_por_tiempo) {
 			estableceCruceroPorTiempo(v_acelerador);
 		} else {
 			estableceCruceroPorCorteAcelerador(v_acelerador);
 		}
+	}
+
+	// Si han pasado 333 ms.
+	if (tiempo2 > tiempo1 + (unsigned long) tiempo_act) {
+		tiempo1 = millis();
+		pulsos = p_pulsos;
+
+		anulaCruceroConFreno();
 
 		// Si no se pedalea.
 		if (!pedaleo) {
@@ -564,7 +580,6 @@ void loop() {
 		}
 	}
 
-	anulaCruceroConFreno();
 	mandaAcelerador(v_acelerador);
 }
 
