@@ -383,8 +383,8 @@ float leeAcelerador() {
 	// Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
 	if (cl_acelerador < a0_valor_reposo) {
 		return a0_valor_reposo;
-	} else if (cl_acelerador > a0_valor_max) {
-		return a0_valor_max;
+	} else if (cl_acelerador > a0_valor_alto) {
+		return a0_valor_alto;
 	}
 
 	return cl_acelerador;
@@ -392,7 +392,7 @@ float leeAcelerador() {
 
 void ayudaArranque() {
 	// A la tercera interrupción, se activa pedaleo.
-	interrupciones_pedaleo = 2;
+	interrupciones_pedaleo = 4;
 
 	boolean while_init = true;
 	// Mientras aceleramos y no pedaleamos.
@@ -412,7 +412,7 @@ void ayudaArranque() {
 	nivel_aceleracion = a0_valor_reposo;
 
 	// A la segunda interrupción, se activa pedaleo.
-	// interrupciones_pedaleo = 1;
+	interrupciones_pedaleo = 1;
 
 	// Cancelamos el crucero si existía en caso de no pedalear y haber soltado el acelerador.
 	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
@@ -425,8 +425,8 @@ void mandaAcelerador(float vf_acelerador) {
 	if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
-		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador está en reposo.
-		if (cnf.modo_crucero == true && crucero_fijado && vf_acelerador <= a0_valor_reposo) {
+		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor mínimo.
+		if (cnf.modo_crucero == true && crucero_fijado && vf_acelerador <= a0_valor_minimo) {
 			// Progresivo no lineal.
 			fac_n = a0_valor_reposo + 60;
 			fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
@@ -531,11 +531,11 @@ void loop() {
 	// Si han pasado 100 ms.
 	if (tiempo2 > tiempo3 + 100) {
 		tiempo3 = millis();
-		if (cnf.establece_crucero_por_tiempo) {
+		//if (cnf.establece_crucero_por_tiempo) {
 			estableceCruceroPorTiempo(v_acelerador);
-		} else {
-			estableceCruceroPorCorteAcelerador(v_acelerador);
-		}
+		//} else {
+		//	estableceCruceroPorCorteAcelerador(v_acelerador);
+		//}
 	}
 
 	// Si han pasado 333 ms.
