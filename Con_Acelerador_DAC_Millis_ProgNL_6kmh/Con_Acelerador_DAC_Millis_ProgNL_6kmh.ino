@@ -88,10 +88,6 @@ struct ConfigContainer {
 	// False --> Manda señal del acelerador.
 	boolean modo_crucero = true;
 
-	// True - Establece crucero por tiempo.
-	// False - Establece crucero por liberación de acelerador.
-	boolean establece_crucero_por_tiempo = true;
-
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// 30 * 100 = 3000 ms.
 	int pulsos_fijar_crucero = 30;
@@ -283,22 +279,6 @@ void pedal() {
 
 // --------- Crucero
 
-void estableceCruceroPorCorteAcelerador(float vl_acelerador) {
-		// El crucero se actualiza mientras se esté pedaleando con la
-		// lectura del acelerador, siempre que esta sea superior al valor de referencia.
-		if (pedaleo && vl_acelerador > a0_valor_minimo) {
-			vl_acelerador_prev = vl_acelerador;
-			crucero_actualizado = true;
-		// Si el crucero se ha actualizado por encima de 2.00 v y si
-		// detecta que el acelerador está por debajo del valor mínimo, fija el crucero.
-		} else if (crucero_actualizado && vl_acelerador_prev > a0_valor_minimo && vl_acelerador <= a0_valor_reposo) {
-			crucero_actualizado = false;
-			crucero_fijado = true;
-			v_crucero=vl_acelerador_prev;
-			repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
-		}
-}
-
 void estableceCruceroPorTiempo(float vl_acelerador) {
 
 		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
@@ -333,8 +313,11 @@ void anulaCrucero() {
 void anulaCruceroConFreno() {
 	if (digitalRead(pin_freno) == LOW) {
 		contador_freno_anulacion_crucero++;
-		if (crucero_fijado && contador_freno_anulacion_crucero % 4 == 0) {
-			repeatTones(cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
+		if (crucero_fijado){
+			// Añadido % 4 para solo ejecutar la acción para los múltiplos de 4 y evitar excesivos tonos.
+			if (contador_freno_anulacion_crucero % 4 == 0) {
+				repeatTones(cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
+			}
 			if (contador_freno_anulacion_crucero >= cnf.pulsos_liberar_crucero) {
 				anulaCrucero();
 			}
@@ -419,7 +402,7 @@ void ayudaArranque() {
 	// A la segunda interrupción, se activa pedaleo.
 	interrupciones_pedaleo = 1;
 
-	// Cancelamos el crucero si existía en caso de no pedalear y haber soltado el acelerador.
+	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
 	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
 		anulaCrucero();
 
@@ -536,11 +519,7 @@ void loop() {
 	// Si han pasado 100 ms.
 	if (tiempo2 > tiempo3 + 100) {
 		tiempo3 = millis();
-		//if (cnf.establece_crucero_por_tiempo) {
-			estableceCruceroPorTiempo(v_acelerador);
-		//} else {
-		//	estableceCruceroPorCorteAcelerador(v_acelerador);
-		//}
+		estableceCruceroPorTiempo(v_acelerador);
 	}
 
 	// Si han pasado 333 ms.
