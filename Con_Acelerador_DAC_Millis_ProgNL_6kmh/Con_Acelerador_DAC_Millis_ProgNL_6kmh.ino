@@ -2,7 +2,7 @@
 #include <Adafruit_MCP4725.h>
 #include <EEPROM.h>
 
-const char version = "2.1.2";
+const char version = "2.1.3";
 
 /* 
                      Versión Con Acelerador y DAC
@@ -417,26 +417,37 @@ void mandaAcelerador(float vf_acelerador) {
 		ayudaArranque();
 	} else {
 		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor mínimo.
-		if (cnf.modo_crucero == true && crucero_fijado && vf_acelerador <= a0_valor_minimo) {
-			// Progresivo no lineal.
-			fac_n = a0_valor_reposo + 60;
-			fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
-			nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
+		if (cnf.modo_crucero == true){
+			if (crucero_fijado){
+				if (vf_acelerador <= a0_valor_minimo) {
+					// Progresivo no lineal.
+					fac_n = a0_valor_reposo + 60;
+					fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
+					nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
-			if (nivel_aceleracion < a0_valor_reposo) {
-				nivel_aceleracion = a0_valor_reposo;
-			} else if (nivel_aceleracion > v_crucero) {
-				nivel_aceleracion = v_crucero;
+					if (nivel_aceleracion < a0_valor_reposo) {
+						nivel_aceleracion = a0_valor_reposo;
+					} else if (nivel_aceleracion > v_crucero) {
+						nivel_aceleracion = v_crucero;
+					}
+				} else {
+					if ((cnf.pulsos_fijar_crucero >= 20 && (millis() - crucero_fijado_millis > 777)) || (cnf.pulsos_fijar_crucero < 4) ){
+						nivel_aceleracion = vf_acelerador;
+					} else {
+						nivel_aceleracion = vf_acelerador;
+					}
+				}
+			} else {
+				nivel_aceleracion = vf_acelerador;
 			}
 		// Si se interactua con el acelerador este prevalence sobre el crucero según la condición descrita.
-		} else if( pedaleo && (cnf.pulsos_fijar_crucero >= 20 && (millis() - crucero_fijado_millis > 666)) || (cnf.pulsos_fijar_crucero < 4) ){
+		} else {
 			nivel_aceleracion = vf_acelerador;
 		}
 
 		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
 	}
 }
-
 // --------- Generales
 
 void paraMotor() {
