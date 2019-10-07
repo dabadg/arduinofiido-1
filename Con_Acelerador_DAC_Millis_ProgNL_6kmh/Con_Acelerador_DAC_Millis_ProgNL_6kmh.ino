@@ -6,7 +6,7 @@ const char version = "2.1.2";
 
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1.2
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1.3
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -189,6 +189,7 @@ float v_crucero = a0_valor_reposo;
 // Variable que almacena el estado de notificación de fijar crucero.
 boolean crucero_actualizado = false;
 boolean crucero_fijado = false;
+unsigned long crucero_fijado_millis;
 
 // Almacena la velocidad de crucero del loop anterior.
 float vl_acelerador_prev;
@@ -293,7 +294,9 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
 				crucero_fijado = true;
 				v_crucero = vl_acelerador;
-				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
+				crucero_fijado_millis=millis();
+				if(cnf.pulsos_fijar_crucero >= 20) // Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+					repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 			}
 
 		} else {
@@ -425,8 +428,8 @@ void mandaAcelerador(float vf_acelerador) {
 			} else if (nivel_aceleracion > v_crucero) {
 				nivel_aceleracion = v_crucero;
 			}
-
-		} else if(pedaleo){ // Si se interactua con el acelerador, este prevalece sobre el crucero.
+		// Si se interactua con el acelerador este prevalence sobre el crucero según la condición descrita.
+		} else if( pedaleo && (cnf.pulsos_fijar_crucero >= 20 && (millis() - crucero_fijado_millis > 666)) || (cnf.pulsos_fijar_crucero < 4) ){
 			nivel_aceleracion = vf_acelerador;
 		}
 
