@@ -372,7 +372,7 @@ float leeAcelerador() {
 
 	// Actualizamos el valor a0_valor_alto, al máximo medido por el acelerador.
 	// Para corregir el valor por el real obtenido de la lectura.
-	if(cl_acelerador > a0_valor_alto)
+	if(cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
 		a0_valor_alto = cl_acelerador;
 
 	return cl_acelerador;
