@@ -305,6 +305,8 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 			contador_crucero_mismo_valor = 0;
 	}
 
+	establece_crucero_ultima_ejecucion_millis = millis();
+
 }
 
 void anulaCrucero() {
@@ -546,7 +548,6 @@ void loop() {
 	//Ejecutamos método cada 100ms
 	if(millis() - establece_crucero_ultima_ejecucion_millis > 100 ){
 		estableceCruceroPorTiempo(v_acelerador);
-		establece_crucero_ultima_ejecucion_millis = millis();
 	}
 
 	// Ejecutamos cada 333ms
