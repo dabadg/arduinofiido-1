@@ -141,11 +141,11 @@ const int pin_piezo = 11; // Pin del zumbador.
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
-//const float a0_valor_corte = 216.0;  // 1.05
+const float a0_valor_corte = 216.0;  // 1.05
 const float a0_valor_minimo = 235.0; // 1.15
 const float a0_valor_suave = 307.0;  // 1.50
 const float a0_valor_6kmh = 450.0;   // 2.19
-//const float a0_valor_medio = 550.0;  // 2.68
+const float a0_valor_medio = 550.0;  // 2.68
 float a0_valor_alto = 798.0;   // 3.90
 const float a0_valor_max = 847.0;    // 4.13
 
@@ -411,6 +411,35 @@ void ayudaArranque() {
 
 }
 
+int calculaTiempoBloqueoAcelerador(float vf_acelerador){
+	if(vf_acelerador > a0_valor_medio){
+		return 999;
+	} else if(vf_acelerador < a0_valor_suave){
+		return 666;
+	} else if(vf_acelerador < a0_valor_minimo){
+		return 300;
+	}
+	return 0;
+}
+
+float calculaAceleradorProgresivoNoLineal(float v_cruceroin){
+
+	float nivel_aceleraciontmp;
+
+	// Progresivo no lineal.
+	fac_n = a0_valor_reposo + 60;
+	fac_m = (v_cruceroin - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
+	nivel_aceleraciontmp = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
+
+	if (nivel_aceleraciontmp < a0_valor_reposo) {
+		nivel_aceleraciontmp = a0_valor_reposo;
+	} else if (nivel_aceleraciontmp > v_cruceroin) {
+		nivel_aceleraciontmp = v_cruceroin;
+	}
+	return nivel_aceleraciontmp;
+
+}
+
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador.
 	if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
@@ -419,19 +448,10 @@ void mandaAcelerador(float vf_acelerador) {
 		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor mínimo.
 		if (cnf.modo_crucero == true){
 			if (crucero_fijado){
-				if (vf_acelerador <= a0_valor_minimo) {
-					// Progresivo no lineal.
-					fac_n = a0_valor_reposo + 60;
-					fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
-					nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
-
-					if (nivel_aceleracion < a0_valor_reposo) {
-						nivel_aceleracion = a0_valor_reposo;
-					} else if (nivel_aceleracion > v_crucero) {
-						nivel_aceleracion = v_crucero;
-					}
+				if (vf_acelerador <= a0_valor_corte) {
+					nivel_aceleracion=calculaAceleradorProgresivoNoLineal(v_crucero);
 				} else {
-					if ((cnf.pulsos_fijar_crucero >= 20 && (millis() - crucero_fijado_millis > 777)) || (cnf.pulsos_fijar_crucero < 4) ){
+					if ((cnf.pulsos_fijar_crucero >= 20 && (millis() - crucero_fijado_millis > calculaTiempoBloqueoAcelerador(vf_acelerador))) || (cnf.pulsos_fijar_crucero < 4) ){
 						nivel_aceleracion = vf_acelerador;
 					} else {
 						nivel_aceleracion = vf_acelerador;
@@ -448,6 +468,7 @@ void mandaAcelerador(float vf_acelerador) {
 		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
 	}
 }
+
 // --------- Generales
 
 void paraMotor() {
