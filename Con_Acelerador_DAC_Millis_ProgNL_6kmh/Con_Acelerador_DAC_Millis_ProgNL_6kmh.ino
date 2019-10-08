@@ -438,25 +438,25 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin){
 }
 
 void mandaAcelerador(float vf_acelerador) {
-	// Asistencia desde parado a 6 km/h mientras se use el acelerador.
-	if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
+	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
+	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
 		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
 		if (cnf.modo_crucero){
 			if (crucero_fijado){
 				// Si no se está acelerando
-				if (vf_acelerador <= a0_valor_reposo) {
+				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
 				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 2
-				// Le da prioridad a la lectura del acelerador
+				// Le da prioridad a la lectura del acelerador.
 				} else if ((millis() - crucero_fijado_millis > 999) || (cnf.pulsos_fijar_crucero <= 2)) {
 						nivel_aceleracion = vf_acelerador;
 				}
-			} else {
+			} else { // Si el crucero no está fijado, prioridad a la lectura del acelerador.
 				nivel_aceleracion = vf_acelerador;
 			}
-		} else {
+		} else { // Si no es modo crucero, prioridad a la lectura del acelerador.
 			nivel_aceleracion = vf_acelerador;
 		}
 
