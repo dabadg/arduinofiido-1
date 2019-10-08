@@ -2,11 +2,11 @@
 #include <Adafruit_MCP4725.h>
 #include <EEPROM.h>
 
-const char version = "2.1.3";
+const char version = "2.1.4";
 
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1.3
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1.4
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -150,10 +150,9 @@ float a0_valor_alto = 798.0;   // 3.90
 const float a0_valor_max = 847.0;    // 4.13
 
 // Variables de tiempo.
-const int tiempo_act = 333;
-unsigned long tiempo1 = 0;
-unsigned long tiempo2 = 0;
-unsigned long tiempo3 = 0;
+// Tiempo de ejecución de cada loop
+const unsigned long tiempo_act = 333;
+unsigned long loop_ultima_ejecucion_millis;
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
@@ -180,6 +179,8 @@ float fac_c = cnf.suavidad_autoprogresivos / 10.0;
 
 // Los voltios que se mandan a la controladora.
 float nivel_aceleracion = a0_valor_reposo;
+// Almacena el último valor asignado al DAC
+float nivel_aceleracion_prev = 0;
 
 // Permite usar el acelerador desde parado a 6 km/h.
 boolean ayuda_salida = false;
@@ -190,6 +191,7 @@ float v_crucero = a0_valor_reposo;
 boolean crucero_actualizado = false;
 boolean crucero_fijado = false;
 unsigned long crucero_fijado_millis;
+unsigned long establece_crucero_ultima_ejecucion_millis;
 
 // Almacena la velocidad de crucero del loop anterior.
 float vl_acelerador_prev;
@@ -282,26 +284,27 @@ void pedal() {
 
 void estableceCruceroPorTiempo(float vl_acelerador) {
 
-		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
-		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
+	// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
+	float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
 
-		vl_acelerador_prev = vl_acelerador;
+	vl_acelerador_prev = vl_acelerador;
 
-		// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
-		if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, media_con_vcrucero_prev, 10.0)) {
-			contador_crucero_mismo_valor++;
-			// Si el contador de crucero ha llegado a su tope, se fija el crucero.
-			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
-				crucero_fijado = true;
-				v_crucero = vl_acelerador;
-				crucero_fijado_millis=millis();
-				if(cnf.pulsos_fijar_crucero >= 20) // Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
-					repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
-			}
-
-		} else {
-				contador_crucero_mismo_valor = 0;
+	// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
+	if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, media_con_vcrucero_prev, 10.0)) {
+		contador_crucero_mismo_valor++;
+		// Si el contador de crucero ha llegado a su tope, se fija el crucero.
+		if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
+			crucero_fijado = true;
+			v_crucero = vl_acelerador;
+			crucero_fijado_millis=millis();
+			if(cnf.pulsos_fijar_crucero >= 20) // Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 		}
+
+	} else {
+			contador_crucero_mismo_valor = 0;
+	}
+
 }
 
 void anulaCrucero() {
@@ -411,17 +414,6 @@ void ayudaArranque() {
 
 }
 
-int calculaTiempoBloqueoAcelerador(float vf_acelerador){
-	if(vf_acelerador > a0_valor_medio){
-		return 999;
-	} else if(vf_acelerador < a0_valor_suave){
-		return 666;
-	} else if(vf_acelerador < a0_valor_minimo){
-		return 300;
-	}
-	return 0;
-}
-
 float calculaAceleradorProgresivoNoLineal(float v_cruceroin){
 
 	float nivel_aceleraciontmp;
@@ -445,27 +437,29 @@ void mandaAcelerador(float vf_acelerador) {
 	if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
-		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor mínimo.
-		if (cnf.modo_crucero == true){
+		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
+		if (cnf.modo_crucero){
 			if (crucero_fijado){
-				if (vf_acelerador <= a0_valor_corte) {
-					nivel_aceleracion=calculaAceleradorProgresivoNoLineal(v_crucero);
-				} else {
-					if ((cnf.pulsos_fijar_crucero >= 20 && (millis() - crucero_fijado_millis > calculaTiempoBloqueoAcelerador(vf_acelerador))) || (cnf.pulsos_fijar_crucero < 4) ){
+				// Si no se está acelerando
+				if (vf_acelerador <= a0_valor_reposo) {
+					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
+				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 2
+				// Le da prioridad a la lectura del acelerador
+				} else if ((millis() - crucero_fijado_millis > 999) || (cnf.pulsos_fijar_crucero <= 2)) {
 						nivel_aceleracion = vf_acelerador;
-					} else {
-						nivel_aceleracion = vf_acelerador;
-					}
 				}
 			} else {
 				nivel_aceleracion = vf_acelerador;
 			}
-		// Si se interactua con el acelerador este prevalence sobre el crucero según la condición descrita.
 		} else {
 			nivel_aceleracion = vf_acelerador;
 		}
 
-		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
+		// Solo fijamos el acelerador si el valor anterior es distinto al actual.
+		if(nivel_aceleracion_prev != nivel_aceleracion){
+			  dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
+			  nivel_aceleracion_prev = nivel_aceleracion;
+		}
 	}
 }
 
@@ -542,24 +536,22 @@ void setup() {
 	// Tono de finalización de setup.
 	repeatTones(cnf.buzzer_activo, 3, 3000, 90, 90);
 	// Arrancar tiempo de inicio.
-	tiempo1 = millis();
-	tiempo3 = millis();
 }
 
 void loop() {
-	tiempo2 = millis();
 
 	float v_acelerador = leeAcelerador();
 
-	// Si han pasado 100 ms.
-	if (tiempo2 > tiempo3 + 100) {
-		tiempo3 = millis();
+
+	//Ejecutamos método cada 100ms
+	if(millis() - establece_crucero_ultima_ejecucion_millis > 100 ){
 		estableceCruceroPorTiempo(v_acelerador);
+		establece_crucero_ultima_ejecucion_millis = millis();
 	}
 
-	// Si han pasado 333 ms.
-	if (tiempo2 > tiempo1 + (unsigned long) tiempo_act) {
-		tiempo1 = millis();
+	// Ejecutamos cada 333ms
+	if(millis() - loop_ultima_ejecucion_millis > tiempo_act){
+
 		pulsos = p_pulsos;
 
 		// Si no se pedalea.
@@ -574,6 +566,7 @@ void loop() {
 			}
 
 			paraMotor();
+
 		// Si se pedalea.
 		} else {
 
@@ -602,6 +595,8 @@ void loop() {
 		if (pulsos < 2) {
 			pedaleo = false;
 		}
+
+		loop_ultima_ejecucion_millis = millis();
 	}
 
 	anulaCruceroConFreno();
