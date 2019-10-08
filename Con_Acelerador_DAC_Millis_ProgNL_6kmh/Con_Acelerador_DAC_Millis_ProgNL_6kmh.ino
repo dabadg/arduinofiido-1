@@ -159,7 +159,11 @@ byte pulsos = 0;
 byte a_pulsos = 0;
 boolean pedaleo = false;
 // A la segunda interrupción, se activa pedaleo.
-unsigned int interrupciones_pedaleo = 1;
+unsigned int const interrupciones_pedaleo_min=1;
+unsigned int const interrupciones_pedaleo_two=2;
+unsigned int const interrupciones_pedaleo_ayuda_arranque=4;
+unsigned int interrupciones_pedaleo;
+
 
 // Contadores de paro, aceleración y auto_progresivo.
 int contador_retardo_aceleracion = 0;
@@ -270,11 +274,10 @@ float aceleradorEnDac(float vl_acelerador) {
 // --------- Pedal
 
 void pedal() {
-	p_pulsos++;
-	a_pulsos++;
+	p_pulsos++; // Pulsos por loop
 
 	// Activamos pedaleo por interrupciones.
-	if (a_pulsos >= interrupciones_pedaleo) {
+	if (++a_pulsos >= interrupciones_pedaleo) {
 		pedaleo = true;
 		a_pulsos = 0;
 	}
@@ -304,6 +307,8 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 	} else {
 			contador_crucero_mismo_valor = 0;
 	}
+
+	establece_crucero_ultima_ejecucion_millis = millis();
 
 }
 
@@ -386,7 +391,7 @@ float leeAcelerador() {
 
 void ayudaArranque() {
 	// A la tercera interrupción, se activa pedaleo.
-	interrupciones_pedaleo = 4;
+	interrupciones_pedaleo = interrupciones_pedaleo_ayuda_arranque;
 
 	boolean while_init = true;
 	// Mientras aceleramos y no pedaleamos.
@@ -406,7 +411,7 @@ void ayudaArranque() {
 	nivel_aceleracion = a0_valor_reposo;
 
 	// A la segunda interrupción, se activa pedaleo.
-	interrupciones_pedaleo = 1;
+	interrupciones_pedaleo = interrupciones_pedaleo_min;
 
 
 	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
@@ -473,7 +478,7 @@ void paraMotor() {
 void freno() {
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
-	interrupciones_pedaleo = 1;
+	interrupciones_pedaleo = interrupciones_pedaleo_min;
 	paraMotor();
 }
 
@@ -482,6 +487,8 @@ void setup() {
 	// Inicia serial:
 	//Serial.begin(19200);
 	//Serial.println(version);
+
+	interrupciones_pedaleo = interrupciones_pedaleo_min;
 
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
@@ -547,7 +554,6 @@ void loop() {
 	//Ejecutamos método cada 100ms
 	if(millis() - establece_crucero_ultima_ejecucion_millis > 100 ){
 		estableceCruceroPorTiempo(v_acelerador);
-		establece_crucero_ultima_ejecucion_millis = millis();
 	}
 
 	// Ejecutamos cada 333ms
@@ -563,7 +569,7 @@ void loop() {
 
 			if (contador_retardo_aceleracion > 4) {
 				bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
-				interrupciones_pedaleo = 2;
+				interrupciones_pedaleo = interrupciones_pedaleo_two;
 			}
 
 			paraMotor();
@@ -578,7 +584,7 @@ void loop() {
 
 				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
 				auto_progresivo = false;
-				interrupciones_pedaleo = 1;
+				interrupciones_pedaleo = interrupciones_pedaleo_min;
 			} else {
 				auto_progresivo = false;
 			}
