@@ -2,11 +2,11 @@
 #include <Adafruit_MCP4725.h>
 #include <EEPROM.h>
 
-const char version = "2.1.4";
+const char version = "2.2 Develop";
 
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.1.4
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.2 Develop
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -18,8 +18,9 @@ PRINCIPALES NOVEDADES:
 VERSIÓN CRUCERO: 
  * Se trata de guardar el último valor del acelerador
  * para no tener que estar sujetando el acelerador.
- * La idea es detectar cuando se suelta de golpe el acelerador
- * y guardar el voltaje anterior como de crucero.
+ * La idea es fijar el acelerador a la velocidad deseada y detectar
+ * cuando se suelta de golpe el acelerador para guardar el voltaje
+ * anterior como de crucero.
  * Al parar y volver a pedalear, se va incrementando voltaje
  * gradualmente hasta llegar al valor de crucero.
  * Si se vuelve a mover el acelerador se toma este como nuevo crucero.
@@ -193,8 +194,7 @@ unsigned long establece_crucero_ultima_ejecucion_millis;
 
 // Almacena la velocidad de crucero del loop anterior.
 float vl_acelerador_prev;
-// Almacena la cantidad de loops que lleva la velocidad en el mismo
-// valor.
+// Cantidad de loops que lleva la velocidad en el mismo valor.
 unsigned int contador_crucero_mismo_valor = 0;
 // Cantidad de loops para cortar crucero con freno.
 unsigned int contador_freno_anulacion_crucero;
@@ -295,12 +295,13 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 			crucero_fijado = true;
 			v_crucero = vl_acelerador;
 			crucero_fijado_millis=millis();
-			if(cnf.pulsos_fijar_crucero >= 20) // Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+			// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+			if (cnf.pulsos_fijar_crucero >= 20)
 				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 		}
 
 	} else {
-			contador_crucero_mismo_valor = 0;
+		contador_crucero_mismo_valor = 0;
 	}
 
 	establece_crucero_ultima_ejecucion_millis = millis();
@@ -398,9 +399,6 @@ void ayudaArranque() {
 		}
 	}
 
-	// Anulamos el nivel de aceleración.
-	nivel_aceleracion = a0_valor_reposo;
-
 	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
 	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
 		anulaCrucero();
@@ -453,7 +451,7 @@ void mandaAcelerador(float vf_acelerador) {
 		//	nivel_aceleracion = a0_valor_reposo;
 
 		// Solo fijamos el acelerador si el valor anterior es distinto al actual.
-		if(nivel_aceleracion_prev != nivel_aceleracion){
+		if (nivel_aceleracion_prev != nivel_aceleracion) {
 			  dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
 			  nivel_aceleracion_prev = nivel_aceleracion;
 		}
@@ -474,7 +472,7 @@ void freno() {
 
 void setup() {
 
-	// Inicia serial:
+	// Inicia serial.
 	//Serial.begin(19200);
 	//Serial.println(version);
 
@@ -531,7 +529,6 @@ void setup() {
 
 	// Tono de finalización de setup.
 	repeatTones(cnf.buzzer_activo, 3, 3000, 90, 90);
-	// Arrancar tiempo de inicio.
 }
 
 void loop() {
@@ -539,13 +536,13 @@ void loop() {
 	float v_acelerador = leeAcelerador();
 
 
-	//Ejecutamos método cada 100ms
-	if(millis() - establece_crucero_ultima_ejecucion_millis > 100 ){
+	// Ejecutamos método cada 100 ms.
+	if (millis() - establece_crucero_ultima_ejecucion_millis > 100) {
 		estableceCruceroPorTiempo(v_acelerador);
 	}
 
-	// Ejecutamos cada 333ms
-	if(millis() - loop_ultima_ejecucion_millis > tiempo_act){
+	// Ejecutamos cada 333 ms.
+	if (millis() - loop_ultima_ejecucion_millis > tiempo_act) {
 
 		pulsos = p_pulsos;
 
