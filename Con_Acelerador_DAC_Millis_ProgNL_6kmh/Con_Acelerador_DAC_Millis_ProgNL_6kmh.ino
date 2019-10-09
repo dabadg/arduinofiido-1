@@ -87,7 +87,7 @@ struct ConfigContainer {
 
 	// True --> Modo crucero.
 	// False --> Manda señal del acelerador.
-	boolean modo_crucero = true;
+	boolean modo_crucero = false;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// 30 * 100 = 3000 ms.
@@ -541,7 +541,8 @@ void loop() {
 
 	// Ejecutamos método cada 100 ms.
 	if (millis() - establece_crucero_ultima_ejecucion_millis > 100) {
-		estableceCruceroPorTiempo(v_acelerador);
+		if(cnf.modo_crucero)
+			estableceCruceroPorTiempo(v_acelerador);
 	}
 
 	// Ejecutamos cada 333 ms.
