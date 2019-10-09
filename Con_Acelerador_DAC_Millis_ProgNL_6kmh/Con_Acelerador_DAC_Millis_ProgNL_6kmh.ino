@@ -270,7 +270,7 @@ void pedal() {
 	p_pulsos++; // Pulsos por loop
 
 	// Activamos pedaleo por interrupciones.
-	if(millis()-ultimo_pulso_pedal < 100) {
+	if(millis()-ultimo_pulso_pedal < 150) {
 		pedaleo = true;
 	} else {
 		pedaleo = false;
@@ -282,30 +282,33 @@ void pedal() {
 
 void estableceCruceroPorTiempo(float vl_acelerador) {
 
-	// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
-	float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
+	// Ejecutamos método cada 100 ms.
+	if (millis() - establece_crucero_ultima_ejecucion_millis > 100) {
 
-	vl_acelerador_prev = vl_acelerador;
+		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
+		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
 
-	// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
-	if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, media_con_vcrucero_prev, 10.0)) {
-		contador_crucero_mismo_valor++;
-		// Si el contador de crucero ha llegado a su tope, se fija el crucero.
-		if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
-			crucero_fijado = true;
-			v_crucero = vl_acelerador;
-			crucero_fijado_millis=millis();
-			// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
-			if (cnf.pulsos_fijar_crucero >= 20)
-				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
+		vl_acelerador_prev = vl_acelerador;
+
+		// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
+		if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, media_con_vcrucero_prev, 10.0)) {
+			contador_crucero_mismo_valor++;
+			// Si el contador de crucero ha llegado a su tope, se fija el crucero.
+			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
+				crucero_fijado = true;
+				v_crucero = vl_acelerador;
+				crucero_fijado_millis=millis();
+				// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+				if (cnf.pulsos_fijar_crucero >= 20)
+					repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
+			}
+
+		} else {
+			contador_crucero_mismo_valor = 0;
 		}
 
-	} else {
-		contador_crucero_mismo_valor = 0;
+		establece_crucero_ultima_ejecucion_millis = millis();
 	}
-
-	establece_crucero_ultima_ejecucion_millis = millis();
-
 }
 
 void anulaCrucero() {
@@ -393,14 +396,12 @@ void ayudaArranque() {
 		if(while_init){
 			// Mandamos 6 km/h directamente al DAC.
 			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+			nivel_aceleracion_prev=a0_valor_6kmh;
 			// Ajustamos contador para cálculo del progresivo.
 			contador_retardo_aceleracion = 5;
 			while_init = false;
 		}
 	}
-
-	// Anulamos el nivel de aceleración.
-	nivel_aceleracion = a0_valor_reposo;
 
 	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
 	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
@@ -431,6 +432,7 @@ void mandaAcelerador(float vf_acelerador) {
 	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
+
 		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
 		if (cnf.modo_crucero){
 			if (crucero_fijado){
@@ -440,18 +442,14 @@ void mandaAcelerador(float vf_acelerador) {
 				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 2
 				// Le da prioridad a la lectura del acelerador.
 				} else if ((millis() - crucero_fijado_millis > 999) || (cnf.pulsos_fijar_crucero <= 2)) {
-						nivel_aceleracion = vf_acelerador;
+					nivel_aceleracion = pedaleo?vf_acelerador:a0_valor_reposo;
 				}
 			} else { // Si el crucero no está fijado, prioridad a la lectura del acelerador.
-				nivel_aceleracion = vf_acelerador;
+				nivel_aceleracion = pedaleo?vf_acelerador:a0_valor_reposo;
 			}
 		} else { // Si no es modo crucero, prioridad a la lectura del acelerador.
-			nivel_aceleracion = vf_acelerador;
+				nivel_aceleracion = pedaleo?vf_acelerador:a0_valor_reposo;
 		}
-
-		// TODO esto falla....... debería forzar el valor, pero alquien lo sobreescribe.
-		//if(!pedaleo)
-		//	nivel_aceleracion = a0_valor_reposo;
 
 		// Solo fijamos el acelerador si el valor anterior es distinto al actual.
 		if (nivel_aceleracion_prev != nivel_aceleracion) {
@@ -538,11 +536,8 @@ void loop() {
 
 	float v_acelerador = leeAcelerador();
 
-
-	// Ejecutamos método cada 100 ms.
-	if (millis() - establece_crucero_ultima_ejecucion_millis > 100) {
+	if(cnf.modo_crucero)
 		estableceCruceroPorTiempo(v_acelerador);
-	}
 
 	// Ejecutamos cada 333 ms.
 	if (millis() - loop_ultima_ejecucion_millis > tiempo_act) {
