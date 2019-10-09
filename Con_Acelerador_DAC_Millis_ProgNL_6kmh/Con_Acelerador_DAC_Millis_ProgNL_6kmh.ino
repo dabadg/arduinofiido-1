@@ -282,30 +282,33 @@ void pedal() {
 
 void estableceCruceroPorTiempo(float vl_acelerador) {
 
-	// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
-	float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
+	// Ejecutamos método cada 100 ms.
+	if (millis() - establece_crucero_ultima_ejecucion_millis > 100) {
 
-	vl_acelerador_prev = vl_acelerador;
+		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
+		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
 
-	// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
-	if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, media_con_vcrucero_prev, 10.0)) {
-		contador_crucero_mismo_valor++;
-		// Si el contador de crucero ha llegado a su tope, se fija el crucero.
-		if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
-			crucero_fijado = true;
-			v_crucero = vl_acelerador;
-			crucero_fijado_millis=millis();
-			// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
-			if (cnf.pulsos_fijar_crucero >= 20)
-				repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
+		vl_acelerador_prev = vl_acelerador;
+
+		// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
+		if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, media_con_vcrucero_prev, 10.0)) {
+			contador_crucero_mismo_valor++;
+			// Si el contador de crucero ha llegado a su tope, se fija el crucero.
+			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
+				crucero_fijado = true;
+				v_crucero = vl_acelerador;
+				crucero_fijado_millis=millis();
+				// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+				if (cnf.pulsos_fijar_crucero >= 20)
+					repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
+			}
+
+		} else {
+			contador_crucero_mismo_valor = 0;
 		}
 
-	} else {
-		contador_crucero_mismo_valor = 0;
+		establece_crucero_ultima_ejecucion_millis = millis();
 	}
-
-	establece_crucero_ultima_ejecucion_millis = millis();
-
 }
 
 void anulaCrucero() {
@@ -538,12 +541,8 @@ void loop() {
 
 	float v_acelerador = leeAcelerador();
 
-
-	// Ejecutamos método cada 100 ms.
-	if (millis() - establece_crucero_ultima_ejecucion_millis > 100) {
-		if(cnf.modo_crucero)
-			estableceCruceroPorTiempo(v_acelerador);
-	}
+	if(cnf.modo_crucero)
+		estableceCruceroPorTiempo(v_acelerador);
 
 	// Ejecutamos cada 333 ms.
 	if (millis() - loop_ultima_ejecucion_millis > tiempo_act) {
