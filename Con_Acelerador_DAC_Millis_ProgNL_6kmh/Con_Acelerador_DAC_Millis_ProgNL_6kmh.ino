@@ -156,14 +156,8 @@ unsigned long loop_ultima_ejecucion_millis;
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
-byte a_pulsos = 0;
+unsigned long ultimo_pulso_pedal=millis();
 boolean pedaleo = false;
-// A la segunda interrupción, se activa pedaleo.
-unsigned int const interrupciones_pedaleo_min=1;
-unsigned int const interrupciones_pedaleo_two=2;
-unsigned int const interrupciones_pedaleo_ayuda_arranque=4;
-unsigned int interrupciones_pedaleo;
-
 
 // Contadores de paro, aceleración y auto_progresivo.
 int contador_retardo_aceleracion = 0;
@@ -272,15 +266,16 @@ float aceleradorEnDac(float vl_acelerador) {
 }
 
 // --------- Pedal
-
 void pedal() {
 	p_pulsos++; // Pulsos por loop
 
 	// Activamos pedaleo por interrupciones.
-	if (++a_pulsos >= interrupciones_pedaleo) {
+	if(millis()-ultimo_pulso_pedal < 100) {
 		pedaleo = true;
-		a_pulsos = 0;
+	} else {
+		pedaleo = false;
 	}
+	ultimo_pulso_pedal=millis();
 }
 
 // --------- Crucero
@@ -390,17 +385,13 @@ float leeAcelerador() {
 }
 
 void ayudaArranque() {
-	// A la tercera interrupción, se activa pedaleo.
-	interrupciones_pedaleo = interrupciones_pedaleo_ayuda_arranque;
 
 	boolean while_init = true;
-	// Mientras aceleramos y no pedaleamos.
-	while (!pedaleo && analogRead(pin_acelerador) > a0_valor_suave) {
+	// Mientras no pedaleamos y aceleramos.
+	while (p_pulsos <= 2 && analogRead(pin_acelerador) > a0_valor_suave) { // TODO Revisar porque no funciona con la condición !pedaleo y si con p_pulsos<=2
 		if(while_init){
-			// Mandamos 6 km/h directamente al DAC. // Porque no dar hasta 6km al dac, permitiendo seleccionar la potencia manualmente?
+			// Mandamos 6 km/h directamente al DAC.
 			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-			// Fijamos nivel de aceleración.
-			nivel_aceleracion = a0_valor_6kmh;
 			// Ajustamos contador para cálculo del progresivo.
 			contador_retardo_aceleracion = 5;
 			while_init = false;
@@ -409,10 +400,6 @@ void ayudaArranque() {
 
 	// Anulamos el nivel de aceleración.
 	nivel_aceleracion = a0_valor_reposo;
-
-	// A la segunda interrupción, se activa pedaleo.
-	interrupciones_pedaleo = interrupciones_pedaleo_min;
-
 
 	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
 	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
@@ -439,27 +426,31 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin){
 }
 
 void mandaAcelerador(float vf_acelerador) {
-	// Asistencia desde parado a 6 km/h mientras se use el acelerador.
-	if (ayuda_salida && pulsos == 0 && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
+	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
+	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
 		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
 		if (cnf.modo_crucero){
 			if (crucero_fijado){
 				// Si no se está acelerando
-				if (vf_acelerador <= a0_valor_reposo) {
+				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
 				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 2
-				// Le da prioridad a la lectura del acelerador
+				// Le da prioridad a la lectura del acelerador.
 				} else if ((millis() - crucero_fijado_millis > 999) || (cnf.pulsos_fijar_crucero <= 2)) {
 						nivel_aceleracion = vf_acelerador;
 				}
-			} else {
+			} else { // Si el crucero no está fijado, prioridad a la lectura del acelerador.
 				nivel_aceleracion = vf_acelerador;
 			}
-		} else {
+		} else { // Si no es modo crucero, prioridad a la lectura del acelerador.
 			nivel_aceleracion = vf_acelerador;
 		}
+
+		// TODO esto falla....... debería forzar el valor, pero alquien lo sobreescribe.
+		//if(!pedaleo)
+		//	nivel_aceleracion = a0_valor_reposo;
 
 		// Solo fijamos el acelerador si el valor anterior es distinto al actual.
 		if(nivel_aceleracion_prev != nivel_aceleracion){
@@ -478,7 +469,6 @@ void paraMotor() {
 void freno() {
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
-	interrupciones_pedaleo = interrupciones_pedaleo_min;
 	paraMotor();
 }
 
@@ -487,8 +477,6 @@ void setup() {
 	// Inicia serial:
 	//Serial.begin(19200);
 	//Serial.println(version);
-
-	interrupciones_pedaleo = interrupciones_pedaleo_min;
 
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
@@ -569,7 +557,6 @@ void loop() {
 
 			if (contador_retardo_aceleracion > 4) {
 				bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
-				interrupciones_pedaleo = interrupciones_pedaleo_two;
 			}
 
 			paraMotor();
@@ -584,7 +571,7 @@ void loop() {
 
 				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
 				auto_progresivo = false;
-				interrupciones_pedaleo = interrupciones_pedaleo_min;
+
 			} else {
 				auto_progresivo = false;
 			}
