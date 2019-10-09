@@ -399,6 +399,9 @@ void ayudaArranque() {
 		}
 	}
 
+	// Anulamos el nivel de aceleración.
+	nivel_aceleracion = a0_valor_reposo;
+
 	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
 	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
 		anulaCrucero();
