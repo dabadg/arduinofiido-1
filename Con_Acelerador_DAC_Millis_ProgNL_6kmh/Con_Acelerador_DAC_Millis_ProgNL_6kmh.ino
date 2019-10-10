@@ -265,14 +265,16 @@ float aceleradorEnDac(float vl_acelerador) {
 
 // --------- Pedal
 void pedal() {
-	p_pulsos++; // Pulsos por loop
+	// Pulsos por loop.
+	p_pulsos++;
 
 	// Activamos pedaleo por interrupciones.
-	if(millis() - ultimo_pulso_pedal < 150) {
+	if (millis() - ultimo_pulso_pedal < 150) {
 		pedaleo = true;
 	} else {
 		pedaleo = false;
 	}
+
 	ultimo_pulso_pedal=millis();
 }
 
@@ -281,7 +283,6 @@ void pedal() {
 void estableceCruceroPorTiempo(float vl_acelerador) {
 	// Ejecutamos método cada 100 ms.
 	if (millis() - establece_crucero_ultima_ejecucion_millis > 100) {
-
 		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
 		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
 
@@ -359,7 +360,6 @@ void validaMinAcelerador() {
 	delay(100);
 }
 
-
 float leeAcelerador() {
 	float cl_acelerador = 0;
 
@@ -379,7 +379,7 @@ float leeAcelerador() {
 
 	// Actualizamos el valor a0_valor_alto, al máximo medido por el acelerador.
 	// Para corregir el valor por el real obtenido de la lectura.
-	if(cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
+	if (cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
 		a0_valor_alto = cl_acelerador;
 
 	return cl_acelerador;
@@ -393,6 +393,7 @@ void ayudaArranque() {
 		if (while_init) {
 			// Mandamos 6 km/h directamente al DAC.
 			dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
+			nivel_aceleracion_prev = a0_valor_6kmh;
 			// Ajustamos contador para cálculo del progresivo.
 			contador_retardo_aceleracion = 5;
 			while_init = false;
@@ -533,7 +534,6 @@ void loop() {
 
 	// Ejecutamos cada 333 ms.
 	if (millis() - loop_ultima_ejecucion_millis > tiempo_act) {
-
 		pulsos = p_pulsos;
 
 		// Si no se pedalea.
