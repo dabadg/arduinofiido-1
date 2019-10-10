@@ -134,7 +134,6 @@ struct ConfigContainer {
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
-
 Adafruit_MCP4725 dac;
 
 ConfigContainer cnf;
@@ -150,11 +149,11 @@ const int pin_piezo = 11; // Pin del zumbador.
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 float a0_valor_reposo = 190.0; // Al inicializar, lee el valor real.
-const float a0_valor_corte = 216.0;  // 1.05
+//const float a0_valor_corte = 216.0;  // 1.05
 const float a0_valor_minimo = 235.0; // 1.15
 const float a0_valor_suave = 307.0;  // 1.50
 const float a0_valor_6kmh = 450.0;   // 2.19
-const float a0_valor_medio = 550.0;  // 2.68
+//const float a0_valor_medio = 550.0;  // 2.68
 float a0_valor_alto = 798.0;   // 3.90
 const float a0_valor_max = 847.0;    // 4.13
 
@@ -277,7 +276,7 @@ float aceleradorEnDac(float vl_acelerador) {
 
 // --------- Pedal
 void pedal() {
-	// Pulsos por loop
+	// Pulsos por loop.
 	p_pulsos++;
 
 	// Activamos pedaleo por interrupciones.
@@ -286,16 +285,15 @@ void pedal() {
 	} else {
 		pedaleo = false;
 	}
+
 	ultimo_pulso_pedal=millis();
 }
 
 // --------- Crucero
 
 void estableceCruceroPorTiempo(float vl_acelerador) {
-
 	// Ejecutamos método cada 100 ms.
 	if (millis() - establece_crucero_ultima_ejecucion_millis > 100) {
-
 		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior
 		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
 
@@ -304,6 +302,7 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 		// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
 		if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, media_con_vcrucero_prev, 10.0)) {
 			contador_crucero_mismo_valor++;
+
 			// Si el contador de crucero ha llegado a su tope, se fija el crucero.
 			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
 				crucero_fijado = true;
@@ -313,7 +312,6 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 				if (cnf.pulsos_fijar_crucero >= 20)
 					repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 			}
-
 		} else {
 			contador_crucero_mismo_valor = 0;
 		}
@@ -369,9 +367,9 @@ void validaMinAcelerador() {
 	} else {
 		SOS_TONE();
 	}
+
 	delay(100);
 }
-
 
 float leeAcelerador() {
 	float cl_acelerador = 0;
@@ -434,7 +432,6 @@ float v_salida_progresivo = cnf.v_salida_progresivo_ayuda_arranque;
 	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
 	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
 		anulaCrucero();
-
 }
 
 float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
@@ -451,8 +448,8 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 	} else if (nivel_aceleraciontmp > v_cruceroin) {
 		nivel_aceleraciontmp = v_cruceroin;
 	}
-	return nivel_aceleraciontmp;
 
+	return nivel_aceleraciontmp;
 }
 
 void mandaAcelerador(float vf_acelerador) {
@@ -460,7 +457,6 @@ void mandaAcelerador(float vf_acelerador) {
 	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
-
 		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
 		if (cnf.modo_crucero){
 			if (crucero_fijado){
@@ -478,7 +474,7 @@ void mandaAcelerador(float vf_acelerador) {
 			}
 		// Si no es modo crucero, prioridad a la lectura del acelerador.
 		} else {
-				nivel_aceleracion = pedaleo?vf_acelerador:a0_valor_reposo;
+			nivel_aceleracion = pedaleo?vf_acelerador:a0_valor_reposo;
 		}
 
 		// Solo fijamos el acelerador si el valor anterior es distinto al actual.
@@ -502,7 +498,6 @@ void freno() {
 }
 
 void setup() {
-
 	// Inicia serial.
 	//Serial.begin(19200);
 	//Serial.println(version);
@@ -515,7 +510,6 @@ void setup() {
 	// Lee configuración desde la eeprom.
 	//const byte EEPROM_INIT_ADDRESS = 11; // Posición de memoria que almacena los datos de modo.
 	//EEPROM.get(EEPROM_INIT_ADDRESS, cnf); // Captura los valores desde la eeprom
-
 
 	// Configura pines.
 	pinMode(pin_piezo, OUTPUT);
@@ -565,7 +559,6 @@ void setup() {
 }
 
 void loop() {
-
 	float v_acelerador = leeAcelerador();
 
 	if (cnf.modo_crucero)
@@ -573,12 +566,10 @@ void loop() {
 
 	// Ejecutamos cada 333 ms.
 	if (millis() - loop_ultima_ejecucion_millis > tiempo_act) {
-
 		pulsos = p_pulsos;
 
 		// Si no se pedalea.
 		if (!pedaleo) {
-
 			contador_retardo_inicio_progresivo++;
 			auto_progresivo = true;
 
@@ -587,10 +578,8 @@ void loop() {
 			}
 
 			paraMotor();
-
 		// Si se pedalea.
 		} else {
-
 			if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
 				if (bkp_contador_retardo_aceleracion > cnf.retardo_aceleracion) {
 					bkp_contador_retardo_aceleracion = cnf.retardo_aceleracion;
@@ -598,7 +587,6 @@ void loop() {
 
 				contador_retardo_aceleracion = bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
 				auto_progresivo = false;
-
 			} else {
 				auto_progresivo = false;
 			}
