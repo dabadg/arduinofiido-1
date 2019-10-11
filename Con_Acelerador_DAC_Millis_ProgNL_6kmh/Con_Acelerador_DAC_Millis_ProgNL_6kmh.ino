@@ -211,7 +211,7 @@ boolean crucero_fijado = false;
 // Controles de tiempo.
 unsigned long crucero_fijado_millis;
 unsigned long establece_crucero_ultima_ejecucion_millis;
-unsigned long anula_crucero_con_freno__ultima_ejecucion_millis;
+unsigned long anula_crucero_con_freno_ultima_ejecucion_millis;
 
 // Almacena la velocidad de crucero del loop anterior.
 float vl_acelerador_prev;
@@ -350,7 +350,7 @@ void anulaCrucero() {
 
 void anulaCruceroConFreno() {
 	// Ejecutamos método cada 100 ms.
-	if ((unsigned long)(millis() - anula_crucero_con_freno__ultima_ejecucion_millis) > 100) {
+	if ((unsigned long)(millis() - anula_crucero_con_freno_ultima_ejecucion_millis) > 100) {
 		if (digitalRead(pin_freno) == LOW) {
 			contador_freno_anulacion_crucero++;
 
@@ -369,7 +369,7 @@ void anulaCruceroConFreno() {
 				contador_freno_anulacion_crucero--;
 		}
 
-		anula_crucero_con_freno__ultima_ejecucion_millis = millis();
+		anula_crucero_con_freno_ultima_ejecucion_millis = millis();
 	}
 }
 
