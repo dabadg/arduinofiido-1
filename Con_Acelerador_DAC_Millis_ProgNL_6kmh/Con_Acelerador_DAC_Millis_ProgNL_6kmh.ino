@@ -2,7 +2,7 @@
 #include <Adafruit_MCP4725.h>
 #include <EEPROM.h>
 
-const char version = "2.3 RC2";
+const char* version = "2.3 RC2";
 
 /* 
                      Versión Con Acelerador y DAC
