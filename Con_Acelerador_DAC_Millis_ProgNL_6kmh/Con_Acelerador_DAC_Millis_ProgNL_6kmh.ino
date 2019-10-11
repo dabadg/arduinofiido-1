@@ -99,13 +99,12 @@ struct ConfigContainer {
 	boolean modo_crucero = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// 30 * 100 = 3000 ms.
+	// 30 * 120 = 3600 ms.
 	// TODO: Afinar cálculo.
 	int pulsos_fijar_crucero = 30;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// 20 * 100 = 2000 ms.
-	// TODO: Revisar cálculo.
+	// 20 * 140 = 2800 ms.
 	int pulsos_liberar_crucero = 20;
 
 	// Retardo para inciar progresivo tras parar pedales.
@@ -207,8 +206,11 @@ int decremento_progresivo_ayuda_arranque;
 float v_crucero = a0_valor_reposo;
 // Variable que almacena el estado de notificación de fijar crucero.
 boolean crucero_fijado = false;
+
+// Controles de tiempo.
 unsigned long crucero_fijado_millis;
 unsigned long establece_crucero_ultima_ejecucion_millis;
+unsigned long anula_crucero_con_freno__ultima_ejecucion_millis;
 
 // Almacena la velocidad de crucero del loop anterior.
 float vl_acelerador_prev;
@@ -346,22 +348,27 @@ void anulaCrucero() {
 }
 
 void anulaCruceroConFreno() {
-	if (digitalRead(pin_freno) == LOW) {
-		contador_freno_anulacion_crucero++;
+	// Ejecutamos método cada 100 ms.
+	if ((unsigned long)(millis() - anula_crucero_con_freno__ultima_ejecucion_millis) > 100) {
+		if (digitalRead(pin_freno) == LOW) {
+			contador_freno_anulacion_crucero++;
 
-		if (crucero_fijado){
-			// Añadido % 4 para solo ejecutar la acción para los múltiplos de 4 y evitar excesivos tonos.
-			if (contador_freno_anulacion_crucero % 4 == 0) {
-				repeatTones(cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
-			}
+			if (crucero_fijado){
+				// Añadido % 4 para solo ejecutar la acción para los múltiplos de 4 y evitar excesivos tonos.
+				if (contador_freno_anulacion_crucero % 4 == 0) {
+					repeatTones(cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
+				}
 
-			if (contador_freno_anulacion_crucero >= cnf.pulsos_liberar_crucero) {
-				anulaCrucero();
+				if (contador_freno_anulacion_crucero >= cnf.pulsos_liberar_crucero) {
+					anulaCrucero();
+				}
 			}
+		} else {
+			if (contador_freno_anulacion_crucero > 0)
+				contador_freno_anulacion_crucero--;
 		}
-	} else {
-		if (contador_freno_anulacion_crucero > 0)
-			contador_freno_anulacion_crucero--;
+
+		anula_crucero_con_freno__ultima_ejecucion_millis = millis();
 	}
 }
 
@@ -526,7 +533,7 @@ void setup() {
 
 	// Lee configuración desde la eeprom.
 	//const byte EEPROM_INIT_ADDRESS = 11; // Posición de memoria que almacena los datos de modo.
-	//EEPROM.get(EEPROM_INIT_ADDRESS, cnf); // Captura los valores desde la eeprom
+	//EEPROM.get(EEPROM_INIT_ADDRESS, cnf); // Captura los valores desde la eeprom.
 
 	// Configura pines.
 	pinMode(pin_piezo, OUTPUT);
