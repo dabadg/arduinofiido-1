@@ -6,7 +6,7 @@ const char* version = "2.3 RC2";
 
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3 RC1
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3 RC2
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
