@@ -50,7 +50,8 @@ AUTO PROGRESIVOS:
 ASISTENCIA A 6 KM/H DESDE PARADO:
  * Si no se pedalea y mientras el acelerador esté accionado, se asiste a
  * 6 km/h, ajustándose a la normativa.
- * Si se suelta el acelerador --> deja de asistir.
+ * Si se suelta el acelerador --> deja de asistir y cortamos valor de
+ * de crucero, si lo hubiera.
  * Si se comienza a pedalear sin dejar de accionar el acelerador --> se
  * sale a la velocidad con la que vayamos regulando con el acelerador.
 ------------------------------------------------------------------------
@@ -150,7 +151,7 @@ const int pin_piezo = 11; // Pin del zumbador.
 //======= VARIABLES PARA CÁLCULOS ======================================
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
-// Al inicializar, lee el valor real.
+// Al inicializar, lee el valor real (a0_valor_reposo).
 float a0_valor_reposo = 190.0;		// 0.85
 //const float a0_valor_corte = 216.0;	// 1.05
 const float a0_valor_minimo = 235.0;	// 1.15
