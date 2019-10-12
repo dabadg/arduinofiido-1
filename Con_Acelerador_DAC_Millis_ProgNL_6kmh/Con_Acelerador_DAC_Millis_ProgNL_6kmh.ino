@@ -86,6 +86,7 @@ struct ConfigContainer {
 	boolean activar_progresivo_ayuda_arranque = true;
 
 	// Valor inicial de salida en la asistencia 6 km/h.
+	// Como mínimo tendrá que tener el valor de la constante a0_valor_6kmh.
 	float v_salida_progresivo_ayuda_arranque = 700;
 
 	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
@@ -171,7 +172,7 @@ unsigned long ultimo_pulso_pedal = millis();
 boolean pedaleo = false;
 
 // Variables cadencia pedal.
-const int pulsos_media_cadencia = 20; // TODO Calcular el número de pulsos óptimos para detectar el cálculo.
+const int pulsos_media_cadencia = 5; // TODO Calcular el número de pulsos óptimos para detectar el cálculo.
 long cadencia = 0;
 long cadencia_tmp = 0;
 int contador_pasos_calculo_cadencia = pulsos_media_cadencia;
@@ -625,9 +626,12 @@ void loop() {
 
 		p_pulsos = 0;
 
-		// Desactivamos pedaleo por cadencia.
+		// Desactivamos pedaleo por cadencia y reseteamos los valores calculados.
 		if (pulsos < 2) {
 			pedaleo = false;
+			contador_pasos_calculo_cadencia = pulsos_media_cadencia;
+			cadencia = 0;
+			cadencia_tmp = 0;
 		}
 
 		loop_ultima_ejecucion_millis = millis();
