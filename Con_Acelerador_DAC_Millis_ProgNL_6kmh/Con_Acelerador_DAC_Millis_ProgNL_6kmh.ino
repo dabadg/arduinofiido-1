@@ -2,11 +2,11 @@
 #include <Adafruit_MCP4725.h>
 #include <EEPROM.h>
 
-const char* version = "2.3.1 RC2";
+const char* version = "2.3.2 RC2";
 
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3.1 RC2
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3.2 RC2
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -430,8 +430,14 @@ void ayudaArranque() {
 	boolean ayuda_arranque_fijada = false;
 	float v_salida_progresivo = cnf.v_salida_progresivo_ayuda_arranque;
 
+	//Delay a la espera de que se suelte el acelerador para anular crucero.
+	delay(150);
+	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
+	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
+		anulaCrucero();
+
 	// Mientras no pedaleamos y aceleramos.
-	while (p_pulsos <= 2 && analogRead(pin_acelerador) > a0_valor_suave) { // TODO Revisar porque no funciona con la condición !pedaleo y si con p_pulsos<=2
+	while (p_pulsos <= 2 && analogRead(pin_acelerador) > a0_valor_6kmh) { // TODO Cambiar p_pulsos<=2 por comparación de valor cadencia.
 		// Iniciamos la salida progresiva inversa, desde 700.
 		if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh) {
 			// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
@@ -457,9 +463,7 @@ void ayudaArranque() {
 		}
 	}
 
-	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
-		anulaCrucero();
+
 }
 
 float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
