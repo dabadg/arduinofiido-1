@@ -496,7 +496,18 @@ void mandaAcelerador(float vf_acelerador) {
 				}
 			// Si el crucero no está fijado, prioridad a la lectura del acelerador.
 			} else {
-				nivel_aceleracion = pedaleo?vf_acelerador:a0_valor_reposo;
+				if (pedaleo) {
+					//Si el acelerador supera a la velocidad de crucero aplica potencia acelerador
+					if (vf_acelerador >= v_crucero) {
+						nivel_aceleracion = vf_acelerador;
+					// Si el acelerador es menor que la velocidad de crucero decrementamos progresivamente por cada pasada por el método.
+					} else {
+						float nivel_acelerador_decrementado = v_crucero - (v_crucero - vf_acelerador) / 150 ;
+						nivel_aceleracion = (nivel_acelerador_decrementado < vf_acelerador)?vf_acelerador:nivel_acelerador_decrementado;
+					}
+				}else{
+					nivel_aceleracion = a0_valor_reposo;
+				}
 			}
 		// Si no es modo crucero, prioridad a la lectura del acelerador.
 		} else {
