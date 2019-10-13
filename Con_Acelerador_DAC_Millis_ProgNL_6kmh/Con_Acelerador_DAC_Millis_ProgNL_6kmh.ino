@@ -2,11 +2,11 @@
 #include <Adafruit_MCP4725.h>
 #include <EEPROM.h>
 
-const char* version = "2.3 RC2";
+const char* version = "2.3.1 RC2";
 
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3 RC2
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3.1 RC2
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -67,7 +67,8 @@ LINKS:
  *
 ------------------------------------------------------------------------
 DEVELOPERS:
- * dabadg, d0s1s, chusquete, ciberus y fulano.
+ * dabadg, d0s1s
+ * , chusquete, ciberus y fulano.
 ------------------------------------------------------------------------
 AGRADECIMIENTOS:
  * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
@@ -483,35 +484,31 @@ void mandaAcelerador(float vf_acelerador) {
 	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
-		//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
-		if (cnf.modo_crucero){
-			if (crucero_fijado){
+		if (pedaleo) {
+			//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
+			if (cnf.modo_crucero && crucero_fijado){
 				// Si no se está acelerando
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
-				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 2
+				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 5
 				// Le da prioridad a la lectura del acelerador.
-				} else if (((unsigned long)(millis() - crucero_fijado_millis) > 999) || (cnf.pulsos_fijar_crucero <= 2)) {
-					nivel_aceleracion = pedaleo?vf_acelerador:a0_valor_reposo;
-				}
-			// Si el crucero no está fijado, prioridad a la lectura del acelerador.
-			} else {
-				if (pedaleo) {
+				} else if (((unsigned long)(millis() - crucero_fijado_millis) > 1500) || (cnf.pulsos_fijar_crucero <= 5)) {
 					//Si el acelerador supera a la velocidad de crucero aplica potencia acelerador
-					if (vf_acelerador >= v_crucero) {
+					if (vf_acelerador >= nivel_aceleracion) {
 						nivel_aceleracion = vf_acelerador;
-					// Si el acelerador es menor que la velocidad de crucero decrementamos progresivamente por cada pasada por el método.
+					// Si el acelerador es menor que la velocidad de crucero actual, decrementamos progresivamente por cada pasada por el método.
 					} else {
-						float nivel_acelerador_decrementado = v_crucero - (v_crucero - vf_acelerador) / 150 ;
+						float nivel_acelerador_decrementado = nivel_aceleracion - (nivel_aceleracion - vf_acelerador) / 150 ;
 						nivel_aceleracion = (nivel_acelerador_decrementado < vf_acelerador)?vf_acelerador:nivel_acelerador_decrementado;
 					}
-				}else{
-					nivel_aceleracion = a0_valor_reposo;
 				}
+
+			} else {
+				nivel_aceleracion = vf_acelerador;
 			}
-		// Si no es modo crucero, prioridad a la lectura del acelerador.
+
 		} else {
-			nivel_aceleracion = pedaleo?vf_acelerador:a0_valor_reposo;
+			nivel_aceleracion = a0_valor_reposo;
 		}
 
 		// Solo fijamos el acelerador si el valor anterior es distinto al actual.
