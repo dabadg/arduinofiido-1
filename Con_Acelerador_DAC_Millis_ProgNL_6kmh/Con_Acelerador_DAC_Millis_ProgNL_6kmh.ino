@@ -72,7 +72,8 @@ DEVELOPERS:
 ------------------------------------------------------------------------
 AGRADECIMIENTOS:
  * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
- * ideas, etc.
+ * ideas, feedback, etc.
+ * Gracias a zereal por sus ideas de concepto.
  */
 
 struct ConfigContainer {
