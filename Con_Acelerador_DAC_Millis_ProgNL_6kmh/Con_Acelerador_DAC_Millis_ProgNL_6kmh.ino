@@ -103,8 +103,8 @@ struct ConfigContainer {
 	boolean modo_crucero = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// 20 * 140 = 2800 ms.
-	int pulsos_fijar_crucero = 20;
+	// 15 * 140 = 2100 ms.
+	int pulsos_fijar_crucero = 15;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 23 * 140 = 3220 ms.
