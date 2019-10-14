@@ -67,12 +67,13 @@ LINKS:
  *
 ------------------------------------------------------------------------
 DEVELOPERS:
- * dabadg, d0s1s
- * , chusquete, ciberus y fulano.
+ * dabadg y d0s1s a partir de la versión de ciberus y fulano con las
+ * aportaciones de chusquete.
 ------------------------------------------------------------------------
 AGRADECIMIENTOS:
  * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
- * ideas, etc.
+ * ideas, feedback, etc.
+ * Gracias a zereal por sus ideas de concepto.
  */
 
 struct ConfigContainer {
@@ -102,13 +103,12 @@ struct ConfigContainer {
 	boolean modo_crucero = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// 30 * 120 = 3600 ms.
-	// TODO: Afinar cálculo.
-	int pulsos_fijar_crucero = 30;
+	// 15 * 140 = 2100 ms.
+	int pulsos_fijar_crucero = 15;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// 20 * 140 = 2800 ms.
-	int pulsos_liberar_crucero = 20;
+	// 23 * 140 = 3220 ms.
+	int pulsos_liberar_crucero = 23;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
@@ -331,7 +331,8 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 				v_crucero = vl_acelerador;
 				crucero_fijado_millis = millis();
 				// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
-				if (cnf.pulsos_fijar_crucero >= 20)
+				// Valores altos se considera a partir de 2 segundos.
+				if (cnf.pulsos_fijar_crucero >= 14)
 					repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 			}
 		} else {
@@ -444,26 +445,24 @@ void ayudaArranque() {
 			if ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) >= ciclo_decremento_progresivo_ayuda_arranque) {
 				v_salida_progresivo -= decremento_progresivo_ayuda_arranque;
 
-				if (v_salida_progresivo<a0_valor_6kmh)
+				if (v_salida_progresivo < a0_valor_6kmh)
 					v_salida_progresivo = a0_valor_6kmh;
 
 				dac.setVoltage(aceleradorEnDac(v_salida_progresivo), false);
-				nivel_aceleracion_prev=v_salida_progresivo;
+				nivel_aceleracion_prev = v_salida_progresivo;
 				timer_progresivo_ayuda_arranque = millis();
 			}
 		} else {
 			if (!ayuda_arranque_fijada) {
 				// Mandamos 6 km/h directamente al DAC.
 				dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-				nivel_aceleracion_prev=a0_valor_6kmh;
+				nivel_aceleracion_prev = a0_valor_6kmh;
 				// Ajustamos contador para cálculo del progresivo.
 				contador_retardo_aceleracion = 5;
 				ayuda_arranque_fijada = true;
 			}
 		}
 	}
-
-
 }
 
 float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
@@ -485,12 +484,12 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
+	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
 			//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
-			if (cnf.modo_crucero && crucero_fijado){
+			if (cnf.modo_crucero && crucero_fijado) {
 				// Si no se está acelerando
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
@@ -502,7 +501,7 @@ void mandaAcelerador(float vf_acelerador) {
 						nivel_aceleracion = vf_acelerador;
 					// Si el acelerador es menor que la velocidad de crucero actual, decrementamos progresivamente por cada pasada por el método.
 					} else {
-						float nivel_acelerador_decrementado = nivel_aceleracion - (nivel_aceleracion - vf_acelerador) / 150 ;
+						float nivel_acelerador_decrementado = nivel_aceleracion - (nivel_aceleracion - vf_acelerador) / 150;
 						nivel_aceleracion = (nivel_acelerador_decrementado < vf_acelerador)?vf_acelerador:nivel_acelerador_decrementado;
 					}
 				}

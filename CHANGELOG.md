@@ -1,3 +1,10 @@
+CHANGELOG 2.1 --> 2.3.2 RC2
+- Optimizaciones y correcciones.
+- Añadido progresivo en la ayuda de aranque (dabadg).
+- Añadido progresivo si bajamos de velocidad con crucero fijado (dabadg).
+- Progresivos sólo si crucero fijado (dabadg).
+- Eliminado establece crucero por acelerador.
+
 CHANGELOG 2.0.1 --> 2.1:
 - Nuevo concepto de detección de pulsos (chusquete):
   - Se activa pedaleo por interrupciones de pedal.
