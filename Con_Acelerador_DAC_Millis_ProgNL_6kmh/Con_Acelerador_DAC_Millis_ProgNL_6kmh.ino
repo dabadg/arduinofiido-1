@@ -2,11 +2,11 @@
 #include <Adafruit_MCP4725.h>
 #include <EEPROM.h>
 
-const char* version = "2.3.2 RC2";
+const char* version = "2.3.3 RC2";
 
 /* 
                      Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3.2 RC2
+              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3.3 RC2
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -130,11 +130,17 @@ struct ConfigContainer {
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
 
-	// True --> Mantiene valor de crucero antes de entrar a la
-	// asistencia de 6km/h desde parado si soltamos acelerador y
-	// no pedaleamos.
-	// False --> en esta situación anula el valor de crucero.
-	boolean valor_crucero_en_asistencia = false;
+	// true -->  En esta situación anula el valor de crucero al incrementar
+	// y soltar acelerador.
+	// false --> Mantiene valor que tenía el crucero antes de entrar a la
+	// asistencia de 6km/h.
+	boolean liberar_crucero_con_acelerador = true;
+
+	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
+	int retardo_ayuda_arranque = 600;
+
+	// Habilita la salida de datos por consola
+	boolean habilitar_consola = true;
 };
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
@@ -173,8 +179,17 @@ unsigned long ultimo_pulso_pedal = millis();
 boolean pedaleo = false;
 
 // Variables cadencia pedal.
-const int pulsos_media_cadencia = 5; // TODO Calcular el número de pulsos óptimos para detectar el cálculo.
-long cadencia = 0;
+
+const int cadencia_sin_pedaleo = 1111;
+const int pulsos_media_cadencia = 12; // Pulsos PAS.
+
+// < 15 - muy rápido
+// > 20 < 30 - rápido
+// < 30 < 40 - medio
+// > 50 < 70 - lento
+// > 100 - casi parado
+// 1111 - parado
+long cadencia = cadencia_sin_pedaleo;
 long cadencia_tmp = 0;
 int contador_pasos_calculo_cadencia = pulsos_media_cadencia;
 
@@ -431,11 +446,28 @@ void ayudaArranque() {
 	boolean ayuda_arranque_fijada = false;
 	float v_salida_progresivo = cnf.v_salida_progresivo_ayuda_arranque;
 
-	//Delay a la espera de que se suelte el acelerador para anular crucero.
-	delay(150);
-	// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-	if (!pedaleo && !cnf.valor_crucero_en_asistencia)
-		anulaCrucero();
+	// Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
+	if (cnf.liberar_crucero_con_acelerador ) {
+		//Delay a la espera de que se suelte el acelerador para anular crucero.
+		while ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) < 250) {
+			delay(1);
+			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
+			if (p_pulsos <= 2 && analogRead(pin_acelerador) <= a0_valor_reposo) {
+				anulaCrucero();
+				break;
+			}
+		}
+	}
+
+	// Si está configurado el retardo de ayuda al arranque, retardamos la entrada
+	// de la ayuda durante los ms leidos de la variable cnf.retardo_ayuda_arranque.
+	// Con esto conseguimos evitar que si se toca acelerador se ejecute automáticamente
+	// la asistencia y la bicicleta se ponga en marcha.
+	if (cnf.retardo_ayuda_arranque > 0 && analogRead(pin_acelerador) > a0_valor_6kmh) {
+		while (p_pulsos <= 2 && (unsigned long)(millis() - timer_progresivo_ayuda_arranque) < cnf.retardo_ayuda_arranque) {
+			delay(1);
+		}
+	}
 
 	// Mientras no pedaleamos y aceleramos.
 	while (p_pulsos <= 2 && analogRead(pin_acelerador) > a0_valor_6kmh) { // TODO Cambiar p_pulsos<=2 por comparación de valor cadencia.
@@ -462,6 +494,11 @@ void ayudaArranque() {
 				ayuda_arranque_fijada = true;
 			}
 		}
+	}
+	if (p_pulsos <= 2 && analogRead(pin_acelerador) <= a0_valor_reposo) {
+		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
+		nivel_aceleracion_prev = a0_valor_reposo;
+
 	}
 }
 
@@ -536,8 +573,10 @@ void freno() {
 
 void setup() {
 	// Inicia serial.
-	//Serial.begin(19200);
-	//Serial.println(version);
+	if(cnf.habilitar_consola){
+		Serial.begin(19200);
+		Serial.println(version);
+	}
 
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
@@ -641,7 +680,7 @@ void loop() {
 		if (pulsos < 2) {
 			pedaleo = false;
 			contador_pasos_calculo_cadencia = pulsos_media_cadencia;
-			cadencia = 0;
+			cadencia = cadencia_sin_pedaleo;
 			cadencia_tmp = 0;
 		}
 
