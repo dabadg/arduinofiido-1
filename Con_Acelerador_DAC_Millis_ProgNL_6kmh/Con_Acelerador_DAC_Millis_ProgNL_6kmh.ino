@@ -331,7 +331,8 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 				v_crucero = vl_acelerador;
 				crucero_fijado_millis = millis();
 				// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
-				if (cnf.pulsos_fijar_crucero >= 20)
+				// Valores altos se considera a partir de 2 segundos.
+				if (cnf.pulsos_fijar_crucero >= 14)
 					repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
 			}
 		} else {
@@ -483,7 +484,7 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave && contador_retardo_aceleracion == 0) {
+	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
