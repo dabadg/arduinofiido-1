@@ -176,19 +176,8 @@ unsigned long loop_ultima_ejecucion_millis;
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
-unsigned long ultimo_pulso_pedal = millis();
+byte a_pulsos = 0;
 boolean pedaleo = false;
-
-// Variables cadencia pedal.
-const int cadencia_sin_pedaleo = 1111;
-// Pulsos PAS.
-const int pulsos_media_cadencia = 3;
-// 30 --> Muy rápido.
-// 250 --> Muy lento.
-// 1111 --> Parado.
-long cadencia = cadencia_sin_pedaleo;
-long cadencia_tmp = 0;
-int contador_pasos_calculo_cadencia = pulsos_media_cadencia;
 
 // Contadores de paro, aceleración y auto_progresivo.
 int contador_retardo_aceleracion = 0;
@@ -307,25 +296,11 @@ void pedal() {
 	// Pulsos por loop.
 	p_pulsos++;
 
-	// Activamos pedaleo por interrupciones.
-	long tiempo_pulso = (unsigned long)(millis() - ultimo_pulso_pedal);
-
-	// Lectura de los valores altos detectados por el PAS entre 30ms y 250ms | 1111 valor de cadencia no calculada.
-	// El DAC da dos medidas, unas altas 30 > 250 y otras bajas 1 > 22 (pares/impares).
-	if (tiempo_pulso > 30 && tiempo_pulso < 250) {
+	// A la tercera interrupción, se activa pedaleo.
+	if (++a_pulsos >= 2) {
 		pedaleo = true;
-
-		// Calcula cadencia cada x pulsos sacando la media.
-		if (--contador_pasos_calculo_cadencia >= 0) {
-			cadencia_tmp += tiempo_pulso;
-		} else if (cadencia_tmp > 0) {
-			cadencia = (unsigned long) (cadencia_tmp / pulsos_media_cadencia);
-			contador_pasos_calculo_cadencia = pulsos_media_cadencia;
-			cadencia_tmp = 0;
-		}
+		a_pulsos = 0;
 	}
-
-	ultimo_pulso_pedal = millis();
 }
 
 // --------- Crucero
@@ -691,12 +666,9 @@ void loop() {
 
 		p_pulsos = 0;
 
-		// Desactivamos pedaleo por cadencia y reseteamos los valores calculados.
+		// Desactivamos pedaleo por cadencia.
 		if (pulsos < 2) {
 			pedaleo = false;
-			contador_pasos_calculo_cadencia = pulsos_media_cadencia;
-			cadencia = cadencia_sin_pedaleo;
-			cadencia_tmp = 0;
 		}
 
 		loop_ultima_ejecucion_millis = millis();
