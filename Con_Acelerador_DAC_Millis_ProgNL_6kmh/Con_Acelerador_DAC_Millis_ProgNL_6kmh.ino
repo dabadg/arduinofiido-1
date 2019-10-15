@@ -92,11 +92,11 @@ struct ConfigContainer {
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// 14 * 140 = 1960 ms.
-	int pulsos_fijar_crucero = 2;
+	unsigned int pulsos_fijar_crucero = 14;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 23 * 140 = 3220 ms.
-	int pulsos_liberar_crucero = 23;
+	unsigned int pulsos_liberar_crucero = 23;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
@@ -125,7 +125,7 @@ struct ConfigContainer {
 	boolean liberar_crucero_con_acelerador = true;
 
 	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
-	int retardo_ayuda_arranque = 600;
+	unsigned int retardo_ayuda_arranque = 600;
 
 	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
 	// progresivo desde alta potencia.
@@ -370,15 +370,15 @@ void anulaCruceroConFreno() {
 
 // --------- Acelerador
 
-float leeAcelerador(int muestras) {
+float leeAcelerador(int nmuestras) {
 	float cl_acelerador = 0;
 
 	// Leemos nivel de acelerador tomando 30 medidas.
-	for (int f = 1; f <= muestras; f++) {
-		cl_acelerador = cl_acelerador + leeAcelerador(3);
+	for (int f = 1; f <= nmuestras; f++) {
+		cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
 	}
 
-	cl_acelerador = cl_acelerador / muestras;
+	cl_acelerador = cl_acelerador / nmuestras;
 
 	// Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
 	if (cl_acelerador < a0_valor_reposo) {
@@ -394,6 +394,7 @@ float leeAcelerador(int muestras) {
 
 	return cl_acelerador;
 }
+
 
 void validaMinAcelerador() {
 	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
@@ -417,6 +418,7 @@ void validaMinAcelerador() {
 
 	delay(100);
 }
+
 
 void ayudaArranque() {
 	unsigned long timer_progresivo_ayuda_arranque = millis();
