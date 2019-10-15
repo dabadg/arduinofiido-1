@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include <Adafruit_MCP4725.h>
-#include <EEPROM.h>
+//#include <EEPROM.h>
 
-const char* version = "2.3.3 RC2";
+const char* version = "Develop";
 
 /* 
-                     Versión Con Acelerador y DAC
-              Con_Acelerador_DAC_Millis_ProgNL_6kmh 2.3.3 RC2
+                   Versión Con Acelerador y DAC
+                 Con_Acelerador_DAC_Millis_ProgNL_6kmh
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
  * Detección de pulsos con millis().
@@ -83,18 +83,6 @@ struct ConfigContainer {
 	// parado a 6 km/h arrancando con el freno pulsado.
 	boolean freno_pulsado = true;
 
-	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
-	// progresivo desde alta potencia.
-	boolean activar_progresivo_ayuda_arranque = true;
-
-	// Valor inicial de salida en la asistencia 6 km/h.
-	// Como mínimo tendrá que tener el valor de la constante a0_valor_6kmh.
-	float v_salida_progresivo_ayuda_arranque = 700;
-
-	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
-	// 1500 ms.
-	int tiempo_ejecucion_progresivo_ayuda_arranque = 1500;
-
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
 
@@ -103,8 +91,8 @@ struct ConfigContainer {
 	boolean modo_crucero = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// 15 * 140 = 2100 ms.
-	int pulsos_fijar_crucero = 15;
+	// 14 * 140 = 1960 ms.
+	int pulsos_fijar_crucero = 14;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 23 * 140 = 3220 ms.
@@ -130,17 +118,30 @@ struct ConfigContainer {
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
 
-	// true -->  En esta situación anula el valor de crucero al incrementar
-	// y soltar acelerador.
-	// false --> Mantiene valor que tenía el crucero antes de entrar a la
-	// asistencia de 6km/h.
+	// False --> Mantiene valor que tenía el crucero antes de entrar a
+	// la asistencia de 6km/h.
+	// True -->  En esta situación anula el valor de crucero al
+	// incrementar y soltar acelerador.
 	boolean liberar_crucero_con_acelerador = true;
 
 	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
 	int retardo_ayuda_arranque = 600;
 
+	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
+	// progresivo desde alta potencia.
+	boolean activar_progresivo_ayuda_arranque = false;
+
+	// Valor inicial de salida en la asistencia 6 km/h.
+	// Como mínimo tendrá que tener el valor de la constante
+	// a0_valor_6kmh --> 450.
+	float v_salida_progresivo_ayuda_arranque = 700;
+
+	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
+	// 1500 ms.
+	int tiempo_ejecucion_progresivo_ayuda_arranque = 1500;
+
 	// Habilita la salida de datos por consola
-	boolean habilitar_consola = true;
+	boolean habilitar_consola = false;
 };
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
@@ -179,16 +180,12 @@ unsigned long ultimo_pulso_pedal = millis();
 boolean pedaleo = false;
 
 // Variables cadencia pedal.
-
 const int cadencia_sin_pedaleo = 1111;
-const int pulsos_media_cadencia = 12; // Pulsos PAS.
-
-// < 15 - muy rápido
-// > 20 < 30 - rápido
-// < 30 < 40 - medio
-// > 50 < 70 - lento
-// > 100 - casi parado
-// 1111 - parado
+// Pulsos PAS.
+const int pulsos_media_cadencia = 3;
+// 30 --> Muy rápido.
+// 250 --> Muy lento.
+// 1111 --> Parado.
 long cadencia = cadencia_sin_pedaleo;
 long cadencia_tmp = 0;
 int contador_pasos_calculo_cadencia = pulsos_media_cadencia;
@@ -292,7 +289,8 @@ void repeatTones(boolean trigger, int steps, int frequency, int duration, int de
 
 // --------- Utilidades
 
-// Calcula si el valor se encuantra entre el rango de valores con tolerancia calculados con el valor2.
+// Calcula si el valor se encuantra entre el rango de valores con
+// tolerancia calculados con el valor2.
 // valor2-tolerancia > valor < valor2+tolerancia
 boolean comparaConTolerancia(float valor, float valorReferencia, float toleranciaValor2) {
 	return (valor > (valorReferencia - toleranciaValor2)) && (valor < (valorReferencia + toleranciaValor2));
@@ -310,17 +308,20 @@ void pedal() {
 
 	// Activamos pedaleo por interrupciones.
 	long tiempo_pulso = (unsigned long)(millis() - ultimo_pulso_pedal);
-	if (tiempo_pulso < 150) {
-		pedaleo = true;
-	}
 
-	// Calcula cadencia cada x pulsos sacando la media
-	if (--contador_pasos_calculo_cadencia >= 0){
-		cadencia_tmp += tiempo_pulso;
-	} else {
-		cadencia = cadencia_tmp / pulsos_media_cadencia;
-		contador_pasos_calculo_cadencia = pulsos_media_cadencia;
-		cadencia_tmp = 0;
+	// Lectura de los valores altos detectados por el PAS entre 30ms y 250ms | 1111 valor de cadencia no calculada.
+	// El DAC da dos medidas, unas altas 30 > 250 y otras bajas 1 > 22 (pares/impares).
+	if (tiempo_pulso > 30 && tiempo_pulso < 250) {
+		pedaleo = true;
+
+		// Calcula cadencia cada x pulsos sacando la media.
+		if (--contador_pasos_calculo_cadencia >= 0) {
+			cadencia_tmp += tiempo_pulso;
+		} else if (cadencia_tmp > 0) {
+			cadencia = (unsigned long) (cadencia_tmp / pulsos_media_cadencia);
+			contador_pasos_calculo_cadencia = pulsos_media_cadencia;
+			cadencia_tmp = 0;
+		}
 	}
 
 	ultimo_pulso_pedal = millis();
@@ -447,7 +448,7 @@ void ayudaArranque() {
 	float v_salida_progresivo = cnf.v_salida_progresivo_ayuda_arranque;
 
 	// Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
-	if (cnf.liberar_crucero_con_acelerador ) {
+	if (cnf.liberar_crucero_con_acelerador) {
 		//Delay a la espera de que se suelte el acelerador para anular crucero.
 		while ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) < 250) {
 			delay(1);
@@ -495,10 +496,10 @@ void ayudaArranque() {
 			}
 		}
 	}
+
 	if (p_pulsos <= 2 && analogRead(pin_acelerador) <= a0_valor_reposo) {
 		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 		nivel_aceleracion_prev = a0_valor_reposo;
-
 	}
 }
 
@@ -525,15 +526,15 @@ void mandaAcelerador(float vf_acelerador) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
-			//El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
+			// El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
 			if (cnf.modo_crucero && crucero_fijado) {
-				// Si no se está acelerando
+				// Si no se está acelerando.
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
-				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 5
-				// Le da prioridad a la lectura del acelerador.
+				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 5,
+				// le da prioridad a la lectura del acelerador.
 				} else if (((unsigned long)(millis() - crucero_fijado_millis) > 1500) || (cnf.pulsos_fijar_crucero <= 5)) {
-					//Si el acelerador supera a la velocidad de crucero aplica potencia acelerador
+					// Si el acelerador supera a la velocidad de crucero aplica potencia acelerador.
 					if (vf_acelerador >= nivel_aceleracion) {
 						nivel_aceleracion = vf_acelerador;
 					// Si el acelerador es menor que la velocidad de crucero actual, decrementamos progresivamente por cada pasada por el método.
@@ -542,11 +543,9 @@ void mandaAcelerador(float vf_acelerador) {
 						nivel_aceleracion = (nivel_acelerador_decrementado < vf_acelerador)?vf_acelerador:nivel_acelerador_decrementado;
 					}
 				}
-
 			} else {
 				nivel_aceleracion = vf_acelerador;
 			}
-
 		} else {
 			nivel_aceleracion = a0_valor_reposo;
 		}
@@ -573,7 +572,7 @@ void freno() {
 
 void setup() {
 	// Inicia serial.
-	if(cnf.habilitar_consola){
+	if (cnf.habilitar_consola) {
 		Serial.begin(19200);
 		Serial.println(version);
 	}
