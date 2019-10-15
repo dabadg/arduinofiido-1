@@ -448,7 +448,7 @@ void ayudaArranque() {
 
 	// Mientras no pedaleamos y aceleramos.
 	while (p_pulsos <= 2 && analogRead(pin_acelerador) > a0_valor_6kmh) { // TODO Cambiar p_pulsos<=2 por comparación de valor cadencia.
-		// Iniciamos la salida progresiva inversa, desde 700.
+		// Iniciamos la salida progresiva inversa.
 		if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh) {
 			// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
 			if ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) >= ciclo_decremento_progresivo_ayuda_arranque) {
