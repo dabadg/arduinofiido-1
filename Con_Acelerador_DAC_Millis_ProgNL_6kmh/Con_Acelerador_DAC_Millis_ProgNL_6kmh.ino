@@ -296,8 +296,8 @@ void pedal() {
 	// Pulsos por loop.
 	p_pulsos++;
 
-	// A la tercera interrupción, se activa pedaleo.
-	if (++a_pulsos >= 2) {
+	// A la cuarta interrupción, se activa pedaleo.
+	if (++a_pulsos >= 3) {
 		pedaleo = true;
 		a_pulsos = 0;
 	}
