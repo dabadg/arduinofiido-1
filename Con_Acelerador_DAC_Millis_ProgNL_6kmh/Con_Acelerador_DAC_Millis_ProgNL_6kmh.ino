@@ -92,7 +92,7 @@ struct ConfigContainer {
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// 14 * 140 = 1960 ms.
-	int pulsos_fijar_crucero = 14;
+	int pulsos_fijar_crucero = 2;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 23 * 140 = 3220 ms.
