@@ -521,7 +521,7 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 	return nivel_aceleraciontmp;
 }
 
-float calculaAceleradorProgresivoNoLineal2() {
+float calculaAceleradorProgresivoNoLineal2(float v_cruceroin) {
 	float nivel_aceleraciontmp;
 
 	// Progresivo no lineal.
@@ -531,6 +531,8 @@ float calculaAceleradorProgresivoNoLineal2() {
 
 	if (nivel_aceleraciontmp < a0_valor_reposo) {
 		nivel_aceleraciontmp = a0_valor_reposo;
+	} else if (nivel_aceleraciontmp > v_cruceroin) {
+		nivel_aceleraciontmp = v_cruceroin;
 	}
 
 	return nivel_aceleraciontmp;
@@ -547,11 +549,15 @@ void mandaAcelerador(float vf_acelerador) {
 				// Si no se está acelerando.
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
+				} else {
+					nivel_aceleracion = vf_acelerador;
 				}
 			} else if (cnf.modo_crucero && !crucero_fijado) {
 				// Si no se está acelerando.
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
-					nivel_aceleracion = calculaAceleradorProgresivoNoLineal2();
+					nivel_aceleracion = calculaAceleradorProgresivoNoLineal2(v_crucero);
+				} else {
+					nivel_aceleracion = vf_acelerador;
 				}
 			} else {
 				nivel_aceleracion = vf_acelerador;
