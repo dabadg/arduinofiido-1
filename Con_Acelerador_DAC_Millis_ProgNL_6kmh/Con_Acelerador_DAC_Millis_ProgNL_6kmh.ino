@@ -302,6 +302,7 @@ float aceleradorEnDac(float vl_acelerador) {
 }
 
 // --------- Pedal
+
 void pedal() {
 	// Pulsos por loop.
 	p_pulsos++;
@@ -520,6 +521,21 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 	return nivel_aceleraciontmp;
 }
 
+float calculaAceleradorProgresivoNoLineal2() {
+	float nivel_aceleraciontmp;
+
+	// Progresivo no lineal.
+	fac_n = 410;
+	fac_m = (a0_valor_max - 410) / pow(cnf.retardo_aceleracion, fac_p);
+	nivel_aceleraciontmp = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
+
+	if (nivel_aceleraciontmp < a0_valor_reposo) {
+		nivel_aceleraciontmp = a0_valor_reposo;
+	}
+
+	return nivel_aceleraciontmp;
+}
+
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
 	if (ayuda_salida && !pedaleo && analogRead(pin_acelerador) > a0_valor_suave) {
@@ -531,17 +547,11 @@ void mandaAcelerador(float vf_acelerador) {
 				// Si no se está acelerando.
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
-				// Si se está acelerando y se ha liberado el bloqueo de tiempo de acelerador o el pulso de fijación de crucero es menor a 5,
-				// le da prioridad a la lectura del acelerador.
-				} else if (((unsigned long)(millis() - crucero_fijado_millis) > 1500) || (cnf.pulsos_fijar_crucero <= 5)) {
-					// Si el acelerador supera a la velocidad de crucero aplica potencia acelerador.
-					if (vf_acelerador >= nivel_aceleracion) {
-						nivel_aceleracion = vf_acelerador;
-					// Si el acelerador es menor que la velocidad de crucero actual, decrementamos progresivamente por cada pasada por el método.
-					} else {
-						float nivel_acelerador_decrementado = nivel_aceleracion - (nivel_aceleracion - vf_acelerador) / 150;
-						nivel_aceleracion = (nivel_acelerador_decrementado < vf_acelerador)?vf_acelerador:nivel_acelerador_decrementado;
-					}
+				}
+			} else if (cnf.modo_crucero && !crucero_fijado) {
+				// Si no se está acelerando.
+				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
+					nivel_aceleracion = calculaAceleradorProgresivoNoLineal2();
 				}
 			} else {
 				nivel_aceleracion = vf_acelerador;
