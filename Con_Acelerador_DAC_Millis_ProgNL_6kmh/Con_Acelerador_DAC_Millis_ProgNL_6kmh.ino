@@ -148,7 +148,7 @@ struct ConfigContainer {
 	// 1500 ms.
 	int tiempo_ejecucion_progresivo_ayuda_arranque = 1500;
 
-	// Habilita la salida de datos por consola
+	// Habilita la salida de datos por consola.
 	boolean habilitar_consola = false;
 };
 
@@ -527,21 +527,25 @@ void mandaAcelerador(float vf_acelerador) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
-			// El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
+			// Si el modo crucero está activo y el crucero está fijado.
 			if (cnf.modo_crucero && crucero_fijado) {
 				// Si no se está acelerando.
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
+				// Si se acelera.
 				} else {
 					nivel_aceleracion = vf_acelerador;
 				}
+			// Si el modo crucero está activo y el crucero no está fijado.
 			} else if (cnf.modo_crucero && !crucero_fijado) {
 				// Si no se está acelerando.
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal2(v_crucero);
+				// Si se acelera.
 				} else {
 					nivel_aceleracion = vf_acelerador;
 				}
+			// Modo crucero desactivado.
 			} else {
 				nivel_aceleracion = vf_acelerador;
 			}
@@ -549,7 +553,7 @@ void mandaAcelerador(float vf_acelerador) {
 			nivel_aceleracion = a0_valor_reposo;
 		}
 
-		// Solo fijamos el acelerador si el valor anterior es distinto al actual.
+		// Fijamos el acelerador si el valor anterior es distinto al actual.
 		if (nivel_aceleracion_prev != nivel_aceleracion) {
 			  dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
 			  nivel_aceleracion_prev = nivel_aceleracion;
@@ -607,7 +611,7 @@ void setup() {
 		if (digitalRead(pin_freno) == LOW) {
 			// Activamos la ayuda desde parado a 6kmh.
 			ayuda_salida = true;
-			// Calculamos el decremento de velocidad desde la salida inicial hasta la potencia 6kmh
+			// Calculamos el decremento de velocidad desde la salida inicial hasta la potencia 6kmh.
 			decremento_progresivo_ayuda_arranque = (int) (cnf.v_salida_progresivo_ayuda_arranque - a0_valor_suave) / ((cnf.tiempo_ejecucion_progresivo_ayuda_arranque / ciclo_decremento_progresivo_ayuda_arranque));
 			delay(200);
 			// Tono aviso de modo con asistencia desde parado.
