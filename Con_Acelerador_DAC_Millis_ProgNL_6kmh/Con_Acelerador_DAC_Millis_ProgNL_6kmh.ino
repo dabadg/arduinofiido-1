@@ -2,10 +2,10 @@
 #include <Adafruit_MCP4725.h>
 //#include <EEPROM.h>
 
-const char* version = "Develop";
+const char* version = "2.3.5 RC1";
 
 /* 
-                   Versión Con Acelerador y DAC
+                     Versión Con Acelerador y DAC
                  Con_Acelerador_DAC_Millis_ProgNL_6kmh
 ------------------------------------------------------------------------
 PRINCIPALES NOVEDADES:
