@@ -1,17 +1,18 @@
-CHANGELOG 2.1 --> 2.3.2 RC2
+CHANGELOG 2.1 --> 2.3.5 RC1
 - Optimizaciones y correcciones.
-- Añadido progresivo en la ayuda de aranque (dabadg).
-- Añadido progresivo si bajamos de velocidad con crucero fijado (dabadg).
-- Progresivos sólo si crucero fijado (dabadg).
+- Añadido progresivo inicial inverso en la ayuda de aranque.
+- Mejorada asistencia a 6 km/h desde parado.
+- Diferentes cálculos del progresivo con crucero fijado y sin fijar.
 - Eliminado establece crucero por acelerador.
+- Aumentadas interrupciones para activar pedaleo.
 
 CHANGELOG 2.0.1 --> 2.1:
 - Nuevo concepto de detección de pulsos (chusquete):
   - Se activa pedaleo por interrupciones de pedal.
   - Se desactiva por cadencia.
-- Añadido crucero tipo "monopatín" (dabadg).
+- Añadido crucero tipo "monopatín".
   - Fija crucero mantiendo el acelerador en la misma posición cada n segundos.
-- El freno anula el valor de crucero si se tiene pulsado n segundos (dabadg).
+- El freno anula el valor de crucero si se tiene pulsado n segundos.
   - Toque corte, no anula crucero.
   - Toque más largo, lo anula.
 - Eliminado modo peatonal en asistencia desde parado a 6 km/h.
@@ -36,10 +37,10 @@ CHANGELOG 1.9 --> 1.9.1:
 
 CHANGELOG 1.8 --> 1.9:
 - Nueva variable de usuario para controlar la cadencia en los auto_progresivos.
-- Refactorización y modificación de métodos para trabajar en escala analógica con los valores del acelerador por dabadg (https://github.com/dabadg).
+- Refactorización y modificación de métodos para trabajar en escala analógica con los valores del acelerador.
 - Añadida variable para elegir entre modos de crucero en la asistencia a 6 km/h y mejorada la respuesta en este modo.
 - Optimizaciones, correcciones y limpieza de código.
-- Nuevo método para establecer crucero sólo cuando se pedalea por dabadg (https://github.com/dabadg).
+- Nuevo método para establecer crucero sólo cuando se pedalea.
 
 CHANGELOG 1.7.1 --> 1.8:
 - Recuperado nivel inicial en el progresivo.
@@ -48,7 +49,7 @@ CHANGELOG 1.7.1 --> 1.8:
   - Lee Acelerador, Manda acelerador y contador de pulsos se ejecutan sin retardo.
   - Las comprobaciones de cadencia se hacen cada 250 ms.
   - Establece crucero cada 125 ms.
-- Añadido buzzer para emitir avisos y refactorización de funciones por dabadg (https://github.com/dabadg).
+- Añadido buzzer para emitir avisos y refactorización de funciones.
 - Correcciones menores.
 - Añadido en comentarios nuevas secciones:
   - Autoprogresivos.
