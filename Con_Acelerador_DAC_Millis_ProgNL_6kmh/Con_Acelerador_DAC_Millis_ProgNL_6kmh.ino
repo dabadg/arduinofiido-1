@@ -373,7 +373,7 @@ void anulaCruceroConFreno() {
 float leeAcelerador(int nmuestras) {
 	float cl_acelerador = 0;
 
-	// Leemos nivel de acelerador tomando 30 medidas.
+	// Leemos nivel de acelerador tomando n medidas.
 	for (int f = 1; f <= nmuestras; f++) {
 		cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
 	}
@@ -396,18 +396,18 @@ float leeAcelerador(int nmuestras) {
 }
 
 
-void validaMinAcelerador() {
+void validaMinAcelerador(int nmuestras) {
 	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
 	// En caso de no tener acelerador, mantenemos valor por defecto.
 	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
 	float l_acelerador_reposo = 0;
 
 	// Tomamos 30 medidas para calcular la media.
-	for (int f = 1; f <= 30; f++) {
-		l_acelerador_reposo = l_acelerador_reposo + leeAcelerador(3);
+	for (int f = 1; f <= nmuestras; f++) {
+		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador);
 	}
 
-	l_acelerador_reposo = l_acelerador_reposo / 30;
+	l_acelerador_reposo = l_acelerador_reposo / nmuestras;
 
 	// Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
 	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
@@ -591,7 +591,7 @@ void setup() {
 	// Interrupción freno.
 	attachInterrupt(digitalPinToInterrupt(pin_freno), freno, FALLING);
 
-	validaMinAcelerador();
+	validaMinAcelerador(30);
 
 	// Tono aviso de inicio a la espera de frenadas (al encender bici).
 	repeatTones(cnf.buzzer_activo, 1, 3000, 90, 190);
