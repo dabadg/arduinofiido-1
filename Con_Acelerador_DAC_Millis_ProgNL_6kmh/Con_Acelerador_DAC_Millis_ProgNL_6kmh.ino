@@ -73,7 +73,8 @@ DEVELOPERS:
 AGRADECIMIENTOS:
  * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
  * ideas, feedback, etc.
- * Gracias a zereal por sus ideas de concepto.
+ * Gracias a zereal por sus ideas de concepto y a faeletronic por el
+ * testing.
  */
 
 struct ConfigContainer {
@@ -90,14 +91,16 @@ struct ConfigContainer {
 	// False --> Manda señal del acelerador.
 	boolean modo_crucero = true;
 
+	// True --> pone a 2 la variable pulsos_fijar_crucero.
+	// Esto es por si se quiere tener el comportamiento de soltar de
+	// golpe el acelerador para fijar crucero.
+	boolean crucero_soltando_acelerador = true;
+
 	// Cantidad de pasadas para fijar el crucero por tiempo.
+	// Para que tenga efecto el crucero tipo "monopatín",
+	// crucero_soltando_acelerador debe estar en False.
 	// 14 * 140 = 1960 ms.
 	unsigned int pulsos_fijar_crucero = 14;
-	
-	// True --> pone a 2 la variable pulsos_fijar_crucero.
-	// Esto es por si se quiere tener el comportamiento de sotar de
-	// golpe el acelerador para fijar crucero.
-	boolean crucero_soltando_acelerador = false;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 23 * 140 = 3220 ms.
