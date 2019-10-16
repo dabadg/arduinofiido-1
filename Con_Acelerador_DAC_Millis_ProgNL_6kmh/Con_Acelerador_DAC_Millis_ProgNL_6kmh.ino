@@ -93,6 +93,11 @@ struct ConfigContainer {
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// 14 * 140 = 1960 ms.
 	unsigned int pulsos_fijar_crucero = 14;
+	
+	// True --> pone a 2 la variable pulsos_fijar_crucero.
+	// Esto es por si se quiere tener el comportamiento de sotar de
+	// golpe el acelerador para fijar crucero.
+	boolean crucero_soltando_acelerador = false;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 23 * 140 = 3220 ms.
@@ -162,9 +167,9 @@ const int pin_piezo = 11; // Pin del zumbador.
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 // Al inicializar, lee el valor real (a0_valor_reposo).
 float a0_valor_reposo = 190.0;		// 0.85
-//const float a0_valor_corte = 216.0;	// 1.05
 const float a0_valor_minimo = 235.0;	// 1.15
 const float a0_valor_suave = 307.0;	// 1.50
+const float a0_valor_5_4kmh = 410.0;	// 2.00
 const float a0_valor_6kmh = 450.0;	// 2.19
 //const float a0_valor_medio = 550.0;	// 2.68
 float a0_valor_alto = 798.0;		// 3.90
@@ -395,7 +400,6 @@ float leeAcelerador(int nmuestras) {
 	return cl_acelerador;
 }
 
-
 void validaMinAcelerador(int nmuestras) {
 	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
 	// En caso de no tener acelerador, mantenemos valor por defecto.
@@ -419,7 +423,6 @@ void validaMinAcelerador(int nmuestras) {
 	delay(100);
 }
 
-
 void ayudaArranque() {
 	unsigned long timer_progresivo_ayuda_arranque = millis();
 	boolean ayuda_arranque_fijada = false;
@@ -427,7 +430,7 @@ void ayudaArranque() {
 
 	// Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
 	if (cnf.liberar_crucero_con_acelerador) {
-		//Delay a la espera de que se suelte el acelerador para anular crucero.
+		// Delay a la espera de que se suelte el acelerador para anular crucero.
 		while ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) < 250) {
 			delay(1);
 			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
@@ -502,8 +505,8 @@ float calculaAceleradorProgresivoNoLineal2(float v_cruceroin) {
 	float nivel_aceleraciontmp;
 
 	// Progresivo no lineal.
-	fac_n = 410;
-	fac_m = (a0_valor_max - 410) / pow(cnf.retardo_aceleracion, fac_p);
+	fac_n = a0_valor_5_4kmh;
+	fac_m = (a0_valor_max - a0_valor_5_4kmh) / pow(cnf.retardo_aceleracion, fac_p);
 	nivel_aceleraciontmp = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
 	if (nivel_aceleraciontmp < a0_valor_reposo) {
@@ -524,14 +527,14 @@ void mandaAcelerador(float vf_acelerador) {
 			// El crucero entra solo si el modo crucero está activo, si el crucero está fijado y el acelerador es menor que el valor de reposo.
 			if (cnf.modo_crucero && crucero_fijado) {
 				// Si no se está acelerando.
-				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
+				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
 				} else {
 					nivel_aceleracion = vf_acelerador;
 				}
 			} else if (cnf.modo_crucero && !crucero_fijado) {
 				// Si no se está acelerando.
-				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo,20)) {
+				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 20)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal2(v_crucero);
 				} else {
 					nivel_aceleracion = vf_acelerador;
@@ -621,6 +624,12 @@ void setup() {
 		fac_b = (1.0 / cnf.retardo_aceleracion - 1.0) / (pow((cnf.retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
 		fac_a = 1.0 - pow(1.0, fac_c) * fac_b;
 	}
+	
+	if (cnf.crucero_soltando_acelerador = true)
+		cnf.pulsos_fijar_crucero = 2;
+		
+	if (cnf.pulsos_fijar_crucero < 2)
+		cnf.pulsos_fijar_crucero = 2;
 
 	// Tono de finalización de setup.
 	repeatTones(cnf.buzzer_activo, 3, 3000, 90, 90);
