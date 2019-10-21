@@ -1,8 +1,10 @@
 #include <Arduino.h>
+#include "tones.h"
+#include "config_continuo.h"
 #include <Adafruit_MCP4725.h>
 //#include <EEPROM.h>
 
-const char* version = "2.3.5 RC1";
+const char* version = "2.3.6";
 
 /* 
                      Versión Con Acelerador y DAC
@@ -77,85 +79,8 @@ AGRADECIMIENTOS:
  * testing.
  */
 
-struct ConfigContainer {
-	//=================== VARIABLES CONFIGURABLES POR EL USUARIO =======
-
-	// (True) si se desea activar la posibilidad de acelerar desde
-	// parado a 6 km/h arrancando con el freno pulsado.
-	boolean freno_pulsado = true;
-
-	// Retardo en segundos para ponerse a velocidad máxima o crucero.
-	int retardo_aceleracion = 5;
-
-	// True --> Modo crucero.
-	// False --> Manda señal del acelerador.
-	boolean modo_crucero = true;
-
-	// True --> pone a 2 la variable pulsos_fijar_crucero.
-	// Esto es por si se quiere tener el comportamiento de soltar de
-	// golpe el acelerador para fijar crucero.
-	boolean crucero_soltando_acelerador = true;
-
-	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// Para que tenga efecto el crucero tipo "monopatín",
-	// crucero_soltando_acelerador debe estar en False.
-	// 14 * 140 = 1960 ms.
-	unsigned int pulsos_fijar_crucero = 14;
-
-	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// 23 * 140 = 3220 ms.
-	unsigned int pulsos_liberar_crucero = 23;
-
-	// Retardo para inciar progresivo tras parar pedales.
-	// Freno anula el tiempo.
-	unsigned int retardo_inicio_progresivo = 10;
-
-	// Suavidad de los progresivos, varía entre 1-10.
-	// Al crecer se hacen más bruscos.
-	float suavidad_progresivos = 5.0;
-
-	// Suavidad de los autoprogresivos, varía entre 1-10.
-	// Al crecer se hacen más bruscos.
-	float suavidad_autoprogresivos = 5.0;
-
-	// Dirección del bus I2C [DAC] (0x60) si está soldado,
-	// si no (0x62).
-	int dir_dac = 0x60;
-
-	// Habilita los tonos de inicialización del sistema.
-	// Recomendado poner a True si se tiene zumbador en el pin 11.
-	boolean buzzer_activo = true;
-
-	// False --> Mantiene valor que tenía el crucero antes de entrar a
-	// la asistencia de 6km/h.
-	// True -->  En esta situación anula el valor de crucero al
-	// incrementar y soltar acelerador.
-	boolean liberar_crucero_con_acelerador = true;
-
-	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
-	unsigned int retardo_ayuda_arranque = 600;
-
-	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
-	// progresivo desde alta potencia.
-	boolean activar_progresivo_ayuda_arranque = false;
-
-	// Valor inicial de salida en la asistencia 6 km/h.
-	// Como mínimo tendrá que tener el valor de la constante
-	// a0_valor_6kmh --> 450.
-	float v_salida_progresivo_ayuda_arranque = 700;
-
-	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
-	// 1500 ms.
-	int tiempo_ejecucion_progresivo_ayuda_arranque = 1500;
-
-	// Habilita la salida de datos por consola.
-	boolean habilitar_consola = false;
-};
-
-//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
 Adafruit_MCP4725 dac;
-
 ConfigContainer cnf;
 
 //======= PINES ========================================================
@@ -169,6 +94,7 @@ const int pin_piezo = 11; // Pin del zumbador.
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 // Al inicializar, lee el valor real (a0_valor_reposo).
+
 float a0_valor_reposo = 190.0;		// 0.85
 const float a0_valor_minimo = 235.0;	// 1.15
 const float a0_valor_suave = 307.0;	// 1.50
@@ -235,53 +161,6 @@ unsigned int contador_freno_anulacion_crucero;
 // Variable donde se suman los pulsos del sensor PAS.
 volatile byte p_pulsos = 0;
 
-//======= FUNCIONES DE TONOS ===========================================
-
-//================== TONES ==================
-// Frecuencias 4 octavas de
-int c[5]={131,262,523,1046,2093};       // Do
-int cs[5]={139,277,554,1108,2217};      // Do#
-int d[5]={147,294,587,1175,2349};       // Re
-int ds[5]={156,311,622,1244,2489};      // Re#
-int e[5]={165,330,659,1319,2637};       // Mi
-int f[5]={175,349,698,1397,2794};       // Fa
-int fs[5]={185,370,740,1480,2960};      // Fa#
-int g[5]={196,392,784,1568,3136};       // Sol
-int gs[5]={208,415,831,1661,3322};      // Sol#
-int a[5]={220,440,880,1760,3520};       // La
-int as[5]={233,466,932,1866,3729};      // La#
-int b[5]={247,494,988,1976,3951};       // Si
-
-void nota(int frec, int ttime) {
-	tone(pin_piezo,frec);
-	delay(ttime);
-	noTone(pin_piezo);
-}
-
-void SOS_TONE() {
-	nota(b[3],150);delay(40);
-	nota(b[3],150);delay(40);
-	nota(b[3],150);delay(70);
-	nota(b[3],100);delay(40);
-	nota(b[3],100);delay(40);
-	nota(b[3],100);delay(70);
-	nota(b[3],150);delay(40);
-	nota(b[3],150);delay(40);
-	nota(b[3],150);delay(100);
-}
-
-void repeatTones(boolean trigger, int steps, int frequency, int duration, int delayTime) {
-	if (trigger) {
-		int cont = steps;
-		while (cont-- > 0) {
-			tone(pin_piezo,frequency,duration);
-			if (delayTime > 0)
-				delay(delayTime);
-			//noTone(pin_piezo);
-		}
-	}
-}
-
 //======= FUNCIONES ====================================================
 
 // --------- Utilidades
@@ -333,7 +212,7 @@ void estableceCruceroPorTiempo(float vl_acelerador) {
 				// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
 				// Valores altos se considera a partir de 2 segundos.
 				if (cnf.pulsos_fijar_crucero >= 14)
-					repeatTones(cnf.buzzer_activo, 1, 3000, 190, 1);
+					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1); // @suppress("Invalid arguments")
 			}
 		} else {
 			contador_crucero_mismo_valor = 0;
@@ -347,7 +226,7 @@ void anulaCrucero() {
 	if (crucero_fijado) {
 		v_crucero = a0_valor_reposo;
 		crucero_fijado = false;
-		repeatTones(cnf.buzzer_activo, 1, 2000, 190, 100);
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2000, 290, 100);
 	}
 }
 
@@ -360,7 +239,7 @@ void anulaCruceroConFreno() {
 			if (crucero_fijado){
 				// Añadido % 4 para solo ejecutar la acción para los múltiplos de 4 y evitar excesivos tonos.
 				if (contador_freno_anulacion_crucero % 4 == 0) {
-					repeatTones(cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
+					repeatTones(pin_piezo, cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
 				}
 
 				if (contador_freno_anulacion_crucero >= cnf.pulsos_liberar_crucero) {
@@ -420,7 +299,7 @@ void validaMinAcelerador(int nmuestras) {
 	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
 		a0_valor_reposo = l_acelerador_reposo;
 	} else {
-		SOS_TONE();
+		SOS_TONE(pin_piezo);
 	}
 
 	delay(100);
@@ -604,7 +483,7 @@ void setup() {
 	validaMinAcelerador(30);
 
 	// Tono aviso de inicio a la espera de frenadas (al encender bici).
-	repeatTones(cnf.buzzer_activo, 1, 3000, 90, 190);
+	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 90, 190);
 
 	// Si arrancamos con el freno pulsado.
 	if (cnf.freno_pulsado) {
@@ -615,7 +494,7 @@ void setup() {
 			decremento_progresivo_ayuda_arranque = (int) (cnf.v_salida_progresivo_ayuda_arranque - a0_valor_suave) / ((cnf.tiempo_ejecucion_progresivo_ayuda_arranque / ciclo_decremento_progresivo_ayuda_arranque));
 			delay(200);
 			// Tono aviso de modo con asistencia desde parado.
-			repeatTones(cnf.buzzer_activo, 2, 2900, 90, 200);
+			repeatTones(pin_piezo, cnf.buzzer_activo, 2, 2900, 90, 200);
 			delay(200);
 		}
 	}
@@ -631,15 +510,13 @@ void setup() {
 		fac_b = (1.0 / cnf.retardo_aceleracion - 1.0) / (pow((cnf.retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
 		fac_a = 1.0 - pow(1.0, fac_c) * fac_b;
 	}
-	
-	if (cnf.crucero_soltando_acelerador = true)
-		cnf.pulsos_fijar_crucero = 2;
 		
+	// Estabiliza pulsos_fijar_crucero para que sean siempre superiores a 2
 	if (cnf.pulsos_fijar_crucero < 2)
 		cnf.pulsos_fijar_crucero = 2;
 
 	// Tono de finalización de setup.
-	repeatTones(cnf.buzzer_activo, 3, 3000, 90, 90);
+	repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 90, 90);
 }
 
 void loop() {
