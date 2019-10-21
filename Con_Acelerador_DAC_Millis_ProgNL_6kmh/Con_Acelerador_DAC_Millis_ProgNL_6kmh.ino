@@ -23,6 +23,7 @@ PRINCIPALES NOVEDADES:
  * Posibilidadad de asistir a 6km/h desde parado.
  * Posibilidadad de cortar crucero al frenar.
  * Añadido buzzer para emitir avisos en la inicialización.
+ * Añadida externalización de configuración a ficheros.
 ------------------------------------------------------------------------
 VERSIÓN CRUCERO: 
  * Se trata de guardar el último valor del acelerador
