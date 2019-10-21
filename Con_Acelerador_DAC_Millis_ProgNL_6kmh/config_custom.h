@@ -44,6 +44,12 @@ struct ConfigContainer {
 	// 20 * 140 = 2800 ms.
 	unsigned int pulsos_fijar_crucero = 20;
 
+	// False --> Mantiene valor que tenía el crucero antes de entrar a
+	// la asistencia de 6km/h.
+	// True -->  En esta situación anula el valor de crucero al
+	// incrementar y soltar acelerador.
+	boolean liberar_crucero_con_acelerador = true;
+
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 23 * 140 = 3220 ms.
 	unsigned int pulsos_liberar_crucero = 23;
@@ -54,12 +60,6 @@ struct ConfigContainer {
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
 	unsigned int retardo_inicio_progresivo = 10;
-
-	// False --> Mantiene valor que tenía el crucero antes de entrar a
-	// la asistencia de 6km/h.
-	// True -->  En esta situación anula el valor de crucero al
-	// incrementar y soltar acelerador.
-	boolean liberar_crucero_con_acelerador = true;
 
 	// -------------- Progresivos
 

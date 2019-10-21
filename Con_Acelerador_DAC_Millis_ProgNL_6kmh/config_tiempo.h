@@ -27,12 +27,12 @@ struct ConfigContainer {
 
 	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
 	// progresivo desde alta potencia.
-	boolean activar_progresivo_ayuda_arranque = false;
+	boolean activar_progresivo_ayuda_arranque = true;
 
 	// Valor inicial de salida en la asistencia 6 km/h.
 	// Como mínimo tendrá que tener el valor de la constante
 	// a0_valor_6kmh --> 450.
-	float v_salida_progresivo_ayuda_arranque = 700;
+	float v_salida_progresivo_ayuda_arranque = 600;
 
 	// -------------- Crucero
 
@@ -44,6 +44,12 @@ struct ConfigContainer {
 	// 20 * 140 = 2800 ms.
 	unsigned int pulsos_fijar_crucero = 20;
 
+	// False --> Mantiene valor que tenía el crucero antes de entrar a
+	// la asistencia de 6km/h.
+	// True -->  En esta situación anula el valor de crucero al
+	// incrementar y soltar acelerador.
+	boolean liberar_crucero_con_acelerador = true;
+
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// 23 * 140 = 3220 ms.
 	unsigned int pulsos_liberar_crucero = 23;
@@ -54,12 +60,6 @@ struct ConfigContainer {
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
 	unsigned int retardo_inicio_progresivo = 10;
-
-	// False --> Mantiene valor que tenía el crucero antes de entrar a
-	// la asistencia de 6km/h.
-	// True -->  En esta situación anula el valor de crucero al
-	// incrementar y soltar acelerador.
-	boolean liberar_crucero_con_acelerador = true;
 
 	// -------------- Progresivos
 

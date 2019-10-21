@@ -1,15 +1,10 @@
 #include <Arduino.h>
+#include "tones.h"
+//#include "config_continuo.h" // Versión con fijación continua de crucero.
+#include "config_tiempo.h" // Versión con fijación de crucero en 2,8s.
+//#include "config_custom.h" // Versión para jugar con los parámetros. ;)
 #include <Adafruit_MCP4725.h>
 //#include <EEPROM.h>
-
-// Externalización de fichero de configuración.
-// Podrás seleccionar el tipo de versión que quieres utilizar
-// O utilizar el custom con los cambios que más te gusten.
-#include "config_continuo.h" // Versión con fijación continua de crucero.
-//#include "config_tiempo.h" // Versión con fijación de crucero en 2,8s.
-//#include "config_custom.h" // Versión para jugar con los parámetros. ;)
-
-#include "tones.h"
 
 const char* version = "2.3.6";
 
@@ -23,7 +18,6 @@ PRINCIPALES NOVEDADES:
  * Posibilidadad de asistir a 6km/h desde parado.
  * Posibilidadad de cortar crucero al frenar.
  * Añadido buzzer para emitir avisos en la inicialización.
- * Añadida externalización de configuración a ficheros.
 ------------------------------------------------------------------------
 VERSIÓN CRUCERO: 
  * Se trata de guardar el último valor del acelerador
@@ -491,7 +485,8 @@ void setup() {
 	validaMinAcelerador(30);
 
 	// Tono aviso de inicio a la espera de frenadas (al encender bici).
-	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 90, 190);
+
+	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 90, 350);
 
 	// Si arrancamos con el freno pulsado.
 	if (cnf.freno_pulsado) {
