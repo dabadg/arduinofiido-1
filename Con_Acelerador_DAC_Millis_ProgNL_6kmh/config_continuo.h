@@ -16,7 +16,6 @@ struct ConfigContainer {
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
 
-
 	// -------------- Asistencia 6kmh
 
 	// (True) si se desea activar la posibilidad de acelerar desde
@@ -35,7 +34,6 @@ struct ConfigContainer {
 	// a0_valor_6kmh --> 450.
 	float v_salida_progresivo_ayuda_arranque = 700;
 
-
 	// -------------- Crucero
 
 	// True --> Modo crucero.
@@ -52,7 +50,6 @@ struct ConfigContainer {
 	// 23 * 140 = 3220 ms.
 	unsigned int pulsos_liberar_crucero = 23;
 
-
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
 
@@ -66,8 +63,6 @@ struct ConfigContainer {
 	// incrementar y soltar acelerador.
 	boolean liberar_crucero_con_acelerador = true;
 
-
-
 	// -------------- Progresivos
 
 	// Suavidad de los progresivos, varía entre 1-10.
@@ -77,7 +72,6 @@ struct ConfigContainer {
 	// Suavidad de los autoprogresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
 	float suavidad_autoprogresivos = 5.0;
-
 
 	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
 	// 1500 ms.
