@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "tones.h"
-#include "config_continuo.h"
+#include "config_continuo.h" // Versión con fijación continua de crucero.
+//#include "config_tiempo.h" // Versión con fijación de crucero en 2,8s.
+//#include "config_custom.h" // Versión para jugar con los parámetros. ;)
 #include <Adafruit_MCP4725.h>
 //#include <EEPROM.h>
 
