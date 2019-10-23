@@ -11,7 +11,7 @@
 
 #include "tones.h"
 
-const char* version = "2.3.6";
+const char* version = "2.3.7";
 
 /* 
                      Versión Con Acelerador y DAC
@@ -63,6 +63,11 @@ ASISTENCIA A 6 KM/H DESDE PARADO:
  * de crucero, si lo hubiera.
  * Si se comienza a pedalear sin dejar de accionar el acelerador --> se
  * sale a la velocidad con la que vayamos regulando con el acelerador.
+------------------------------------------------------------------------
+ VALIDACIÓN DEL ACELERADOR
+ * Se ha implementado una validación de seguridad para que en caso de
+ * detectarse una medida erronea del acelerador al inicializar el sistema,
+ * Este quede anulado.
 ------------------------------------------------------------------------
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
@@ -539,7 +544,7 @@ void setup() {
 }
 
 void loop() {
-	if(a0_valor_reposo > 0){
+	if (a0_valor_reposo > 0) {
 		float v_acelerador = leeAcelerador(30);
 
 		if (cnf.modo_crucero)
@@ -591,8 +596,9 @@ void loop() {
 
 		anulaCruceroConFreno();
 		mandaAcelerador(v_acelerador);
-	}else{
-		long errorloop = millis();
+
+	} else {
+
 		delay(1000);
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
 
@@ -600,7 +606,7 @@ void loop() {
 		Serial.begin(19200);
 		int lines=0;
 		Serial.println("Error de acelerador detectado.");
-		Serial.println("> Abriendo puerto para mostrar medidas. Tome medidas en reposo y a máxima potencia.");
+		Serial.println("> Abriendo puerto para mostrar medidas. [Tome medidas en reposo y a máxima potencia].");
 		while(lines < 30){
 			delay(1000);
 			Serial.print("Valor Acelerador: ");
