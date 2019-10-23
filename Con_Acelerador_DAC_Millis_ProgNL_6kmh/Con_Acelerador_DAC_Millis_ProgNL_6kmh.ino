@@ -609,6 +609,7 @@ void loop() {
 		}
 		Serial.print("> Cerrando puerto.");
 		Serial.end();
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
 		// Bloqueamos el loop.
 		while(true){
 			delay(1000);
