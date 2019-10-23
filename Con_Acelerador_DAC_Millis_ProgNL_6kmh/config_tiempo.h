@@ -81,5 +81,5 @@ struct ConfigContainer {
 
 	// -------------- DEBUG
 	// Habilita la salida de datos por consola.
-	boolean habilitar_consola = false;
+	boolean habilitar_consola = true;
 };
