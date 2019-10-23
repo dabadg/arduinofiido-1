@@ -16,6 +16,10 @@ struct ConfigContainer {
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
 
+	// -------------- Acelerador
+
+	boolean recalcular_rangos_acelerador = true;
+
 	// -------------- Asistencia 6kmh
 
 	// (True) si se desea activar la posibilidad de acelerar desde
