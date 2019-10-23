@@ -617,7 +617,15 @@ void loop() {
 		Serial.end();
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
 		// Bloqueamos el loop.
+		//float nivel_aceleracion_prevv;
+		//float nivel_aceleracionv;
 		while (true) {
+		// TODO Pendiente de tomar decisiones. Si el acelerador ha dado una medida incorrecta se deja actuar al acelerador sin pasar por la lógica del lopp principal.
+		//	float nivel_aceleracionv = leeAcelerador(30);
+		//	if (nivel_aceleracion_prevv != nivel_aceleracionv) {
+		//		dac.setVoltage(aceleradorEnDac(nivel_aceleracionv), false);
+		//		nivel_aceleracion_prevv = nivel_aceleracionv;
+		//	}
 			delay(1000);
 		}
 	}
