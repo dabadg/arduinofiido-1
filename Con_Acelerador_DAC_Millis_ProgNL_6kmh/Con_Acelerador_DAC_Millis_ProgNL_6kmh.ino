@@ -274,17 +274,17 @@ float leeAcelerador(int nmuestras) {
 
 	cl_acelerador = cl_acelerador / nmuestras;
 
-	// Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
-	if (cl_acelerador < a0_valor_reposo) {
-		return a0_valor_reposo;
-	} else if (cl_acelerador > a0_valor_alto) {
-		return a0_valor_alto;
-	}
-
 	// Actualizamos el valor a0_valor_alto, al máximo medido por el acelerador.
 	// Para corregir el valor por el real obtenido de la lectura.
 	if (cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
 		a0_valor_alto = cl_acelerador;
+
+	// Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
+	if (cl_acelerador < a0_valor_reposo) {
+		cl_acelerador = a0_valor_reposo;
+	} else if (cl_acelerador > a0_valor_alto) {
+		cl_acelerador = a0_valor_alto;
+	}
 
 	return cl_acelerador;
 }
