@@ -599,16 +599,17 @@ void loop() {
 		// Pintamos 30 lecturas del valor del acelerador para poder hacer un debug.
 		Serial.begin(19200);
 		int lines=0;
+		Serial.println("Error de acelerador detectado.");
+		Serial.println("> Abriendo puerto para mostrar medidas. Tome medidas en reposo y a máxima potencia.");
 		while(lines < 30){
-			if(millis() - errorloop > 1000){
-				Serial.print("Valor Acelerador: ");
-				Serial.println(leeAcelerador(3));
-				lines++;
-			}
-			errorloop = millis();
+			delay(1000);
+			Serial.print("Valor Acelerador: ");
+			Serial.println(leeAcelerador(3));
+			lines++;
 		}
+		Serial.print("> Cerrando puerto.");
 		Serial.end();
-		// Bloqueamos el loop
+		// Bloqueamos el loop.
 		while(true){
 			delay(1000);
 		}
