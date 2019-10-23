@@ -607,7 +607,7 @@ void loop() {
 		int lines=0;
 		Serial.println("Error de acelerador detectado.");
 		Serial.println("> Abriendo puerto para mostrar medidas. [Tome medidas en reposo y a máxima potencia].");
-		while(lines < 30){
+		while (lines < 30) {
 			delay(1000);
 			Serial.print("Valor Acelerador: ");
 			Serial.println(leeAcelerador(3));
@@ -617,7 +617,7 @@ void loop() {
 		Serial.end();
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
 		// Bloqueamos el loop.
-		while(true){
+		while (true) {
 			delay(1000);
 		}
 	}
