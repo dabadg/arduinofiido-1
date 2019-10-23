@@ -276,7 +276,7 @@ float leeAcelerador(int nmuestras) {
 
 	// Actualizamos el valor a0_valor_alto, al máximo medido por el acelerador.
 	// Para corregir el valor por el real obtenido de la lectura.
-	if (cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
+	if (cnf.recalcular_rangos_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
 		a0_valor_alto = cl_acelerador;
 
 	// Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
@@ -302,9 +302,13 @@ void validaMinAcelerador(int nmuestras) {
 
 	l_acelerador_reposo = l_acelerador_reposo / nmuestras;
 
-	// Si la medida no es correcta, emitimos un aviso sonoro SOS para poder localizar el error y desactivamos el acelerador.
+	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
+	// del acelerador y desactivamos el acelerador.
 	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
-		a0_valor_reposo = l_acelerador_reposo;
+		// Si queremos arrancar con la actualización de los valores reales tomados por el ecelerador.
+		if(cnf.recalcular_rangos_acelerador){
+			a0_valor_reposo = l_acelerador_reposo;
+		}
 	} else {
 		SOS_TONE(pin_piezo);
 	}
@@ -323,7 +327,7 @@ void ayudaArranque() {
 		while ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) < 250) {
 			delay(1);
 			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-			if (p_pulsos <= 2 && leeAcelerador(3) <= a0_valor_reposo) {
+			if (p_pulsos <= 2 && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo,20)) {
 				anulaCrucero();
 				break;
 			}
