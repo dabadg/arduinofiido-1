@@ -595,11 +595,22 @@ void loop() {
 		long errorloop = millis();
 		delay(1000);
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
-		while(true){
-			delay(100);
+
+		// Pintamos 30 lecturas del valor del acelerador para poder hacer un debug.
+		Serial.begin(19200);
+		int lines=0;
+		while(lines < 30){
 			if(millis() - errorloop > 1000){
+				Serial.print("Valor Acelerador: ");
 				Serial.println(leeAcelerador(3));
+				lines++;
 			}
+			errorloop = millis();
+		}
+		Serial.end();
+		// Bloqueamos el loop
+		while(true){
+			delay(1000);
 		}
 	}
 }
