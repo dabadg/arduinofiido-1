@@ -123,7 +123,7 @@ const float a0_valor_minimo = 235.0;	// 1.15
 const float a0_valor_suave = 307.0;	// 1.50
 const float a0_valor_5_4kmh = 410.0;	// 2.00
 const float a0_valor_6kmh = 450.0;	// 2.19
-float a0_valor_alto = 798.0;		// 3.90
+const float a0_valor_alto = 798.0;	// 3.90
 const float a0_valor_max = 810.0;	// 3.95
 
 // Variables de tiempo.
@@ -288,11 +288,6 @@ float leeAcelerador(int nmuestras) {
 	}
 
 	cl_acelerador = cl_acelerador / nmuestras;
-
-	// Actualizamos el valor a0_valor_alto, al máximo medido por el acelerador.
-	// Para corregir el valor por el real obtenido de la lectura.
-	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
-		a0_valor_alto = cl_acelerador;
 
 	// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
 	if (cl_acelerador < a0_valor_reposo) {
