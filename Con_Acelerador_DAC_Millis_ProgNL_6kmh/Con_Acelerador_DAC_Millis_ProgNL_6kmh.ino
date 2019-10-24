@@ -381,8 +381,6 @@ void ayudaArranque() {
 				// Mandamos 6 km/h directamente al DAC.
 				dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
 				nivel_aceleracion_prev = a0_valor_6kmh;
-				// Ajustamos contador para cálculo del progresivo.
-				contador_retardo_aceleracion = 5;
 				ayuda_arranque_fijada = true;
 			}
 		}
@@ -430,7 +428,7 @@ float calculaAceleradorProgresivoNoLineal2(float v_cruceroin) {
 
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if (ayuda_salida && !pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
+	if (ayuda_salida && pulsos == 0 && leeAcelerador(3) > a0_valor_6kmh) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
