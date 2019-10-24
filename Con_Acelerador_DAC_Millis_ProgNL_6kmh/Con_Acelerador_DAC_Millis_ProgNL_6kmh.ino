@@ -124,7 +124,7 @@ const float a0_valor_suave = 307.0;	// 1.50
 const float a0_valor_5_4kmh = 410.0;	// 2.00
 const float a0_valor_6kmh = 450.0;	// 2.19
 const float a0_valor_alto = 798.0;	// 3.90
-const float a0_valor_max = 810.0;	// 3.95
+//const float a0_valor_max = 810.0;	// 3.95
 
 // Variables de tiempo.
 const unsigned long tiempo_act = 333;
@@ -408,23 +408,6 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 	return nivel_aceleraciontmp;
 }
 
-float calculaAceleradorProgresivoNoLineal2(float v_cruceroin) {
-	float nivel_aceleraciontmp;
-
-	// Progresivo no lineal.
-	fac_n = a0_valor_5_4kmh;
-	fac_m = (a0_valor_max - a0_valor_5_4kmh) / pow(cnf.retardo_aceleracion, fac_p);
-	nivel_aceleraciontmp = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
-
-	if (nivel_aceleraciontmp < a0_valor_reposo) {
-		nivel_aceleraciontmp = a0_valor_reposo;
-	} else if (nivel_aceleraciontmp > v_cruceroin) {
-		nivel_aceleraciontmp = v_cruceroin;
-	}
-
-	return nivel_aceleraciontmp;
-}
-
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
 	if (ayuda_salida && pulsos == 0 && leeAcelerador(3) > a0_valor_6kmh) {
@@ -442,13 +425,7 @@ void mandaAcelerador(float vf_acelerador) {
 				}
 			// Si el modo crucero está activo y el crucero no está fijado.
 			} else if (cnf.modo_crucero && !crucero_fijado) {
-				// Si no se está acelerando.
-				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 20)) {
-					nivel_aceleracion = calculaAceleradorProgresivoNoLineal2(v_crucero);
-				// Si se acelera.
-				} else {
-					nivel_aceleracion = vf_acelerador;
-				}
+				nivel_aceleracion = vf_acelerador;
 			// Modo crucero desactivado.
 			} else {
 				nivel_aceleracion = vf_acelerador;
