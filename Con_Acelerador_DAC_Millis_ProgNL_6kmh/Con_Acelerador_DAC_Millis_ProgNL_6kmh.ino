@@ -3,22 +3,9 @@
 //#include <EEPROM.h>
 #include "tones.h"
 
-/*
- * Externalización de fichero de configuración. Podrás seleccionar el
- * tipo de versión que quieres utilizar o utilizar el Custom con los
- * cambios que más te gusten.
- */
-
-// Versión con fijación contínua de crucero (soltando de golpe).
-//#include "config_continuo.h"
-// Versión con fijación de crucero a los 2,8 segundos.
-#include "config_tiempo.h"
-// Versión para jugar con los parámetros. ;)
-//#include "config_custom.h"
-
 const char* version = "2.3.7 Develop";
 
-/* 
+/*
                      Versión Con Acelerador y DAC
                  Con_Acelerador_DAC_Millis_ProgNL_6kmh
 ------------------------------------------------------------------------
@@ -95,6 +82,23 @@ AGRADECIMIENTOS:
  * Gracias a zereal por sus ideas de concepto y a faeletronic por el
  * testing.
  */
+
+//=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
+
+/*
+ * Externalización de fichero de configuración. Podrás seleccionar el
+ * tipo de versión que quieres utilizar o utilizar el Custom con los
+ * cambios que más te gusten.
+ */
+
+// Versión con fijación contínua de crucero (soltando de golpe).
+//#include "config_continuo.h"
+// Versión con fijación de crucero a los 2,8 segundos.
+#include "config_tiempo.h"
+// Versión para jugar con los parámetros. ;)
+//#include "config_custom.h"
+
+//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
 Adafruit_MCP4725 dac;
 ConfigContainer cnf;
