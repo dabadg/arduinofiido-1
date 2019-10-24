@@ -602,12 +602,14 @@ void loop() {
 		delay(1000);
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
 
-		// Pintamos 30 lecturas del valor del acelerador para poder hacer un debug.
-		Serial.begin(19200);
+		if (!cnf.habilitar_consola)
+			Serial.begin(19200);
+
 		int lines = 0;
 		Serial.println("Error de acelerador detectado.");
 		Serial.println("> Abriendo puerto para mostrar medidas. [Tome medidas en reposo y a máxima potencia].");
 
+		// Pintamos 30 lecturas del valor del acelerador para poder hacer un Debug.
 		while (lines < 30) {
 			delay(1000);
 			Serial.print("Valor Acelerador: ");
