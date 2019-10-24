@@ -287,7 +287,7 @@ float leeAcelerador(int nmuestras) {
 
 	// Actualizamos el valor a0_valor_alto, al máximo medido por el acelerador.
 	// Para corregir el valor por el real obtenido de la lectura.
-	if (cnf.recalcular_rangos_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
+	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
 		a0_valor_alto = cl_acelerador;
 
 	// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
@@ -319,7 +319,7 @@ boolean validaMinAcelerador(int nmuestras) {
 	// del acelerador y desactivamos el acelerador.
 	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 40)) {
 		// Si queremos arrancar con la actualización de los valores reales tomados por el ecelerador.
-		if (cnf.recalcular_rangos_acelerador) {
+		if (cnf.recalcular_rango_min_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
 		}
 		status = true;
