@@ -14,7 +14,7 @@ struct ConfigContainer {
 
 	// Habilita los tonos de inicialización del sistema.
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
-	boolean buzzer_activo = true;
+	boolean buzzer_activo = false;
 
 	// -------------- ACELERADOR
 
@@ -24,7 +24,7 @@ struct ConfigContainer {
 
 	// (True) si se desea activar la posibilidad de acelerar desde
 	// parado a 6 km/h arrancando con el freno pulsado.
-	boolean freno_pulsado = true;
+	boolean freno_pulsado = false;
 
 	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
 	unsigned int retardo_ayuda_arranque = 600;
@@ -47,8 +47,8 @@ struct ConfigContainer {
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// Con el valor 2 se va actualizando la configuración
 	// constantemente y mantiene la última medida al soltar el acelerador.
-	// 20 * 140 = 2800 ms.
-	unsigned int pulsos_fijar_crucero = 20;
+	// 2 * 140 = 280 ms.
+	unsigned int pulsos_fijar_crucero = 2;
 
 	// False --> Mantiene valor que tenía el crucero antes de entrar a
 	// la asistencia de 6km/h.
@@ -57,8 +57,8 @@ struct ConfigContainer {
 	boolean liberar_crucero_con_acelerador = true;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// 23 * 140 = 3220 ms.
-	unsigned int pulsos_liberar_crucero = 23;
+	// 33 * 140 = 4622 ms.
+	unsigned int pulsos_liberar_crucero = 33;
 
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
@@ -87,4 +87,3 @@ struct ConfigContainer {
 };
 
 // EOF
-
