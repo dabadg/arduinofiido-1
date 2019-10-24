@@ -429,7 +429,7 @@ float calculaAceleradorProgresivoNoLineal2(float v_cruceroin) {
 
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if (ayuda_salida && !pedaleo && leeAcelerador(3) > a0_valor_suave) {
+	if (ayuda_salida && !pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
