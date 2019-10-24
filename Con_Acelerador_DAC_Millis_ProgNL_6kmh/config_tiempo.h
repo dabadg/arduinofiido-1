@@ -31,7 +31,7 @@ struct ConfigContainer {
 
 	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
 	// progresivo desde alta potencia.
-	boolean activar_progresivo_ayuda_arranque = false;
+	boolean activar_progresivo_ayuda_arranque = true;
 
 	// Valor inicial de salida en la asistencia 6 km/h.
 	// Como mínimo tendrá que tener el valor de la constante
@@ -45,8 +45,6 @@ struct ConfigContainer {
 	boolean modo_crucero = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// Con el valor 2 se va actualizando la configuración
-	// constantemente y mantiene la última medida al soltar el acelerador.
 	// 20 * 140 = 2800 ms.
 	unsigned int pulsos_fijar_crucero = 20;
 
