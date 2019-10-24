@@ -486,7 +486,6 @@ void setup() {
 	// Inicia serial.
 	if (cnf.habilitar_consola) {
 		Serial.begin(19200);
-		Serial.println("    Versión Con Acelerador y DAC");
 		Serial.print("Con_Acelerador_DAC_Millis_ProgNL_6kmh ");
 		Serial.println(version);
 	}
