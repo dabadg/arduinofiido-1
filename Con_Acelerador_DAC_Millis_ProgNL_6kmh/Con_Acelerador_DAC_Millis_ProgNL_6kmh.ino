@@ -1,10 +1,12 @@
+#include <Adafruit_MCP4725.h>
 #include <Arduino.h>
+//#include <EEPROM.h>
 #include "tones.h"
 
 /* Externalización de fichero de configuración.
  * Podrás seleccionar el tipo de versión que quieres utilizar
- * O utilizar el Custom con los cambios que más te gusten.
-*/
+ * o utilizar el Custom con los cambios que más te gusten.
+ */
 
 // Versión con fijación contínua de crucero (soltando de golpe).
 //#include "config_continuo.h"
@@ -12,9 +14,6 @@
 #include "config_tiempo.h"
 // Versión para jugar con los parámetros. ;)
 //#include "config_custom.h"
-
-#include <Adafruit_MCP4725.h>
-//#include <EEPROM.h>
 
 const char* version = "2.3.7 Develop";
 
