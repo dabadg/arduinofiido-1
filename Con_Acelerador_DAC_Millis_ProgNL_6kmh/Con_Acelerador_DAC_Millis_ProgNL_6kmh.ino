@@ -1,13 +1,17 @@
 #include <Arduino.h>
 #include "tones.h"
 
-// Externalización de fichero de configuración.
-// Podrás seleccionar el tipo de versión que quieres utilizar
-// O utilizar el custom con los cambios que más te gusten.
+/* Externalización de fichero de configuración.
+ * Podrás seleccionar el tipo de versión que quieres utilizar
+ * O utilizar el Custom con los cambios que más te gusten.
+*/
 
-//#include "config_continuo.h" // Versión con fijación continua de crucero.
-#include "config_tiempo.h" // Versión con fijación de crucero en 2,8s.
-//#include "config_custom.h" // Versión para jugar con los parámetros. ;)
+// Versión con fijación contínua de crucero (soltando de golpe).
+//#include "config_continuo.h"
+// Versión con fijación de crucero a los 2,8 segudos.
+#include "config_tiempo.h"
+// Versión para jugar con los parámetros. ;)
+//#include "config_custom.h"
 
 #include <Adafruit_MCP4725.h>
 //#include <EEPROM.h>
@@ -92,16 +96,18 @@ AGRADECIMIENTOS:
  * testing.
  */
 
-
 Adafruit_MCP4725 dac;
 ConfigContainer cnf;
 
 //======= PINES ========================================================
-const int pin_acelerador = A0; // Pin acelerador.
-const int pin_pedal = 2; // Pin sensor pas, en Nano/Uno usar 2 ó 3.
-const int pin_freno = 3; // Pin de activación del freno.
-const int pin_piezo = 11; // Pin del zumbador.
-// Resto de pines 9 y 10.
+// Pin del acelerador.
+const int pin_acelerador = A0;
+// Pin sensor PAS, en Nano/Uno usar 2 ó 3.
+const int pin_pedal = 2;
+// Pin de activación del freno.
+const int pin_freno = 3;
+// Pin del zumbador.
+const int pin_piezo = 11;
 
 //======= VARIABLES PARA CÁLCULOS ======================================
 
@@ -113,7 +119,6 @@ const float a0_valor_minimo = 235.0;	// 1.15
 const float a0_valor_suave = 307.0;	// 1.50
 const float a0_valor_5_4kmh = 410.0;	// 2.00
 const float a0_valor_6kmh = 450.0;	// 2.19
-//const float a0_valor_medio = 550.0;	// 2.68
 float a0_valor_alto = 798.0;		// 3.90
 const float a0_valor_max = 810.0;	// 3.95
 
@@ -271,7 +276,6 @@ void anulaCruceroConFreno() {
 // --------- Acelerador
 
 float leeAcelerador(int nmuestras) {
-
 	float cl_acelerador = 0;
 
 	// Leemos nivel de acelerador tomando n medidas.
@@ -286,9 +290,10 @@ float leeAcelerador(int nmuestras) {
 	if (cnf.recalcular_rangos_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
 		a0_valor_alto = cl_acelerador;
 
-	// Nivelamos los valores de la media para que no se salgan del rango de máximo/mínimo.
+	// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
 	if (cl_acelerador < a0_valor_reposo) {
 		cl_acelerador = a0_valor_reposo;
+	// Nivelamos los valores de la media para que no se salgan del rango de máximo.
 	} else if (cl_acelerador > a0_valor_alto) {
 		cl_acelerador = a0_valor_alto;
 	}
@@ -314,7 +319,7 @@ boolean validaMinAcelerador(int nmuestras) {
 	// del acelerador y desactivamos el acelerador.
 	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 40)) {
 		// Si queremos arrancar con la actualización de los valores reales tomados por el ecelerador.
-		if(cnf.recalcular_rangos_acelerador){
+		if (cnf.recalcular_rangos_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
 		}
 		status = true;
@@ -322,6 +327,7 @@ boolean validaMinAcelerador(int nmuestras) {
 		a0_valor_reposo = 0;
 		SOS_TONE(pin_piezo);
 	}
+
 	delay(100);
 
 	return status;
@@ -338,7 +344,7 @@ void ayudaArranque() {
 		while ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) < 250) {
 			delay(1);
 			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-			if (p_pulsos <= 2 && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo,20)) {
+			if (p_pulsos <= 2 && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 20)) {
 				anulaCrucero();
 				break;
 			}
@@ -541,7 +547,6 @@ void setup() {
 		// Tono de finalización configuración del sistema.
 		repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 90, 90);
 	}
-
 }
 
 void loop() {
@@ -597,26 +602,27 @@ void loop() {
 
 		anulaCruceroConFreno();
 		mandaAcelerador(v_acelerador);
-
 	} else {
-
 		delay(1000);
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
 
 		// Pintamos 30 lecturas del valor del acelerador para poder hacer un debug.
 		Serial.begin(19200);
-		int lines=0;
+		int lines = 0;
 		Serial.println("Error de acelerador detectado.");
 		Serial.println("> Abriendo puerto para mostrar medidas. [Tome medidas en reposo y a máxima potencia].");
+
 		while (lines < 30) {
 			delay(1000);
 			Serial.print("Valor Acelerador: ");
 			Serial.println(leeAcelerador(3));
 			lines++;
 		}
+
 		Serial.print("> Cerrando puerto.");
 		Serial.end();
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
+
 		// Bloqueamos el loop.
 		//float nivel_aceleracion_prevv;
 		//float nivel_aceleracionv;
