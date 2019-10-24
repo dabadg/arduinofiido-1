@@ -1,7 +1,7 @@
 #include <Arduino.h>
 //======= FUNCIONES DE TONOS ===========================================
 
-//================== TONES ==================
+//================== TONES ===================
 // Frecuencias 4 octavas de
 int c[5]={131,262,523,1046,2093};       // Do
 int cs[5]={139,277,554,1108,2217};      // Do#
@@ -46,7 +46,4 @@ void repeatTones(int pin_piezo, boolean trigger, int steps, int frequency, int d
 	}
 }
 
-
-
-
-
+// EOF
