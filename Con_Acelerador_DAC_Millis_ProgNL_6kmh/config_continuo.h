@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-//=================== VARIABLES CONFIGURABLES POR EL USUARIO =======
+//=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
 
 struct ConfigContainer {
 
@@ -10,17 +10,18 @@ struct ConfigContainer {
 	// si no (0x62).
 	int dir_dac = 0x60;
 
-	// -------------- Tonos
+	// -------------- TONOS
 
 	// Habilita los tonos de inicialización del sistema.
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
 
-	// -------------- Acelerador
+	// -------------- ACELERADOR
 
-	boolean recalcular_rangos_acelerador = true;
+	boolean recalcular_rango_min_acelerador = true;
+	boolean recalcular_rango_max_acelerador = false;
 
-	// -------------- Asistencia 6kmh
+	// -------------- ASISTENCIA 6 KM/H
 
 	// (True) si se desea activar la posibilidad de acelerar desde
 	// parado a 6 km/h arrancando con el freno pulsado.
@@ -38,7 +39,7 @@ struct ConfigContainer {
 	// a0_valor_6kmh --> 450.
 	float v_salida_progresivo_ayuda_arranque = 700;
 
-	// -------------- Crucero
+	// -------------- CRUCERO
 
 	// True --> Modo crucero.
 	// False --> Manda señal del acelerador.
@@ -67,7 +68,7 @@ struct ConfigContainer {
 	// Freno anula el tiempo.
 	unsigned int retardo_inicio_progresivo = 10;
 
-	// -------------- Progresivos
+	// -------------- PROGRESIVOS
 
 	// Suavidad de los progresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
@@ -85,3 +86,6 @@ struct ConfigContainer {
 	// Habilita la salida de datos por consola.
 	boolean habilitar_consola = false;
 };
+
+// EOF
+
