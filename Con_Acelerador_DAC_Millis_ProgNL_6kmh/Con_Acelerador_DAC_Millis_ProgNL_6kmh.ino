@@ -3,7 +3,7 @@
 //#include <EEPROM.h>
 #include "tones.h"
 
-const char* version = "2.3.7 Develop";
+const char* version = "2.3.7 RC1";
 
 /*
                      Versión Con Acelerador y DAC
@@ -100,6 +100,9 @@ AGRADECIMIENTOS:
 //#include "config_sincrucero.h"
 // Versión con fijación de crucero a los 2,8 segundos.
 #include "config_tiempo.h"
+
+// Sólo para propósitos de Testing. TODO: Eliminar en versión final.
+const boolean manda_Acelerador_2 = false;
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
@@ -603,8 +606,12 @@ void loop() {
 		}
 
 		anulaCruceroConFreno();
-		mandaAcelerador(v_acelerador);
-		//mandaAcelerador2(v_acelerador);
+
+		if (!manda_Acelerador_2) {
+			mandaAcelerador(v_acelerador);
+		} else {
+			mandaAcelerador2(v_acelerador);
+		}
 	} else {
 		delay(1000);
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
