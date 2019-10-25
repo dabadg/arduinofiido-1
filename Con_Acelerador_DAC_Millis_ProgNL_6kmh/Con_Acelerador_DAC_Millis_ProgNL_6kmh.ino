@@ -139,7 +139,6 @@ unsigned long loop_ultima_ejecucion_millis;
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
 byte a_pulsos = 0;
-boolean pedaleo = false;
 
 // Contadores de paro, aceleración y auto_progresivo.
 int contador_retardo_aceleracion = 0;
@@ -188,6 +187,8 @@ unsigned int contador_freno_anulacion_crucero;
 //======= Variables interrupción =======================================
 // Variable donde se suman los pulsos del sensor PAS.
 volatile byte p_pulsos = 0;
+// Variable para la detección del pedaleo.
+volatile boolean pedaleo = false;
 
 //======= FUNCIONES ====================================================
 
