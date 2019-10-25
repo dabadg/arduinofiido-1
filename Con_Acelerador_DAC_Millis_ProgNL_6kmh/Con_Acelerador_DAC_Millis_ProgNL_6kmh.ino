@@ -467,8 +467,8 @@ void setup() {
 
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
-	// Fija voltaje inicial en Dac (0.85v).
-	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
+	// Fija voltaje inicial en Dac (3.95v).
+	dac.setVoltage(813, false);
 
 	// Lee configuración desde la eeprom.
 	//const byte EEPROM_INIT_ADDRESS = 11; // Posición de memoria que almacena los datos de modo.
