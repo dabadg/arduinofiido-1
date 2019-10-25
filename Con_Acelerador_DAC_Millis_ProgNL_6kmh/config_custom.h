@@ -47,8 +47,8 @@ struct ConfigContainer {
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// Con el valor 2 se va actualizando la configuración
 	// constantemente y mantiene la última medida al soltar el acelerador.
-	// 2 * 140 = 280 ms.
-	unsigned int pulsos_fijar_crucero = 2;
+	// 20 * 140 = 2800 ms.
+	unsigned int pulsos_fijar_crucero = 20;
 
 	// False --> Mantiene valor que tenía el crucero antes de entrar a
 	// la asistencia de 6km/h.
