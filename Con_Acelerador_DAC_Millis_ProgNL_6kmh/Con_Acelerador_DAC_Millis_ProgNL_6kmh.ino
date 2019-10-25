@@ -125,7 +125,7 @@ float a0_valor_reposo = 175.0;		// 0.85
 const float a0_valor_minimo = 237.0;	// 1.15
 const float a0_valor_suave = 308.0;	// 1.50
 const float a0_valor_6kmh = 451.0;	// 2.19
-const float a0_valor_alto = 761.0;	// 3.70
+const float a0_valor_alto = 782.0;	// 3.80
 //const float a0_valor_alto = 803.0;	// 3.90
 //const float a0_valor_max = 813.0;	// 3.95
 
