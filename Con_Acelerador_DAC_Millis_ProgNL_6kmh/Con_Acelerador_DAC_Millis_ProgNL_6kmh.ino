@@ -121,13 +121,13 @@ const int pin_piezo = 11;
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 // Al inicializar, lee el valor real (a0_valor_reposo).
 
-float a0_valor_reposo = 175.0;		// 0.85
-const float a0_valor_minimo = 237.0;	// 1.15
-const float a0_valor_suave = 308.0;	// 1.50
-const float a0_valor_6kmh = 451.0;	// 2.19
-const float a0_valor_alto = 782.0;	// 3.80
-//const float a0_valor_alto = 803.0;	// 3.90
-//const float a0_valor_max = 813.0;	// 3.95
+float a0_valor_reposo = 174.30;		// 0.85
+const float a0_valor_minimo = 235.82;	// 1.15
+const float a0_valor_suave = 308.59;	// 1.50
+const float a0_valor_6kmh = 449.09;	// 2.19
+const float a0_valor_alto = 779.24;	// 3.80
+//const float a0_valor_alto = 799.75;	// 3.90
+//const float a0_valor_max = 810.0;	// 3.95
 
 // Variables de tiempo.
 const unsigned long tiempo_act = 333;
@@ -468,7 +468,7 @@ void setup() {
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
 	// Fija voltaje inicial en Dac (3.95v).
-	dac.setVoltage(813, false);
+	dac.setVoltage(810, false);
 
 	// Lee configuración desde la eeprom.
 	//const byte EEPROM_INIT_ADDRESS = 11; // Posición de memoria que almacena los datos de modo.
