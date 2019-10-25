@@ -124,7 +124,6 @@ const int pin_piezo = 11;
 float a0_valor_reposo = 190.0;		// 0.85
 const float a0_valor_minimo = 235.0;	// 1.15
 const float a0_valor_suave = 307.0;	// 1.50
-const float a0_valor_5_4kmh = 410.0;	// 2.00
 const float a0_valor_6kmh = 450.0;	// 2.19
 const float a0_valor_alto = 798.0;	// 3.90
 //const float a0_valor_max = 810.0;	// 3.95
