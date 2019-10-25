@@ -319,7 +319,7 @@ boolean validaMinAcelerador(int nmuestras) {
 
 	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
 	// del acelerador y desactivamos el acelerador.
-	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 40)) {
+	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 45)) {
 		// Si queremos arrancar con la actualización de los valores reales tomados por el ecelerador.
 		if (cnf.recalcular_rango_min_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
