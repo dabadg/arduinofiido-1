@@ -445,6 +445,32 @@ void mandaAcelerador(float vf_acelerador) {
 	}
 }
 
+void mandaAcelerador2(float vf_acelerador) {
+	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
+	if (ayuda_salida && pulsos == 0 && leeAcelerador(3) > a0_valor_6kmh) {
+		ayudaArranque();
+	} else if (cnf.modo_crucero == true) {
+		// Progresivo no lineal.
+		fac_n = a0_valor_reposo;
+		fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
+		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
+
+		if (nivel_aceleracion < a0_valor_reposo) {
+			nivel_aceleracion = a0_valor_reposo;
+		} else if (nivel_aceleracion > v_crucero) {
+			nivel_aceleracion = v_crucero;
+		}
+	} else {
+		nivel_aceleracion = vf_acelerador;
+	}
+
+	// Fijamos el acelerador si el valor anterior es distinto al actual.
+	if (nivel_aceleracion_prev != nivel_aceleracion) {
+		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
+		nivel_aceleracion_prev = nivel_aceleracion;
+	}
+}
+
 // --------- Generales
 
 void paraMotor() {
@@ -578,6 +604,7 @@ void loop() {
 
 		anulaCruceroConFreno();
 		mandaAcelerador(v_acelerador);
+		//mandaAcelerador2(v_acelerador);
 	} else {
 		delay(1000);
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
