@@ -336,14 +336,14 @@ boolean validaMinAcelerador(int nmuestras) {
 
 	l_acelerador_reposo = l_acelerador_reposo / nmuestras;
 
-	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
-	// del acelerador y desactivamos el acelerador.
 	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 45)) {
 		// Si queremos arrancar con la actualización de los valores reales tomados por el ecelerador.
 		if (cnf.recalcular_rango_min_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
 		}
 		status = true;
+	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
+	// del acelerador y desactivamos el acelerador.
 	} else {
 		a0_valor_reposo = 0;
 		SOS_TONE(pin_piezo);
@@ -513,7 +513,7 @@ void setup() {
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
 	// Fija voltaje inicial en Dac.
-	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
+	dac.setVoltage(810, false);
 
 	// Lee configuración desde la eeprom.
 	//const byte EEPROM_INIT_ADDRESS = 11; // Posición de memoria que almacena los datos de modo.
