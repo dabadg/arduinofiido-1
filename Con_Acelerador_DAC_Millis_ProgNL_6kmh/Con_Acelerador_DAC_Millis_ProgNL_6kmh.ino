@@ -223,8 +223,8 @@ void pedal() {
 // --------- Crucero
 
 void estableceCrucero(float vl_acelerador) {
-	// Ejecutamos método cada 100 ms.
-	if ((unsigned long)(millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
+	// Ejecutamos método cada 280 ms.
+	if ((unsigned long)(millis() - establece_crucero_ultima_ejecucion_millis) > 280) {
 		// El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre
 		// que esta sea superior al valor de referencia.
 		if (pedaleo && vl_acelerador > a0_valor_minimo) {
