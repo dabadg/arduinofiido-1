@@ -85,6 +85,7 @@ struct ConfigContainer {
 	int tiempo_ejecucion_progresivo_ayuda_arranque = 1500;
 	
 	// True --> El progresivo entra con crucero fijado o sin fijar.
+	// No poner a True si modo_crucero_continuo está a False.
 	// False --> El progresivo sólo entra si el crucero está fijado.
 	boolean modo_todo_progresivo = false;
 
