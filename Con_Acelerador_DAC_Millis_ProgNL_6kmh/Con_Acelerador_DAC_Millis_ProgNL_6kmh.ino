@@ -3,7 +3,7 @@
 //#include <EEPROM.h>
 #include "tones.h"
 
-const char* version = "2.3.8 RC6";
+const char* version = "2.3.9 RC1";
 
 /*
                      Versión Con Acelerador y DAC
