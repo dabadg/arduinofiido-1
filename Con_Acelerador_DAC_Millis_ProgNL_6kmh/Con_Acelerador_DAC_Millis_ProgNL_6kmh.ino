@@ -101,8 +101,9 @@ AGRADECIMIENTOS:
 // Versión con fijación de crucero a los 2,8 segundos.
 #include "config_tiempo.h"
 
-// Sólo para propósitos de Testing. TODO: Eliminar en versión final.
-const boolean manda_Acelerador_2 = false;
+// Establece crucero contínuo y los progresivos se aplican si el crucero
+// está fijado y también si no lo está.
+const boolean modo_clasico = false;
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
@@ -220,6 +221,20 @@ void pedal() {
 }
 
 // --------- Crucero
+
+void estableceCrucero(float vl_acelerador) {
+	// Ejecutamos método cada 100 ms.
+	if ((unsigned long)(millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
+		// El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre
+		// que esta sea superior al valor de referencia.
+		if (pedaleo && vl_acelerador > a0_valor_minimo) {
+			v_crucero = vl_acelerador;
+			crucero_fijado = true;
+		}
+
+		establece_crucero_ultima_ejecucion_millis = millis();
+	}
+}
 
 void estableceCruceroPorTiempo(float vl_acelerador) {
 	// Ejecutamos método cada 100 ms.
@@ -559,8 +574,13 @@ void loop() {
 	if (a0_valor_reposo > 0) {
 		float v_acelerador = leeAcelerador(30);
 
-		if (cnf.modo_crucero)
-			estableceCruceroPorTiempo(v_acelerador);
+		if (cnf.modo_crucero) {
+			if (!modo_clasico) {
+				estableceCruceroPorTiempo(v_acelerador);
+			} else {
+				estableceCrucero(v_acelerador);
+			}
+		}
 
 		// Ejecutamos cada 333 ms.
 		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
@@ -608,7 +628,7 @@ void loop() {
 
 		anulaCruceroConFreno();
 
-		if (!manda_Acelerador_2) {
+		if (!modo_clasico) {
 			mandaAcelerador(v_acelerador);
 		} else {
 			mandaAcelerador2(v_acelerador);
