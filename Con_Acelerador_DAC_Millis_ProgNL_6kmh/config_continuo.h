@@ -62,8 +62,8 @@ struct ConfigContainer {
 	boolean liberar_crucero_con_acelerador = true;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// 23 * 140 = 3220 ms.
-	unsigned int pulsos_liberar_crucero = 23;
+	// 33 * 140 = 4620 ms.
+	unsigned int pulsos_liberar_crucero = 33;
 
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
@@ -97,4 +97,3 @@ struct ConfigContainer {
 };
 
 // EOF
-
