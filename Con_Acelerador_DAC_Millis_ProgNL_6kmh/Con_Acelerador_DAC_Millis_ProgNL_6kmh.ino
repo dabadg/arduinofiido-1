@@ -3,7 +3,7 @@
 //#include <EEPROM.h>
 #include "tones.h"
 
-const char* version = "2.3.8 RC4";
+const char* version = "2.3.8 RC6";
 
 /*
                      Versión Con Acelerador y DAC
@@ -92,14 +92,14 @@ AGRADECIMIENTOS:
  */
 
 // Versión con fijación contínua de crucero (soltando de golpe).
-//#include "config_continuo.h"
+#include "config_continuo.h"
 // Versión para jugar con los parámetros. ;)
 //#include "config_custom.h"
 // Versión sin fijación de crucero --> Comportamiento como de fábrica
 // con el acelerador legalizado.
 //#include "config_sincrucero.h"
 // Versión con fijación de crucero a los 2,8 segundos.
-#include "config_tiempo.h"
+//#include "config_tiempo.h"
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
