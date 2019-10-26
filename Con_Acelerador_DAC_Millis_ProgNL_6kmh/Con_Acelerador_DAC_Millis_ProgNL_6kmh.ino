@@ -350,7 +350,7 @@ void ayudaArranque() {
 		while ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) < 250) {
 			delay(1);
 			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-			if (p_pulsos <= 2 && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 20)) {
+			if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 20)) {
 				anulaCrucero();
 				break;
 			}
@@ -362,13 +362,13 @@ void ayudaArranque() {
 	// Con esto conseguimos evitar que si se toca acelerador se ejecute automáticamente
 	// la asistencia y la bicicleta se ponga en marcha.
 	if (cnf.retardo_ayuda_arranque > 0 && leeAcelerador(3) > a0_valor_6kmh) {
-		while (p_pulsos <= 2 && (unsigned long)(millis() - timer_progresivo_ayuda_arranque) < cnf.retardo_ayuda_arranque) {
+		while (!pedaleo && (unsigned long)(millis() - timer_progresivo_ayuda_arranque) < cnf.retardo_ayuda_arranque) {
 			delay(1);
 		}
 	}
 
 	// Mientras no pedaleamos y aceleramos.
-	while (p_pulsos <= 2 && leeAcelerador(3) > a0_valor_6kmh) { // TODO Cambiar p_pulsos<=2 por comparación de valor cadencia.
+	while (!pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
 		// Iniciamos la salida progresiva inversa.
 		if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh) {
 			// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
@@ -392,7 +392,7 @@ void ayudaArranque() {
 		}
 	}
 
-	if (p_pulsos <= 2 && leeAcelerador(3) <= a0_valor_reposo) {
+	if (!pedaleo && leeAcelerador(3) <= a0_valor_reposo) {
 		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 		nivel_aceleracion_prev = a0_valor_reposo;
 	}
@@ -417,7 +417,7 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if (ayuda_salida && pulsos == 0 && leeAcelerador(3) > a0_valor_6kmh) {
+	if (ayuda_salida && !pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
@@ -497,8 +497,8 @@ void setup() {
 
 	// Configura DAC.
 	dac.begin(cnf.dir_dac);
-	// Fija voltaje inicial en Dac (3.95v).
-	dac.setVoltage(810, false);
+	// Fija voltaje inicial en Dac.
+	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 
 	// Lee configuración desde la eeprom.
 	//const byte EEPROM_INIT_ADDRESS = 11; // Posición de memoria que almacena los datos de modo.
