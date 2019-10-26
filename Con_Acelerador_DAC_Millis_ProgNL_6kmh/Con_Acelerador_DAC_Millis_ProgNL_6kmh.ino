@@ -332,7 +332,7 @@ boolean validaMinAcelerador(int nmuestras) {
 
 	l_acelerador_reposo = l_acelerador_reposo / nmuestras;
 
-	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 45)) {
+	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 50)) {
 		// Si queremos arrancar con la actualización de los valores reales tomados por el ecelerador.
 		if (cnf.recalcular_rango_min_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
