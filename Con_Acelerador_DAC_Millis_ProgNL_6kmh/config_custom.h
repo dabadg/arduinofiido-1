@@ -43,6 +43,11 @@ struct ConfigContainer {
 	// True --> Modo crucero.
 	// False --> Manda señal del acelerador.
 	boolean modo_crucero = true;
+	
+	// True --> Habilita método de crucero contínuo. La variable
+	// pulsos_fijar_crucero no tiene efecto en este modo.
+	// False --> Habilita método de crucero por tiempo.
+	boolean modo_crucero_continuo = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// Con el valor 2 se va actualizando la configuración
@@ -80,6 +85,10 @@ struct ConfigContainer {
 	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
 	// 1500 ms.
 	int tiempo_ejecucion_progresivo_ayuda_arranque = 1500;
+
+	// True --> El progresivo entra con crucero fijado o sin fijar.
+	// False --> El progresivo sólo entra si el crucero está fijado.
+	boolean modo_todo_progresivo = false;
 
 	// -------------- DEBUG
 	// Habilita la salida de datos por consola.
