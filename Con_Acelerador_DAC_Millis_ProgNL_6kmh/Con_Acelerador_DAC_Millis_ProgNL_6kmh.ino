@@ -101,10 +101,6 @@ AGRADECIMIENTOS:
 // Versión con fijación de crucero a los 2,8 segundos.
 #include "config_tiempo.h"
 
-// Establece crucero contínuo y los progresivos se aplican si el crucero
-// está fijado y también si no lo está.
-const boolean modo_clasico = false;
-
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
 Adafruit_MCP4725 dac;
@@ -575,7 +571,7 @@ void loop() {
 		float v_acelerador = leeAcelerador(30);
 
 		if (cnf.modo_crucero) {
-			if (!modo_clasico) {
+			if (!cnf.modo_crucero_continuo) {
 				estableceCruceroPorTiempo(v_acelerador);
 			} else {
 				estableceCrucero(v_acelerador);
@@ -628,7 +624,7 @@ void loop() {
 
 		anulaCruceroConFreno();
 
-		if (!modo_clasico) {
+		if (!cnf.modo_todo_progresivo) {
 			mandaAcelerador(v_acelerador);
 		} else {
 			mandaAcelerador2(v_acelerador);
