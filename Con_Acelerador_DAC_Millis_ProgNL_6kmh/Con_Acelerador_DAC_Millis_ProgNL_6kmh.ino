@@ -125,8 +125,8 @@ float a0_valor_reposo = 174.30;		// 0.85
 const float a0_valor_minimo = 235.82;	// 1.15
 const float a0_valor_suave = 308.59;	// 1.50
 const float a0_valor_6kmh = 449.09;	// 2.19
-const float a0_valor_alto = 779.24;	// 3.80
-//const float a0_valor_alto = 799.75;	// 3.90
+//const float a0_valor_alto = 779.24;	// 3.80
+const float a0_valor_alto = 799.75;	// 3.90
 //const float a0_valor_max = 810.0;	// 3.95
 
 // Variables de tiempo.
