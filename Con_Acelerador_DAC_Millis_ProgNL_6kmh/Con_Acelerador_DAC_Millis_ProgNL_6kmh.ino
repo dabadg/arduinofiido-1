@@ -583,6 +583,12 @@ void loop() {
 		// Ejecutamos cada 333 ms.
 		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 			pulsos = p_pulsos;
+			p_pulsos = 0;
+
+			// Desactivamos pedaleo por cadencia.
+			if (pulsos < 2) {
+				pedaleo = false;
+			}
 
 			// Si no se pedalea.
 			if (!pedaleo) {
@@ -612,13 +618,6 @@ void loop() {
 				if (contador_retardo_aceleracion < cnf.retardo_aceleracion) {
 					contador_retardo_aceleracion++;
 				}
-			}
-
-			p_pulsos = 0;
-
-			// Desactivamos pedaleo por cadencia.
-			if (pulsos < 2) {
-				pedaleo = false;
 			}
 
 			loop_ultima_ejecucion_millis = millis();
