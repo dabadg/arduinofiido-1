@@ -164,6 +164,8 @@ boolean ayuda_salida = false;
 const int ciclo_decremento_progresivo_ayuda_arranque = 50;
 int decremento_progresivo_ayuda_arranque;
 
+// Valor recogido del acelerador.
+float v_acelerador;
 // Valor de crucero del acelerador.
 float v_crucero = a0_valor_reposo;
 // Variable que almacena el estado de notificación de fijar crucero.
@@ -568,7 +570,7 @@ void setup() {
 
 void loop() {
 	if (a0_valor_reposo > 0) {
-		float v_acelerador = leeAcelerador(30);
+		v_acelerador = leeAcelerador(30);
 
 		if (cnf.modo_crucero) {
 			if (!cnf.modo_crucero_continuo) {
