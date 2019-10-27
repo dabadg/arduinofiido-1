@@ -188,6 +188,9 @@ unsigned int contador_freno_anulacion_crucero;
 volatile byte p_pulsos = 0;
 // Variable para la detección del pedaleo.
 volatile boolean pedaleo = false;
+// Variable para modificación dinámica de las interrupciones para
+// activar pedaleo.
+volatile byte interrupciones = 2;
 
 //======= FUNCIONES ====================================================
 
@@ -212,7 +215,7 @@ void pedal() {
 	p_pulsos++;
 
 	// Activamos pedaleo por interrupciones.
-	if (++a_pulsos >= 2) {
+	if (++a_pulsos >= interrupciones) {
 		pedaleo = true;
 		a_pulsos = 0;
 	}
@@ -380,6 +383,10 @@ void ayudaArranque() {
 		}
 	}
 
+	// Aumentamos número de interrupciones para activar pedaleo para meternos en el while.
+	// Pedaleo está a false en este punto.
+	interrupciones = 4;
+
 	// Mientras no pedaleamos y aceleramos.
 	while (!pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
 		// Iniciamos la salida progresiva inversa.
@@ -404,6 +411,9 @@ void ayudaArranque() {
 			}
 		}
 	}
+
+	// Volvemos al número normal de interrupciones para activar pedaleo.
+	interrupciones = 2;
 
 	if (!pedaleo && leeAcelerador(3) <= a0_valor_reposo) {
 		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
