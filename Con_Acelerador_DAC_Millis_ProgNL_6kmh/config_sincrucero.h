@@ -60,8 +60,8 @@ struct ConfigContainer {
 	boolean liberar_crucero_con_acelerador = false;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// 23 * 140 = 3220 ms.
-	unsigned int pulsos_liberar_crucero = 23;
+	// 33 * 140 = 4620 ms.
+	unsigned int pulsos_liberar_crucero = 33;
 
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
@@ -83,11 +83,6 @@ struct ConfigContainer {
 	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
 	// 1500 ms.
 	int tiempo_ejecucion_progresivo_ayuda_arranque = 1500;
-	
-	// True --> El progresivo entra con crucero fijado o sin fijar.
-	// No poner a True si modo_crucero_continuo está a False.
-	// False --> El progresivo sólo entra si el crucero está fijado.
-	boolean modo_todo_progresivo = false;
 
 	// -------------- DEBUG
 	// Habilita la salida de datos por consola.
