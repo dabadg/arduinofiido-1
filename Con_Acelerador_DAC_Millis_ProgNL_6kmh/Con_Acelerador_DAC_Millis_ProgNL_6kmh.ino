@@ -462,6 +462,7 @@ void mandaAcelerador(float vf_acelerador) {
 	}
 }
 
+// TODO: Eliminar para la Release final.
 void mandaAcelerador2(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
 	if (ayuda_salida && pulsos == 0 && leeAcelerador(3) > a0_valor_6kmh) {
