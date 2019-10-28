@@ -415,7 +415,7 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 	float nivel_aceleraciontmp;
 
 	// Progresivo no lineal.
-	fac_n = a0_valor_reposo;
+	fac_n = a0_valor_reposo + 50;
 	fac_m = (v_cruceroin - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
 	nivel_aceleraciontmp = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
