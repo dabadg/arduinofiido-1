@@ -468,7 +468,7 @@ void mandaAcelerador2(float vf_acelerador) {
 		ayudaArranque();
 	} else if (cnf.modo_crucero == true) {
 		// Progresivo no lineal.
-		fac_n = a0_valor_reposo;
+		fac_n = a0_valor_reposo + 50;
 		fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
 		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
