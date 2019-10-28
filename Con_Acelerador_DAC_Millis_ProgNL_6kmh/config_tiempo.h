@@ -31,7 +31,7 @@ struct ConfigContainer {
 
 	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
 	// progresivo desde alta potencia.
-	boolean activar_progresivo_ayuda_arranque = false;
+	boolean activar_progresivo_ayuda_arranque = true;
 
 	// Valor inicial de salida en la asistencia 6 km/h.
 	// Como mínimo tendrá que tener el valor de la constante
@@ -83,11 +83,6 @@ struct ConfigContainer {
 	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
 	// 1500 ms.
 	int tiempo_ejecucion_progresivo_ayuda_arranque = 1500;
-	
-	// True --> El progresivo entra con crucero fijado o sin fijar.
-	// No poner a True si modo_crucero_continuo está a False.
-	// False --> El progresivo sólo entra si el crucero está fijado.
-	boolean modo_todo_progresivo = false;
 
 	// -------------- DEBUG
 	// Habilita la salida de datos por consola.
