@@ -125,7 +125,6 @@ float a0_valor_reposo = 174.30;		// 0.85
 const float a0_valor_minimo = 235.82;	// 1.15
 const float a0_valor_suave = 308.59;	// 1.50
 const float a0_valor_6kmh = 449.09;	// 2.19
-//const float a0_valor_alto = 779.24;	// 3.80
 const float a0_valor_alto = 799.75;	// 3.90
 //const float a0_valor_max = 810.0;	// 3.95
 
@@ -430,7 +429,7 @@ float calculaAceleradorProgresivoNoLineal(float v_cruceroin) {
 
 void mandaAcelerador(float vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if (ayuda_salida && !pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
+	if (ayuda_salida && !pedaleo && leeAcelerador(3) > a0_valor_suave + 5) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
@@ -459,33 +458,6 @@ void mandaAcelerador(float vf_acelerador) {
 			  dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
 			  nivel_aceleracion_prev = nivel_aceleracion;
 		}
-	}
-}
-
-// TODO: Eliminar para la Release final.
-void mandaAcelerador2(float vf_acelerador) {
-	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if (ayuda_salida && pulsos == 0 && leeAcelerador(3) > a0_valor_6kmh) {
-		ayudaArranque();
-	} else if (cnf.modo_crucero == true) {
-		// Progresivo no lineal.
-		fac_n = a0_valor_reposo + 50;
-		fac_m = (v_crucero - a0_valor_reposo) / pow(cnf.retardo_aceleracion, fac_p);
-		nivel_aceleracion = fac_n + fac_m * pow(contador_retardo_aceleracion, fac_p);
-
-		if (nivel_aceleracion < a0_valor_reposo) {
-			nivel_aceleracion = a0_valor_reposo;
-		} else if (nivel_aceleracion > v_crucero) {
-			nivel_aceleracion = v_crucero;
-		}
-	} else {
-		nivel_aceleracion = vf_acelerador;
-	}
-
-	// Fijamos el acelerador si el valor anterior es distinto al actual.
-	if (nivel_aceleracion_prev != nivel_aceleracion) {
-		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
-		nivel_aceleracion_prev = nivel_aceleracion;
 	}
 }
 
@@ -625,12 +597,7 @@ void loop() {
 		}
 
 		anulaCruceroConFreno();
-
-		if (!cnf.modo_todo_progresivo) {
-			mandaAcelerador(v_acelerador);
-		} else {
-			mandaAcelerador2(v_acelerador);
-		}
+		mandaAcelerador(v_acelerador);
 	} else {
 		delay(1000);
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
