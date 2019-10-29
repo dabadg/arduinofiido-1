@@ -368,7 +368,7 @@ void ayudaArranque() {
 		while ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) < 250) {
 			delay(1);
 			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-			if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 20)) {
+			if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 50)) {
 				anulaCrucero();
 				break;
 			}
@@ -442,7 +442,7 @@ void mandaAcelerador(float vf_acelerador) {
 			// Si el modo crucero está activo y el crucero está fijado.
 			if (cnf.modo_crucero && crucero_fijado) {
 				// Si no se está acelerando.
-				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 20)) {
+				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 50)) {
 					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
 				// Si se acelera.
 				} else {
