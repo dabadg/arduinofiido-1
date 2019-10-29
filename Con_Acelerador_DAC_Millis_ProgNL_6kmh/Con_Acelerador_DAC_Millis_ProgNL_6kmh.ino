@@ -536,6 +536,24 @@ void setup() {
 		if (cnf.pulsos_fijar_crucero < 2)
 			cnf.pulsos_fijar_crucero = 2;
 
+		// Estabiliza el progresivo inverso si se supera el valor de referencia..
+		if (cnf.v_salida_progresivo_ayuda_arranque > 710.0)
+			cnf.v_salida_progresivo_ayuda_arranque = 710.0;
+
+		// Estabiliza suavidad de los progresivos.
+		if (cnf.suavidad_progresivos < 1.0) {
+			cnf.suavidad_progresivos = 1.0;
+		} else if (cnf.suavidad_progresivos > 10.0) {
+			cnf.suavidad_progresivos = 10.0;
+		}
+
+		// Estabiliza suavidad de los auto_progresivos.
+		if (cnf.suavidad_autoprogresivos < 1.0) {
+			cnf.suavidad_autoprogresivos = 1.0;
+		} else if (cnf.suavidad_autoprogresivos > 10.0) {
+			cnf.suavidad_autoprogresivos = 10.0;
+		}
+
 		// Tono de finalización configuración del sistema.
 		repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 90, 90);
 	}
