@@ -121,12 +121,12 @@ const int pin_piezo = 11;
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 // Al inicializar, lee el valor real (a0_valor_reposo).
 
-float a0_valor_reposo = 174.30;		// 0.85
-const float a0_valor_minimo = 235.82;	// 1.15
-const float a0_valor_suave = 308.59;	// 1.50
-const float a0_valor_6kmh = 449.09;	// 2.19
-const float a0_valor_alto = 799.75;	// 3.90
-//const float a0_valor_max = 810.0;	// 3.95
+float a0_valor_reposo = 173.91;		// 0.85
+const float a0_valor_minimo = 235.29;	// 1.15
+const float a0_valor_suave = 306.90;	// 1.50
+const float a0_valor_6kmh = 448.07;	// 2.19
+const float a0_valor_alto = 797.94;	// 3.90
+//const float a0_valor_max = 808.17;	// 3.95
 
 // Variables de tiempo.
 const unsigned long tiempo_act = 500;
