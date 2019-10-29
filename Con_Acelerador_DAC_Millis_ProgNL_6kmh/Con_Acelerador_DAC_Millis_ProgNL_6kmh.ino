@@ -163,6 +163,10 @@ boolean ayuda_salida = false;
 const int ciclo_decremento_progresivo_ayuda_arranque = 50;
 int decremento_progresivo_ayuda_arranque;
 
+// Almacena el valor del acelerador en escala DAC.
+float valor_acelerador;
+// Variable para casteo de valor_acelerador.
+unsigned int valor_dac;
 // Valor recogido del acelerador.
 float v_acelerador;
 // Valor de crucero del acelerador.
@@ -200,8 +204,10 @@ boolean comparaConTolerancia(float valor, float valorReferencia, float toleranci
 }
 
 // Pasamos de escala acelerador -> DAC.
-int aceleradorEnDac(float vl_acelerador) {
-	return (unsigned int) vl_acelerador * 4096 / 1023;
+unsigned int aceleradorEnDac(float vl_acelerador) {
+	valor_acelerador = vl_acelerador * 4096 / 1023;
+	valor_dac = (unsigned int) valor_acelerador;
+	return valor_dac;
 }
 
 // --------- Pedal
