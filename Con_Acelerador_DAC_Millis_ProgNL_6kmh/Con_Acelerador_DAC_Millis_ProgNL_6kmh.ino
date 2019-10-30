@@ -205,7 +205,7 @@ boolean comparaConTolerancia(float valor, float valorReferencia, float toleranci
 
 // Pasamos de escala acelerador -> DAC.
 unsigned int aceleradorEnDac(float vl_acelerador) {
-	valor_acelerador = vl_acelerador * 4096 / 1023;
+	valor_acelerador = vl_acelerador * 4096.0 / 1023.0;
 	valor_dac = (unsigned int) valor_acelerador;
 	return valor_dac;
 }
