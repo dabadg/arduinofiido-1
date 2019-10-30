@@ -129,7 +129,6 @@ const float a0_valor_alto = 797.94;	// 3.90
 //const float a0_valor_max = 808.17;	// 3.95
 
 // Variables de tiempo.
-const unsigned long tiempo_act = 500;
 unsigned long loop_ultima_ejecucion_millis;
 
 // Variables para la detección del pedaleo.
@@ -578,7 +577,7 @@ void loop() {
 		}
 
 		// Ejecutamos cada 500 ms.
-		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
+		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > 500) {
 			pulsos = p_pulsos;
 			p_pulsos = 0;
 
