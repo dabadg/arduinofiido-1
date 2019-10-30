@@ -3,7 +3,7 @@
 //#include <EEPROM.h>
 #include "tones.h"
 
-const char* version = "2.4 Pre Release";
+const char* version = "2.4";
 
 /*
                      Versión Con Acelerador y DAC
@@ -79,8 +79,8 @@ DEVELOPERS:
 AGRADECIMIENTOS:
  * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
  * ideas, feedback, etc.
- * Gracias a zereal por sus ideas de concepto y a faeletronic por el
- * testing.
+ * Gracias a zereal por sus ideas de concepto y a faeletronic y
+ * basbonald por el testing.
  */
 
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
