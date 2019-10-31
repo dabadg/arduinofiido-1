@@ -620,7 +620,9 @@ void loop() {
 			loop_ultima_ejecucion_millis = millis();
 		}
 
-		anulaCruceroConFreno();
+		if (cnf.modo_crucero)
+			anulaCruceroConFreno();
+
 		mandaAcelerador(v_acelerador);
 	} else {
 		delay(1000);
