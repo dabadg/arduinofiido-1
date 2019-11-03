@@ -474,6 +474,7 @@ void paraMotor() {
 }
 
 void freno() {
+	pedaleo = false;
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
 	paraMotor();
