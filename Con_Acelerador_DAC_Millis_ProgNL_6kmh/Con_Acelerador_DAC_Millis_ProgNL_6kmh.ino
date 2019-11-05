@@ -1,10 +1,11 @@
 #include <Adafruit_MCP4725.h>
 #include <Arduino.h>
-//#include <EEPROM.h>
-#include "tones.h"
-#include "level.h"
 
-const char* version = "2.4.3";
+#include "Level.h"
+//#include <EEPROM.h>
+#include "Tones.h"
+
+const char* version = "2.4.4";
 
 /*
                      Versión Con Acelerador y DAC
