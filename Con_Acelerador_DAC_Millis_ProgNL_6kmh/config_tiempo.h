@@ -38,7 +38,7 @@ struct ConfigContainer {
 	// Valor inicial de salida en la asistencia 6 km/h.
 	// Como mínimo tendrá que tener el valor de la constante
 	// a0_valor_6kmh --> 450.
-	float v_salida_progresivo_ayuda_arranque = 700;
+	int v_salida_progresivo_ayuda_arranque = 700;
 
 	// -------------- CRUCERO
 

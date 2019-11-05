@@ -536,8 +536,8 @@ void setup() {
 			cnf.pulsos_fijar_crucero = 2;
 
 		// Estabiliza el progresivo inverso si se supera el valor de referencia..
-		if (cnf.v_salida_progresivo_ayuda_arranque > 710.0)
-			cnf.v_salida_progresivo_ayuda_arranque = 710.0;
+		if (cnf.v_salida_progresivo_ayuda_arranque > 710)
+			cnf.v_salida_progresivo_ayuda_arranque = 710;
 
 		// Estabiliza suavidad de los progresivos.
 		nivelarRango(cnf.suavidad_progresivos, 1, 10);

@@ -19,6 +19,7 @@ struct ConfigContainer {
 	// -------------- ACELERADOR
 
 	boolean recalcular_rango_min_acelerador = true;
+	boolean recalcular_rango_max_acelerador = true;
 
 	// -------------- ASISTENCIA 6 KM/H
 
@@ -36,7 +37,7 @@ struct ConfigContainer {
 	// Valor inicial de salida en la asistencia 6 km/h.
 	// Como mínimo tendrá que tener el valor de la constante
 	// a0_valor_6kmh --> 450.
-	float v_salida_progresivo_ayuda_arranque = 700;
+	int v_salida_progresivo_ayuda_arranque = 700;
 
 	// -------------- CRUCERO
 
@@ -76,11 +77,11 @@ struct ConfigContainer {
 
 	// Suavidad de los progresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
-	float suavidad_progresivos = 5.0;
+	float suavidad_progresivos = 5;
 
 	// Suavidad de los autoprogresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
-	float suavidad_autoprogresivos = 5.0;
+	int suavidad_autoprogresivos = 5;
 
 	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
 	// 1500 ms.
