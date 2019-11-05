@@ -2,6 +2,7 @@
 #include <Arduino.h>
 //#include <EEPROM.h>
 #include "tones.h"
+#include "level.h"
 
 const char* version = "2.4.3";
 
@@ -92,14 +93,14 @@ AGRADECIMIENTOS:
  */
 
 // Versión con fijación contínua de crucero (soltando de golpe).
-#include "config_continuo.h"
+//#include "config_continuo.h"
 // Versión para jugar con los parámetros. ;)
 //#include "config_custom.h"
 // Versión sin fijación de crucero --> Comportamiento como de fábrica
 // con el acelerador legalizado.
 //#include "config_sincrucero.h"
 // Versión con fijación de crucero a los 2,8 segundos.
-//#include "config_tiempo.h"
+#include "config_tiempo.h"
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
@@ -191,13 +192,6 @@ volatile boolean pedaleo = false;
 
 // --------- Utilidades
 
-// Calcula si el valor se encuantra entre el rango de valores con
-// tolerancia calculados con el valor2.
-// valor2-tolerancia > valor < valor2+tolerancia
-boolean comparaConTolerancia(int valor, int valorReferencia, byte toleranciaValor2) {
-	return (valor > (valorReferencia - toleranciaValor2)) && (valor < (valorReferencia + toleranciaValor2));
-}
-
 // Pasamos de escala acelerador -> DAC.
 int aceleradorEnDac(int vl_acelerador) {
 	return vl_acelerador * (4096 / 1024);
@@ -277,8 +271,8 @@ void anulaCruceroConFreno() {
 			contador_freno_anulacion_crucero++;
 
 			if (crucero_fijado){
-				// Añadido % 4 para solo ejecutar la acción para los múltiplos de 4 y evitar excesivos tonos.
-				if (contador_freno_anulacion_crucero % 4 == 0) {
+				// Añadido % 6 para solo ejecutar la acción para los múltiplos de 4 y evitar excesivos tonos.
+				if (contador_freno_anulacion_crucero % 6 == 0) {
 					repeatTones(pin_piezo, cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
 				}
 
@@ -309,13 +303,7 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
 	if(nivelar){
-		// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
-		if (cl_acelerador < a0_valor_reposo) {
-			cl_acelerador = a0_valor_reposo;
-		// Nivelamos los valores de la media para que no se salgan del rango de máximo.
-		} else if (cl_acelerador > a0_valor_alto) {
-			cl_acelerador = a0_valor_alto;
-		}
+		nivelarRango(cl_acelerador,a0_valor_reposo,a0_valor_alto);
 	}
 
 	return cl_acelerador;
@@ -425,11 +413,7 @@ int calculaAceleradorProgresivoNoLineal(int v_cruceroin) {
 	fac_m = (a0_valor_alto - a0_valor_suave) / pow(cnf.retardo_aceleracion, fac_p);
 	nivel_aceleraciontmp = (int) a0_valor_suave + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
-	if (nivel_aceleraciontmp < a0_valor_reposo) {
-		nivel_aceleraciontmp = a0_valor_reposo;
-	} else if (nivel_aceleraciontmp > v_cruceroin) {
-		nivel_aceleraciontmp = v_cruceroin;
-	}
+	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_cruceroin);
 
 	return nivel_aceleraciontmp;
 }
@@ -549,18 +533,10 @@ void setup() {
 			cnf.v_salida_progresivo_ayuda_arranque = 710.0;
 
 		// Estabiliza suavidad de los progresivos.
-		if (cnf.suavidad_progresivos < 1.0) {
-			cnf.suavidad_progresivos = 1.0;
-		} else if (cnf.suavidad_progresivos > 10.0) {
-			cnf.suavidad_progresivos = 10.0;
-		}
+		nivelarRango(cnf.suavidad_progresivos, 1, 10);
 
 		// Estabiliza suavidad de los auto_progresivos.
-		if (cnf.suavidad_autoprogresivos < 1.0) {
-			cnf.suavidad_autoprogresivos = 1.0;
-		} else if (cnf.suavidad_autoprogresivos > 10.0) {
-			cnf.suavidad_autoprogresivos = 10.0;
-		}
+		nivelarRango(cnf.suavidad_autoprogresivos,1,10);
 
 		// Tono de finalización configuración del sistema.
 		repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 90, 90);

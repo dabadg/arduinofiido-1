@@ -61,7 +61,7 @@ struct ConfigContainer {
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero (0-255).
 	// 33 * 140 = 4620 ms.
-	byte pulsos_liberar_crucero = 33;
+	byte pulsos_liberar_crucero = 36;
 
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
@@ -74,11 +74,11 @@ struct ConfigContainer {
 
 	// Suavidad de los progresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
-	float suavidad_progresivos = 5.0;
+	int suavidad_progresivos = 5;
 
 	// Suavidad de los autoprogresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
-	float suavidad_autoprogresivos = 5.0;
+	int suavidad_autoprogresivos = 5;
 
 	// Tiempo de ejecución del progresivo en la asistencia a 6 km/h.
 	// 1500 ms.
