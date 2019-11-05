@@ -297,7 +297,7 @@ void anulaCruceroConFreno() {
 
 // --------- Acelerador
 
-int leeAcelerador(byte nmuestras) {
+int leeAcelerador(byte nmuestras, boolean nivelar) {
 
 	int cl_acelerador = 0;
 
@@ -308,15 +308,21 @@ int leeAcelerador(byte nmuestras) {
 
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
-	// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
-	if (cl_acelerador < a0_valor_reposo) {
-		cl_acelerador = a0_valor_reposo;
-	// Nivelamos los valores de la media para que no se salgan del rango de máximo.
-	} else if (cl_acelerador > a0_valor_alto) {
-		cl_acelerador = a0_valor_alto;
+	if(nivelar){
+		// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
+		if (cl_acelerador < a0_valor_reposo) {
+			cl_acelerador = a0_valor_reposo;
+		// Nivelamos los valores de la media para que no se salgan del rango de máximo.
+		} else if (cl_acelerador > a0_valor_alto) {
+			cl_acelerador = a0_valor_alto;
+		}
 	}
 
 	return cl_acelerador;
+}
+
+int leeAcelerador(byte nmuestras) {
+  return leeAcelerador(nmuestras, true);
 }
 
 boolean validaMinAcelerador(byte nmuestras) {
@@ -635,7 +641,7 @@ void loop() {
 		while (lines < 30) {
 			delay(1000);
 			Serial.print("Valor Acelerador: ");
-			Serial.println(leeAcelerador(3));
+			Serial.println(leeAcelerador(3, false));
 			lines++;
 		}
 
