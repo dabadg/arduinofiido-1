@@ -126,8 +126,8 @@ int a0_valor_reposo = 174;		// 0.85
 const int a0_valor_minimo = 235;	// 1.15
 const int a0_valor_suave = 307;	// 1.50
 const int a0_valor_6kmh = 448;	// 2.19
-const int a0_valor_alto = 798;	// 3.90
-//const int a0_valor_max = 809;	// 3.95
+int a0_valor_alto = 798;	// 3.90
+const int a0_valor_max = 809;	// 3.95
 
 // Variables de tiempo.
 const unsigned long tiempo_act = 500;
@@ -301,6 +301,12 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 	}
 
 	cl_acelerador = (int) cl_acelerador / nmuestras;
+
+
+	// Para corregir el valor por el real obtenido de la lectura.
+ 	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
+ 		a0_valor_alto = cl_acelerador;
+
 
 	if(nivelar){
 		nivelarRango(cl_acelerador,a0_valor_reposo,a0_valor_alto);

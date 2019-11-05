@@ -19,6 +19,8 @@ struct ConfigContainer {
 	// -------------- ACELERADOR
 
 	boolean recalcular_rango_min_acelerador = true;
+	boolean recalcular_rango_max_acelerador = true;
+
 
 	// -------------- ASISTENCIA 6 KM/H
 
