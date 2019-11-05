@@ -272,8 +272,8 @@ void anulaCruceroConFreno() {
 			contador_freno_anulacion_crucero++;
 
 			if (crucero_fijado){
-				// Añadido % 6 para solo ejecutar la acción para los múltiplos de 4 y evitar excesivos tonos.
-				if (contador_freno_anulacion_crucero % 6 == 0) {
+				// Añadido % 8 para solo ejecutar la acción para los múltiplos de 8 y evitar excesivos tonos.
+				if (contador_freno_anulacion_crucero % 8 == 0) {
 					repeatTones(pin_piezo, cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
 				}
 
