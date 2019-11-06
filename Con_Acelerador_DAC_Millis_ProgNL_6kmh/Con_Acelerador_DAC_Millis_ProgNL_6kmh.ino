@@ -125,10 +125,10 @@ const byte pin_piezo = 11;
 
 int a0_valor_reposo = 174;		// 0.85
 const int a0_valor_minimo = 235;	// 1.15
-const int a0_valor_suave = 307;	// 1.50
-const int a0_valor_6kmh = 448;	// 2.19
-int a0_valor_alto = 798;	// 3.90
-const int a0_valor_max = 809;	// 3.95
+const int a0_valor_suave = 307;		// 1.50
+const int a0_valor_6kmh = 448;		// 2.19
+int a0_valor_alto = 798;		// 3.90
+const int a0_valor_max = 809;		// 3.95
 
 // Variables de tiempo.
 const unsigned long tiempo_act = 500;
@@ -163,7 +163,6 @@ boolean ayuda_salida = false;
 const byte ciclo_decremento_progresivo_ayuda_arranque = 50;
 int decremento_progresivo_ayuda_arranque;
 
-
 // Valor recogido del acelerador.
 int v_acelerador;
 // Valor de crucero del acelerador.
@@ -177,7 +176,7 @@ unsigned long establece_crucero_ultima_ejecucion_millis;
 unsigned long anula_crucero_con_freno_ultima_ejecucion_millis;
 
 // Almacena la velocidad de crucero del loop anterior.
-int vl_acelerador_prev=0;
+int vl_acelerador_prev = 0;
 // Cantidad de loops que lleva la velocidad en el mismo valor.
 byte contador_crucero_mismo_valor = 0;
 // Cantidad de loops para cortar crucero con freno.
@@ -241,7 +240,7 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
 				crucero_fijado = true;
 				v_crucero = vl_acelerador;
-				contador_crucero_mismo_valor=0;
+				contador_crucero_mismo_valor = 0;
 				crucero_fijado_millis = millis();
 				// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
 				// Valores altos se considera a partir de 2 segundos.
@@ -293,7 +292,6 @@ void anulaCruceroConFreno() {
 // --------- Acelerador
 
 int leeAcelerador(byte nmuestras, boolean nivelar) {
-
 	int cl_acelerador = 0;
 
 	// Leemos nivel de acelerador tomando n medidas.
@@ -303,21 +301,19 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
-
 	// Para corregir el valor por el real obtenido de la lectura.
  	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
  		a0_valor_alto = cl_acelerador;
 
-
-	if(nivelar){
-		nivelarRango(cl_acelerador,a0_valor_reposo,a0_valor_alto);
+	if (nivelar) {
+		nivelarRango(cl_acelerador, a0_valor_reposo, a0_valor_alto);
 	}
 
 	return cl_acelerador;
 }
 
 int leeAcelerador(byte nmuestras) {
-  return leeAcelerador(nmuestras, true);
+	return leeAcelerador(nmuestras, true);
 }
 
 boolean validaMinAcelerador(byte nmuestras) {
@@ -411,16 +407,15 @@ void ayudaArranque() {
 	}
 }
 
-int calculaAceleradorProgresivoNoLineal(int v_cruceroin) {
-
+int calculaAceleradorProgresivoNoLineal() {
 	int nivel_aceleraciontmp;
 	int fac_m = 0;
 
 	// Progresivo no lineal.
-	fac_m = (a0_valor_alto - a0_valor_suave) / pow(cnf.retardo_aceleracion, fac_p);
+	fac_m = (a0_valor_max - a0_valor_suave) / pow(cnf.retardo_aceleracion, fac_p);
 	nivel_aceleraciontmp = (int) a0_valor_suave + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
-	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_cruceroin);
+	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, a0_valor_max);
 
 	return nivel_aceleraciontmp;
 }
@@ -435,7 +430,7 @@ void mandaAcelerador(int vf_acelerador) {
 			if (cnf.modo_crucero && crucero_fijado) {
 				// Si no se está acelerando.
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 50)) {
-					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
+					nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
 				// Si se acelera.
 				} else {
 					nivel_aceleracion = vf_acelerador;
