@@ -238,14 +238,17 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 
 			// Si el contador de crucero ha llegado a su tope, se fija el crucero.
 			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero) {
-				crucero_fijado = true;
-				v_crucero = vl_acelerador;
-				contador_crucero_mismo_valor = 0;
-				crucero_fijado_millis = millis();
-				// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
-				// Valores altos se considera a partir de 2 segundos.
-				if (cnf.pulsos_fijar_crucero >= 14)
-					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1); // @suppress("Invalid arguments")
+				// Solo se fija el crucero si se ha notado una variación de más de +-20 pasos entre la medida actual y la de crucero ya fijada.
+				if(!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
+					crucero_fijado = true;
+					v_crucero = vl_acelerador;
+					contador_crucero_mismo_valor = 0;
+					crucero_fijado_millis = millis();
+					// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+					// Valores altos se considera a partir de 2 segundos.
+					if (cnf.pulsos_fijar_crucero >= 14)
+						repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1); // @suppress("Invalid arguments")
+				}
 			}
 		} else {
 			contador_crucero_mismo_valor = 0;
