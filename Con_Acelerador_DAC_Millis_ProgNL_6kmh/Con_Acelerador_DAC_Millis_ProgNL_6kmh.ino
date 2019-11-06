@@ -410,7 +410,7 @@ void ayudaArranque() {
 	}
 }
 
-int calculaAceleradorProgresivoNoLineal(int v_cruceroin) {
+int calculaAceleradorProgresivoNoLineal() {
 	int nivel_aceleraciontmp;
 	int fac_m = 0;
 
@@ -418,7 +418,7 @@ int calculaAceleradorProgresivoNoLineal(int v_cruceroin) {
 	fac_m = (a0_valor_max - a0_valor_suave) / pow(cnf.retardo_aceleracion, fac_p);
 	nivel_aceleraciontmp = (int) a0_valor_suave + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
-	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_cruceroin);
+	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero > a0_valor_reposo ? v_crucero:a0_valor_max);
 
 	return nivel_aceleraciontmp;
 }
@@ -433,7 +433,7 @@ void mandaAcelerador(int vf_acelerador) {
 			if (cnf.modo_crucero && crucero_fijado) {
 				// Si no se está acelerando.
 				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 50)) {
-					nivel_aceleracion = calculaAceleradorProgresivoNoLineal(v_crucero);
+					nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
 				// Si se acelera.
 				} else {
 					nivel_aceleracion = vf_acelerador;
