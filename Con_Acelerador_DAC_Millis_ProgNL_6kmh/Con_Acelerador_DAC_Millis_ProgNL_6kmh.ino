@@ -5,7 +5,7 @@
 //#include <EEPROM.h>
 #include "Tones.h"
 
-const char* version = "2.4.4 RC3";
+const char* version = "2.4.4 RC5";
 
 /*
                      Versión Con Acelerador y DAC
@@ -429,18 +429,21 @@ void mandaAcelerador(int vf_acelerador) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
-			// Si el modo crucero está activo y el crucero está fijado.
-			if (cnf.modo_crucero && crucero_fijado) {
-				// Si no se está acelerando.
-				if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 50)) {
-					nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
-				// Si se acelera.
+			// Modo crucero activado.
+			if (cnf.modo_crucero) {
+				// Si el crucero está fijado.
+				if (crucero_fijado) {
+					// Si no se está acelerando o se acelera por debajo de la velocidad de crucero mientras el acelerador está bloqueado por debajo de crucero.
+					if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 50) || (cnf.bloqueo_acelerador_debajo_crucero && vf_acelerador < v_crucero )) {
+						nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
+					// Si se acelera.
+					} else {
+						nivel_aceleracion = vf_acelerador;
+					}
+				// Si el crucero no está fijado.
 				} else {
 					nivel_aceleracion = vf_acelerador;
 				}
-			// Si el modo crucero está activo y el crucero no está fijado.
-			} else if (cnf.modo_crucero && !crucero_fijado) {
-				nivel_aceleracion = vf_acelerador;
 			// Modo crucero desactivado.
 			} else {
 				nivel_aceleracion = vf_acelerador;

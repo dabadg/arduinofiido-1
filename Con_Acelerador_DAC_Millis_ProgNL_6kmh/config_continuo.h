@@ -50,6 +50,16 @@ struct ConfigContainer {
 	// False --> Habilita método de crucero por tiempo.
 	boolean modo_crucero_continuo = true;
 
+	// Para que el acelerador funcione como en el coche. Si se fija el crucero,
+	// la potencia del motor solo cambia si se supera con el acelerador la velocidad de crucero fijada.
+	// *** No poner a TRUE si la variable [modo_crucero_continuo] está activada.
+	// False --> El acelerador actua siempre.
+	// True --> El acelerador solo funciona por encima de la velocidad de crucero.
+	boolean bloqueo_acelerador_debajo_crucero = false;
+
+	// --------- +++
+	
+
 	// Cantidad de pasadas para fijar el crucero por tiempo (0-255).
 	// Con el valor 2 se va actualizando la configuración
 	// constantemente y mantiene la última medida al soltar el acelerador.
