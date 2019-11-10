@@ -166,7 +166,7 @@ int v_crucero = a0_valor_reposo;
 boolean crucero_fijado = false;
 
 // Controles de tiempo.
-const unsigned long tiempo_act;
+unsigned long tiempo_act;
 unsigned long loop_ultima_ejecucion_millis;
 unsigned long crucero_fijado_millis;
 unsigned long establece_crucero_ultima_ejecucion_millis;
