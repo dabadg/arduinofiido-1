@@ -578,7 +578,7 @@ void loop() {
 			}
 		}
 
-		// Ejecutamos cada 500 ms.
+		// Ejecutamos en función del [tiempo_act].
 		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 			pulsos = p_pulsos;
 			p_pulsos = 0;
@@ -656,7 +656,7 @@ void loop() {
 		//float nivel_aceleracion_prevv;
 		//float nivel_aceleracionv;
 		while (true) {
-		// TODO Pendiente de tomar decisiones. Si el acelerador ha dado una medida incorrecta se deja actuar al acelerador sin pasar por la lógica del lopp principal.
+		// TODO Pendiente de tomar decisiones. Si el acelerador ha dado una medida incorrecta se deja actuar al acelerador sin pasar por la lógica del loop principal.
 		//	float nivel_aceleracionv = leeAcelerador(30);
 		//	if (nivel_aceleracion_prevv != nivel_aceleracionv) {
 		//		dac.setVoltage(aceleradorEnDac(nivel_aceleracionv), false);
