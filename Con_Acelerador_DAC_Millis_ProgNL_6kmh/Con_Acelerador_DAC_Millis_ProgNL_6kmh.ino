@@ -4,7 +4,7 @@
 #include "Level.h"
 #include "Tones.h"
 
-const char* version = "2.5.0 RC2";
+const char* version = "2.5.0 RC3";
 
 /*
                      Versión Con Acelerador y DAC
@@ -420,8 +420,8 @@ int calculaAceleradorProgresivoNoLineal() {
 	int fac_m = 0;
 
 	// Progresivo no lineal.
-	fac_m = (a0_valor_max - a0_valor_suave) / pow(cnf.retardo_aceleracion, fac_p);
-	nivel_aceleraciontmp = (int) a0_valor_suave + fac_m * pow(contador_retardo_aceleracion, fac_p);
+	fac_m = (a0_valor_max - a0_valor_minimo) / pow(cnf.retardo_aceleracion, fac_p);
+	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
 	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero > a0_valor_reposo ? v_crucero:a0_valor_max);
 
@@ -578,7 +578,7 @@ void loop() {
 			}
 		}
 
-		// Ejecutamos cada 500 ms.
+		// Ejecutamos en función del [tiempo_act].
 		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 			pulsos = p_pulsos;
 			p_pulsos = 0;
@@ -656,7 +656,7 @@ void loop() {
 		//float nivel_aceleracion_prevv;
 		//float nivel_aceleracionv;
 		while (true) {
-		// TODO Pendiente de tomar decisiones. Si el acelerador ha dado una medida incorrecta se deja actuar al acelerador sin pasar por la lógica del lopp principal.
+		// TODO Pendiente de tomar decisiones. Si el acelerador ha dado una medida incorrecta se deja actuar al acelerador sin pasar por la lógica del loop principal.
 		//	float nivel_aceleracionv = leeAcelerador(30);
 		//	if (nivel_aceleracion_prevv != nivel_aceleracionv) {
 		//		dac.setVoltage(aceleradorEnDac(nivel_aceleracionv), false);
