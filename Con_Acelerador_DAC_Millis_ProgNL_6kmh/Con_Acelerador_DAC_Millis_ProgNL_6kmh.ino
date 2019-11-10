@@ -420,8 +420,8 @@ int calculaAceleradorProgresivoNoLineal() {
 	int fac_m = 0;
 
 	// Progresivo no lineal.
-	fac_m = (a0_valor_max - a0_valor_suave) / pow(cnf.retardo_aceleracion, fac_p);
-	nivel_aceleraciontmp = (int) a0_valor_suave + fac_m * pow(contador_retardo_aceleracion, fac_p);
+	fac_m = (a0_valor_max - a0_valor_minimo) / pow(cnf.retardo_aceleracion, fac_p);
+	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow(contador_retardo_aceleracion, fac_p);
 
 	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero > a0_valor_reposo ? v_crucero:a0_valor_max);
 
