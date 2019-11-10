@@ -571,7 +571,7 @@ void loop() {
 		v_acelerador = leeAcelerador(30);
 
 		if (cnf.modo_crucero) {
-			if (!cnf.pulsos_fijar_crucero <= 2) {
+			if (cnf.pulsos_fijar_crucero <= 2) {
 				estableceCrucero(v_acelerador);
 			} else {
 				estableceCruceroPorTiempo(v_acelerador);
