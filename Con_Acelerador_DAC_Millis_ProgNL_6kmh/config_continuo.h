@@ -44,12 +44,14 @@ struct ConfigContainer {
 	// True --> Modo crucero.
 	// False --> Manda señal del acelerador.
 	boolean modo_crucero = true;
-	
-	// True --> Habilita método de crucero contínuo. La variable
-	// pulsos_fijar_crucero no tiene efecto en este modo.
-	// False --> Habilita método de crucero por tiempo.
-	boolean modo_crucero_continuo = true;
 
+  // Cantidad de pasadas para fijar el crucero por tiempo.
+  // Con el valor 2 se va actualizando la configuración
+  // constantemente y mantiene la última medida al soltar el acelerador (0-255).
+  // 2 * 140 = 280 ms. Crucero continuo.
+  // 20 * 140 = 2800 ms. Crucero por tiempo.
+  byte pulsos_fijar_crucero = 2;
+  
 	// Para que el acelerador funcione como en el coche. Si se fija el crucero,
 	// la potencia del motor solo cambia si se supera con el acelerador la velocidad de crucero fijada.
 	// *** No poner a TRUE si la variable [modo_crucero_continuo] está activada.
@@ -58,13 +60,6 @@ struct ConfigContainer {
 	boolean bloqueo_acelerador_debajo_crucero = false;
 
 	// --------- +++
-	
-
-	// Cantidad de pasadas para fijar el crucero por tiempo (0-255).
-	// Con el valor 2 se va actualizando la configuración
-	// constantemente y mantiene la última medida al soltar el acelerador.
-	// 2 * 140 = 280 ms.
-	byte pulsos_fijar_crucero = 2;
 
 	// False --> Mantiene valor que tenía el crucero antes de entrar a
 	// la asistencia de 6km/h.
@@ -76,14 +71,14 @@ struct ConfigContainer {
 	// 33 * 140 = 4620 ms.
 	byte pulsos_liberar_crucero = 33;
 
+  // -------------- PROGRESIVOS
+
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
 	unsigned long retardo_inicio_progresivo = 10;
-
-	// -------------- PROGRESIVOS
 
 	// Suavidad de los progresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.

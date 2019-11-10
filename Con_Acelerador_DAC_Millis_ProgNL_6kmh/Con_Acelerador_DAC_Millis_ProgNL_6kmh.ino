@@ -5,7 +5,7 @@
 //#include <EEPROM.h>
 #include "Tones.h"
 
-const char* version = "2.4.4 RC5";
+const char* version = "2.5.1 RC1";
 
 /*
                      Versión Con Acelerador y DAC
@@ -556,10 +556,10 @@ void loop() {
 		v_acelerador = leeAcelerador(30);
 
 		if (cnf.modo_crucero) {
-			if (!cnf.modo_crucero_continuo) {
-				estableceCruceroPorTiempo(v_acelerador);
+			if (!cnf.pulsos_fijar_crucero <= 2) {
+        estableceCrucero(v_acelerador);
 			} else {
-				estableceCrucero(v_acelerador);
+        estableceCruceroPorTiempo(v_acelerador);
 			}
 		}
 
