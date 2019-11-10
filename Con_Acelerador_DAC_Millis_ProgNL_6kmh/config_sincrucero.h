@@ -21,6 +21,13 @@ struct ConfigContainer {
 	boolean recalcular_rango_min_acelerador = true;
 	boolean recalcular_rango_max_acelerador = true;
 
+	// -------------- PEDALEO
+
+	// Activa pedaleo al paso del pedal por el primer imán.
+	boolean interrupciones_pedaleo_primer_iman = true;
+	// Activa pedaleo al paso del pedal por el segundo imán.
+	boolean interrupciones_pedaleo_segundo_iman = false;
+
 	// -------------- ASISTENCIA 6 KM/H
 
 	// (True) si se desea activar la posibilidad de acelerar desde
@@ -44,15 +51,25 @@ struct ConfigContainer {
 	// True --> Modo crucero.
 	// False --> Manda señal del acelerador.
 	boolean modo_crucero = false;
-
-	// True --> Habilita método de crucero contínuo. La variable
-	// pulsos_fijar_crucero no tiene efecto en este modo.
-	// False --> Habilita método de crucero por tiempo.
-	boolean modo_crucero_continuo = true;
-
+ 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// 20 * 140 = 2800 ms.
-	unsigned int pulsos_fijar_crucero = 20;
+	// Con el valor 2 se va actualizando la configuración constantemente
+	// y mantiene la última medida al soltar el acelerador (0-255).
+	// 2 * 140 = 280 ms. Crucero continuo.
+	// 20 * 140 = 2800 ms. Crucero por tiempo.
+	byte pulsos_fijar_crucero = 2;
+  
+	// Para que el acelerador funcione como en el coche. Si se fija el
+	// crucero, la potencia del motor solo cambia si se supera con el
+	// acelerador la velocidad de crucero fijada.
+	// NO PONER a TRUE si la variable [modo_crucero_continuo] está
+	// activada.
+	// False --> El acelerador actúa siempre.
+	// True --> El acelerador solo funciona por encima de la velocidad
+	// de crucero.
+	boolean bloqueo_acelerador_debajo_crucero = false;
+
+	// --------- +++
 
 	// False --> Mantiene valor que tenía el crucero antes de entrar a
 	// la asistencia de 6km/h.
@@ -61,17 +78,18 @@ struct ConfigContainer {
 	boolean liberar_crucero_con_acelerador = false;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
+	// De 0 a 255.
 	// 33 * 140 = 4620 ms.
-	unsigned int pulsos_liberar_crucero = 33;
+	byte pulsos_liberar_crucero = 0;
 
+	// -------------- PROGRESIVOS
+  
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
 
 	// Retardo para inciar progresivo tras parar pedales.
 	// Freno anula el tiempo.
-	unsigned int retardo_inicio_progresivo = 10;
-
-	// -------------- PROGRESIVOS
+	unsigned long retardo_inicio_progresivo = 10;
 
 	// Suavidad de los progresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
