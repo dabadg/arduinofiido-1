@@ -493,6 +493,7 @@ void freno() {
 	paraMotor();
 }
 
+// TODO Actualizar para usar serial plotter y haber un análisis más gráfico de los valores de los sensores
 void testSensores(){
 		delay(1000);
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
@@ -500,36 +501,37 @@ void testSensores(){
 		if (!cnf.habilitar_consola)
 			Serial.begin(19200);
 
-		int lines = 0;
 		Serial.println("Error de acelerador detectado.");
 		Serial.println("> Abriendo puerto para mostrar medidas. [Tome medidas en reposo y a máxima potencia].");
 
 		// Pintamos 30 lecturas del valor del acelerador para poder hacer un Debug.
-		while (lines < 30) {
+		int lines = 30;
+		while (lines-- > 0) {
 			delay(1000);
 			Serial.print("Valor Acelerador: ");
 			Serial.println(leeAcelerador(3, false));
-			lines++;
 		}
 
 		Serial.println("> [Mueva el pedal para verificar los pulsos del sensor PAS].");
 
 		// Pintamos 10 lecturas del valor de los pulsos para poder hacer un Debug.
-		while (lines < 10) {
+		lines = 10;
+		while (lines-- > 0) {
 			delay(1000);
-			Serial.print("Pulsos del pedal: ");
+			Serial.print("Pulsos del pedal en 1s: ");
 			Serial.println(p_pulsos);
-			lines++;
+			p_pulsos=0;
 		}
 
 		Serial.println("> [Frene para verificar los pulsos del freno].");
 
 		// Pintamos 10 lecturas de las frenadas para poder hacer un Debug.
-		while (lines < 10) {
+		lines = 10;
+		while (lines-- > 10) {
 			delay(1000);
-			Serial.print("Frenadas: ");
+			Serial.print("Frenadas en 1s: ");
 			Serial.println(p_frenadas);
-			lines++;
+			p_frenadas=0;
 		}
 
 		Serial.print("> Cerrando puerto.");
