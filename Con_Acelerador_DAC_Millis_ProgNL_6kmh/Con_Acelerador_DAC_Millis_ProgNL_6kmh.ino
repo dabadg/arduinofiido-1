@@ -567,7 +567,7 @@ void setup() {
 			cnf.interrupciones_pedaleo_primer_iman = false;
 
 		// Estabiliza interrupciones para activar pedaleo.
-		if (cnf.interrupciones_pedaleo_primer_iman = false && cnf.interrupciones_pedaleo_segundo_iman == false)
+		if (cnf.interrupciones_pedaleo_primer_iman == false && cnf.interrupciones_pedaleo_segundo_iman == false)
 			cnf.interrupciones_pedaleo_primer_iman = true;
 
 		// Estabiliza pulsos_fijar_crucero para que sean siempre superiores a 2.
