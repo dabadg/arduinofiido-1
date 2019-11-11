@@ -185,6 +185,8 @@ byte contador_freno_anulacion_crucero;
 volatile byte p_pulsos = 0;
 // Variable para la detección del pedaleo.
 volatile boolean pedaleo = false;
+// Número de interrupciones para activar pedaleo.
+volatile byte interrupciones_activacion_pedaleo = 2;
 
 //======= FUNCIONES ====================================================
 
@@ -203,7 +205,7 @@ void pedal() {
 
 	// Activamos pedaleo por interrupciones.
 	if (cnf.interrupciones_pedaleo_primer_iman) {
-		if (++a_pulsos >= 2) {
+		if (++a_pulsos >= interrupciones_activacion_pedaleo) {
 			pedaleo = true;
 			a_pulsos = 0;
 		}
@@ -384,6 +386,11 @@ void ayudaArranque() {
 		}
 	}
 
+	// Activación de pedaleo al pasar por el segundo imán.
+	if (cnf.interrupciones_pedaleo_primer_iman) {
+		interrupciones_activacion_pedaleo = 3;
+	}
+
 	// Mientras no pedaleamos y aceleramos.
 	while (!pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
 		// Iniciamos la salida progresiva inversa.
@@ -407,6 +414,11 @@ void ayudaArranque() {
 				ayuda_arranque_fijada = true;
 			}
 		}
+	}
+
+	// Activación de pedaleo al pasar por el primer imán.
+	if (cnf.interrupciones_pedaleo_primer_iman) {
+		interrupciones_activacion_pedaleo = 2;
 	}
 
 	if (!pedaleo && leeAcelerador(3) <= a0_valor_reposo) {
