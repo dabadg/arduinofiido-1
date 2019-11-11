@@ -187,6 +187,8 @@ volatile byte p_pulsos = 0;
 volatile boolean pedaleo = false;
 // Número de interrupciones para activar pedaleo.
 volatile byte interrupciones_activacion_pedaleo = 2;
+// Variable donde se suman los pulsos del freno.
+volatile byte p_frenadas = 0;
 
 //======= FUNCIONES ====================================================
 
@@ -485,6 +487,7 @@ void paraMotor() {
 
 void freno() {
 	pedaleo = false;
+	p_frenadas++;
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
 	paraMotor();
@@ -594,6 +597,7 @@ void loop() {
 		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 			pulsos = p_pulsos;
 			p_pulsos = 0;
+			p_frenadas = 0;
 
 			// Desactivamos pedaleo por cadencia.	
 			if (cnf.interrupciones_pedaleo_primer_iman) {
@@ -657,6 +661,26 @@ void loop() {
 			delay(1000);
 			Serial.print("Valor Acelerador: ");
 			Serial.println(leeAcelerador(3, false));
+			lines++;
+		}
+
+		Serial.println("> [Mueva el pedal para verificar los pulsos del sensor PAS].");
+
+		// Pintamos 10 lecturas del valor de los pulsos para poder hacer un Debug.
+		while (lines < 10) {
+			delay(1000);
+			Serial.print("Pulsos del pedal: ");
+			Serial.println(p_pulsos);
+			lines++;
+		}
+
+		Serial.println("> [Frene para verificar los pulsos del freno].");
+
+		// Pintamos 10 lecturas de las frenadas para poder hacer un Debug.
+		while (lines < 10) {
+			delay(1000);
+			Serial.print("Frenadas: ");
+			Serial.println(p_frenadas);
 			lines++;
 		}
 
