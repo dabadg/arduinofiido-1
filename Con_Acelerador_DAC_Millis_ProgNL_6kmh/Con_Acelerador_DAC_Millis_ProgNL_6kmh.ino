@@ -493,6 +493,51 @@ void freno() {
 	paraMotor();
 }
 
+void testSensores(){
+		delay(1000);
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
+
+		if (!cnf.habilitar_consola)
+			Serial.begin(19200);
+
+		int lines = 0;
+		Serial.println("Error de acelerador detectado.");
+		Serial.println("> Abriendo puerto para mostrar medidas. [Tome medidas en reposo y a máxima potencia].");
+
+		// Pintamos 30 lecturas del valor del acelerador para poder hacer un Debug.
+		while (lines < 30) {
+			delay(1000);
+			Serial.print("Valor Acelerador: ");
+			Serial.println(leeAcelerador(3, false));
+			lines++;
+		}
+
+		Serial.println("> [Mueva el pedal para verificar los pulsos del sensor PAS].");
+
+		// Pintamos 10 lecturas del valor de los pulsos para poder hacer un Debug.
+		while (lines < 10) {
+			delay(1000);
+			Serial.print("Pulsos del pedal: ");
+			Serial.println(p_pulsos);
+			lines++;
+		}
+
+		Serial.println("> [Frene para verificar los pulsos del freno].");
+
+		// Pintamos 10 lecturas de las frenadas para poder hacer un Debug.
+		while (lines < 10) {
+			delay(1000);
+			Serial.print("Frenadas: ");
+			Serial.println(p_frenadas);
+			lines++;
+		}
+
+		Serial.print("> Cerrando puerto.");
+		Serial.end();
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
+}
+
+
 void setup() {
 	// Inicia serial.
 	if (cnf.habilitar_consola) {
@@ -653,60 +698,19 @@ void loop() {
 			anulaCruceroConFreno();
 
 		mandaAcelerador(v_acelerador);
+
+	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador.
 	} else {
-		delay(1000);
-		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
-
-		if (!cnf.habilitar_consola)
-			Serial.begin(19200);
-
-		int lines = 0;
-		Serial.println("Error de acelerador detectado.");
-		Serial.println("> Abriendo puerto para mostrar medidas. [Tome medidas en reposo y a máxima potencia].");
-
-		// Pintamos 30 lecturas del valor del acelerador para poder hacer un Debug.
-		while (lines < 30) {
-			delay(1000);
-			Serial.print("Valor Acelerador: ");
-			Serial.println(leeAcelerador(3, false));
-			lines++;
-		}
-
-		Serial.println("> [Mueva el pedal para verificar los pulsos del sensor PAS].");
-
-		// Pintamos 10 lecturas del valor de los pulsos para poder hacer un Debug.
-		while (lines < 10) {
-			delay(1000);
-			Serial.print("Pulsos del pedal: ");
-			Serial.println(p_pulsos);
-			lines++;
-		}
-
-		Serial.println("> [Frene para verificar los pulsos del freno].");
-
-		// Pintamos 10 lecturas de las frenadas para poder hacer un Debug.
-		while (lines < 10) {
-			delay(1000);
-			Serial.print("Frenadas: ");
-			Serial.println(p_frenadas);
-			lines++;
-		}
-
-		Serial.print("> Cerrando puerto.");
-		Serial.end();
-		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
-
+		// Ejecutamos el procedimiento de monitorización de sensores.
+		testSensores();
 		// Bloqueamos el loop.
-		//float nivel_aceleracion_prevv;
-		//float nivel_aceleracionv;
+		int contador_bloqueo_sistema=11;
 		while (true) {
-		// TODO Pendiente de tomar decisiones. Si el acelerador ha dado una medida incorrecta se deja actuar al acelerador sin pasar por la lógica del loop principal.
-		//	float nivel_aceleracionv = leeAcelerador(30);
-		//	if (nivel_aceleracion_prevv != nivel_aceleracionv) {
-		//		dac.setVoltage(aceleradorEnDac(nivel_aceleracionv), false);
-		//		nivel_aceleracion_prevv = nivel_aceleracionv;
-		//	}
 			delay(1000);
+			if(contador_bloqueo_sistema>0){
+				contador_bloqueo_sistema--;
+				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
+			}
 		}
 	}
 }
