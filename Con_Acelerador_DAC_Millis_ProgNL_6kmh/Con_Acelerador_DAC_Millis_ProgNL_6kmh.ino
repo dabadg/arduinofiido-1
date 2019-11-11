@@ -4,7 +4,7 @@
 #include "Level.h"
 #include "Tones.h"
 
-const char* version = "2.5.0 RC6";
+const char* version = "2.5.0 RC7";
 
 /*
                      Versión Con Acelerador y DAC
