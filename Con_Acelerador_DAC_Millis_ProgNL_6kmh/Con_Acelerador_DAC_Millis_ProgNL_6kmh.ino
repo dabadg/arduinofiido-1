@@ -697,6 +697,8 @@ void loop() {
 				}
 
 				paraMotor();
+				dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
+				nivel_aceleracion_prev = a0_valor_reposo;
 			// Si se pedalea.
 			} else {
 				if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
