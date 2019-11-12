@@ -539,6 +539,29 @@ void testSensores(){
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
 }
 
+void testSensoresPlotter(){
+
+	delay(1000);
+	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
+
+	if (!cnf.habilitar_consola)
+		Serial.begin(19200);
+
+	delay(1000);
+	// Durante 60s monitorizamos los valores de los sensores cada 200ms
+	unsigned long inicio_ejecucion_millis = millis();
+	while ((unsigned long)(millis() - inicio_ejecucion_millis) > 60*1000) {
+		delay(200);
+		Serial.print(leeAcelerador(3, false));
+		Serial.print("\t");
+		Serial.print(p_pulsos * 10);
+		Serial.print("\t");
+		Serial.print(digitalRead(pin_freno) ? 500 : 10);
+		Serial.print("\t");
+	}
+	Serial.end();
+	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
+}
 
 void setup() {
 	// Inicia serial.
