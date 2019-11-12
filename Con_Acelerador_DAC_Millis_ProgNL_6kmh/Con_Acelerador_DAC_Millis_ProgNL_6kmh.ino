@@ -211,16 +211,9 @@ void pedal() {
 	p_pulsos++;
 
 	// Activamos pedaleo por interrupciones.
-	if (cnf.interrupciones_pedaleo_primer_iman) {
-		if (++a_pulsos >= interrupciones_activacion_pedaleo) {
-			pedaleo = true;
-			a_pulsos = 0;
-		}
-	} else if (cnf.interrupciones_pedaleo_segundo_iman) {
-		if (++a_pulsos >= interrupciones_activacion_pedaleo) {
-			pedaleo = true;
-			a_pulsos = 0;
-		}
+	if (++a_pulsos >= interrupciones_activacion_pedaleo) {
+		pedaleo = true;
+		a_pulsos = 0;
 	}
 }
 
