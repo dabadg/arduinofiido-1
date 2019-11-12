@@ -17,11 +17,11 @@ PRINCIPALES NOVEDADES:
  * Posibilidadad de cortar crucero al frenar.
  * Añadido buzzer para emitir avisos en la inicialización.
 ------------------------------------------------------------------------
-VERSIÓN CRUCERO: 
+VERSIÓN CRUCERO SOLTANDO DE GOLPE (CONTÍNUO):
  * Se trata de guardar el último valor del acelerador
  * para no tener que estar sujetando el acelerador.
- * La idea es fijar el acelerador a la velocidad deseada y esperar el
- * el tiempo definido para guardar el voltaje como de crucero.
+ * La idea es fijar el acelerador a la velocidad deseada y soltar de
+ * de golpe para guardar el voltaje como de crucero.
  * Al parar y volver a pedalear, se va incrementando voltaje
  * gradualmente hasta llegar al valor de crucero.
  * Si se vuelve a mover el acelerador se toma este como nuevo crucero.
@@ -36,10 +36,16 @@ VERSIÓN CRUCERO:
  * abriendo un poco de gas y desacelerando hasta el final sin soltar
  * de golpe.
 ------------------------------------------------------------------------
+VERSIÓN CRUCERO TIPO "MONOPATÍN" (POR TIEMPO):
+ * TODO --> Documentar.
+------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
  * Básicamente lo que hace es detectar pulsos mediante una
  * interrupción en el pin (pin_pedal). Si no se pedalea, no asiste el
  * acelerador.
+------------------------------------------------------------------------
+PROGRESIVOS:
+ * TODO --> Documentar.
 ------------------------------------------------------------------------
 AUTO PROGRESIVOS:
  * Si se deja de pedalear, el motor se para como de costumbre, pero si
@@ -52,10 +58,9 @@ AUTO PROGRESIVOS:
 ASISTENCIA A 6 KM/H DESDE PARADO:
  * Si no se pedalea y mientras el acelerador esté accionado, se asiste a
  * 6 km/h, ajustándose a la normativa.
- * Si se suelta el acelerador --> deja de asistir y cortamos valor de
- * de crucero, si lo hubiera.
  * Si se comienza a pedalear sin dejar de accionar el acelerador --> se
  * sale a la velocidad con la que vayamos regulando con el acelerador.
+ * TODO --> Seguir documentando.
 ------------------------------------------------------------------------
 VALIDACIÓN DEL ACELERADOR
  * Se ha implementado una validación de seguridad para que en caso de
