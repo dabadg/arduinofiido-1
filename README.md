@@ -5,6 +5,7 @@ Programa para Arduino en las bicicletas Fiido.
 - Progresivos y autoprogresivos no lineales.
 - Posibilidad de usar asistencia a 6 km/h desde parado.
 - Añadido buzzer para emitir avisos en la inicialización.
+- Posibilidad de elegir tipo de crucero.
 ------------------------------------------------------------------------------------------------------------------------------------------
 
 Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram: http://t.me/FiidoD1Spain
