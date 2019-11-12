@@ -16,8 +16,13 @@ PRINCIPALES NOVEDADES:
  * Posibilidadad de asistir a 6km/h desde parado.
  * Posibilidadad de cortar crucero al frenar.
  * Añadido buzzer para emitir avisos en la inicialización.
+ * Posibilidad de elegir el tipo de curcero.
 ------------------------------------------------------------------------
-VERSIÓN CRUCERO SOLTANDO DE GOLPE (CONTÍNUO):
+WIKI:
+ * https://github.com/d0s1s/arduinofiido/wiki/Wiki-Arduino-Fiido
+------------------------------------------------------------------------
+VERSIÓN CRUCERO SOLTANDO DE GOLPE (CONTÍNUO) --> FIJADO Y DESFIJADO DEL
+NIVEL DE ASISTENCIA:
  * Se trata de guardar el último valor del acelerador
  * para no tener que estar sujetando el acelerador.
  * La idea es fijar el acelerador a la velocidad deseada y soltar de
@@ -36,7 +41,8 @@ VERSIÓN CRUCERO SOLTANDO DE GOLPE (CONTÍNUO):
  * abriendo un poco de gas y desacelerando hasta el final sin soltar
  * de golpe.
 ------------------------------------------------------------------------
-VERSIÓN CRUCERO TIPO "MONOPATÍN" (POR TIEMPO):
+VERSIÓN CRUCERO TIPO "MONOPATÍN" (POR TIEMPO) --> FIJADO Y DESFIJADO DEL
+NIVEL DE ASISTENCIA:
  * Al igual que la versión continua, se trata de fijar la potencia del
  * motor para no tener que estar sujetando el acelerador.
  * La idea principal es que mientras se pedalea, una vez se llegue a la
@@ -75,7 +81,11 @@ LEGALIZACIÓN ACELERADOR:
  * acelerador.
 ------------------------------------------------------------------------
 PROGRESIVOS:
- * TODO --> Documentar.
+ * Una vez fijemos una velocidad de crucero con el acelerador, si
+ * paramos de pedalear durante más de 10 segundos o accionamos el freno,
+ * al volver a reanudar el pedaleo, la asistencia se iniciará desde 0
+ * progresivamente hasta volver a alcanzar la velocidad anteriormente
+ * fijada.
 ------------------------------------------------------------------------
 AUTO PROGRESIVOS:
  * Si se deja de pedalear, el motor se para como de costumbre, pero si
