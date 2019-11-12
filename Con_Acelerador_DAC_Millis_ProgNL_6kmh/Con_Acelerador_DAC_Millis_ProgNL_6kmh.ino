@@ -731,7 +731,8 @@ void loop() {
 	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador.
 	} else {
 		// Ejecutamos el procedimiento de monitorización de sensores.
-		testSensores();
+		//testSensores();
+		testSensoresPlotter();
 		// Bloqueamos el loop.
 		int contador_bloqueo_sistema = 11;
 		while (true) {
