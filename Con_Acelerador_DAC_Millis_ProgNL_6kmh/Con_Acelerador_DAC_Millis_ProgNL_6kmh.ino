@@ -18,6 +18,9 @@ PRINCIPALES NOVEDADES:
  * Añadido buzzer para emitir avisos en la inicialización.
  * Posibilidad de elegir el tipo de curcero.
 ------------------------------------------------------------------------
+WIKI:
+ * https://github.com/d0s1s/arduinofiido/wiki/Wiki-Arduino-Fiido
+------------------------------------------------------------------------
 VERSIÓN CRUCERO SOLTANDO DE GOLPE (CONTÍNUO) --> FIJADO Y DESFIJADO DEL
 NIVEL DE ASISTENCIA:
  * Se trata de guardar el último valor del acelerador
