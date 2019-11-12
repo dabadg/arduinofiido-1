@@ -188,7 +188,7 @@ volatile boolean pedaleo = false;
 // Número de interrupciones para activar pedaleo.
 volatile byte interrupciones_activacion_pedaleo = 2;
 // Variable donde se suman los pulsos del freno.
-volatile byte p_frenadas = 0;
+//volatile byte p_frenadas = 0;
 
 //======= FUNCIONES ====================================================
 
@@ -487,7 +487,7 @@ void paraMotor() {
 
 void freno() {
 	pedaleo = false;
-	p_frenadas++;
+	//p_frenadas++;
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	bkp_contador_retardo_aceleracion = 0;
 	paraMotor();
@@ -511,7 +511,7 @@ void testSensoresPlotter(){
 		Serial.print(p_pulsos * 2);
 		Serial.print("\t");
 		Serial.print(digitalRead(pin_freno) ? 10 : 500);
-    Serial.println("");
+    		Serial.println("");
 	}
 
 	Serial.end();
@@ -630,7 +630,7 @@ void loop() {
 		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 			pulsos = p_pulsos;
 			p_pulsos = 0;
-			p_frenadas = 0;
+			//p_frenadas = 0;
 
 			// Desactivamos pedaleo por cadencia.	
 			if (cnf.interrupciones_pedaleo_primer_iman) {
@@ -680,16 +680,16 @@ void loop() {
 			anulaCruceroConFreno();
 
 		mandaAcelerador(v_acelerador);
-
 	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador.
 	} else {
 		// Ejecutamos el procedimiento de monitorización de sensores.
 		testSensoresPlotter();
 		// Bloqueamos el loop.
 		int contador_bloqueo_sistema = 6;
+
 		while (true) {
 			delay(500);
-			if(contador_bloqueo_sistema > 0) {
+			if (contador_bloqueo_sistema > 0) {
 				repeatTones(pin_piezo, cnf.buzzer_activo, 1, (contador_bloqueo_sistema--) % 2 ?3000:2000, 1000, 0);
 			}
 		}
