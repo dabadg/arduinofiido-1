@@ -493,52 +493,6 @@ void freno() {
 	paraMotor();
 }
 
-// TODO Actualizar para usar serial plotter y hacer un análisis más gráfico de los valores de los sensores.
-void testSensores() {
-	delay(1000);
-	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
-
-	if (!cnf.habilitar_consola)
-		Serial.begin(19200);
-
-	Serial.println("Error de acelerador detectado.");
-	Serial.println("> Abriendo puerto para mostrar medidas. [Tome medidas en reposo y a máxima potencia].");
-
-	// Pintamos 30 lecturas del valor del acelerador para poder hacer un Debug.
-	int lines = 30;
-	while (lines-- > 0) {
-		delay(1000);
-		Serial.print("Valor Acelerador: ");
-		Serial.println(leeAcelerador(3, false));
-	}
-
-	Serial.println("> [Mueva el pedal para verificar los pulsos del sensor PAS].");
-
-	// Pintamos 10 lecturas del valor de los pulsos para poder hacer un Debug.
-	lines = 10;
-	while (lines-- > 0) {
-		delay(1000);
-		Serial.print("Pulsos del pedal en 1s: ");
-		Serial.println(p_pulsos);
-		p_pulsos = 0;
-	}
-
-	Serial.println("> [Frene para verificar los pulsos del freno].");
-
-	// Pintamos 10 lecturas de las frenadas para poder hacer un Debug.
-	lines = 10;
-	while (lines-- > 10) {
-		delay(1000);
-		Serial.print("Frenadas en 1s: ");
-		Serial.println(p_frenadas);
-		p_frenadas = 0;
-	}
-
-	Serial.print("> Cerrando puerto.");
-	Serial.end();
-	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
-}
-
 void testSensoresPlotter(){
 	delay(1000);
 	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
@@ -550,18 +504,17 @@ void testSensoresPlotter(){
 	// Durante 60s monitorizamos los valores de los sensores cada 200 ms.
 	unsigned long inicio_ejecucion_millis = millis();
 
-	while ((unsigned long)(millis() - inicio_ejecucion_millis) > 60*1000) {
+	while ((unsigned long)(millis() - inicio_ejecucion_millis) < 60000) {
 		delay(200);
 		Serial.print(leeAcelerador(3, false));
 		Serial.print("\t");
-		Serial.print(p_pulsos * 10);
+		Serial.print(p_pulsos * 2);
 		Serial.print("\t");
-		Serial.print(digitalRead(pin_freno) ? 500 : 10);
-		Serial.print("\t");
+		Serial.print(digitalRead(pin_freno) ? 10 : 500);
+    Serial.println("");
 	}
 
 	Serial.end();
-	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 500, 0);
 }
 
 void setup() {
@@ -731,15 +684,13 @@ void loop() {
 	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador.
 	} else {
 		// Ejecutamos el procedimiento de monitorización de sensores.
-		//testSensores();
 		testSensoresPlotter();
 		// Bloqueamos el loop.
-		int contador_bloqueo_sistema = 11;
+		int contador_bloqueo_sistema = 6;
 		while (true) {
-			delay(1000);
+			delay(500);
 			if(contador_bloqueo_sistema > 0) {
-				contador_bloqueo_sistema--;
-				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
+				repeatTones(pin_piezo, cnf.buzzer_activo, 1, (contador_bloqueo_sistema--) % 2 ?3000:2000, 1000, 0);
 			}
 		}
 	}
