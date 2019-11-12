@@ -1,3 +1,17 @@
+CHANGELOG 2.3.5 RC1 --> 2.5.0
+- Refactorización de código.
+- Optimizaciones y correcciones.
+- Añadido nuevo "Car Mode". 
+- Solucionado ruido al usar el freno en algunas bicis.
+- Mejorados los progresivos.
+- Añadidas funciones de detección de errores.
+- Separación de configs para las variables de usuario.
+  - Config fija nivel de asistencia soltando de golpe.
+  - Config fija nivel de asistencia estilo "monopatín".
+  - Config sin crucero.
+  - Config Custom para los más intrépidos.
+- Completada documentación.
+
 CHANGELOG 2.1 --> 2.3.5 RC1
 - Optimizaciones y correcciones.
 - Añadido progresivo inicial inverso en la ayuda de aranque.
