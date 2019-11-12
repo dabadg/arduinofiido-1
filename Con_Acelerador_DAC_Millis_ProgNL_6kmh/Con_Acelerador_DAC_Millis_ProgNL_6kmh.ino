@@ -212,7 +212,7 @@ void pedal() {
 			a_pulsos = 0;
 		}
 	} else if (cnf.interrupciones_pedaleo_segundo_iman) {
-		if (++a_pulsos >= 3) {
+		if (++a_pulsos >= interrupciones_activacion_pedaleo) {
 			pedaleo = true;
 			a_pulsos = 0;
 		}
@@ -389,9 +389,7 @@ void ayudaArranque() {
 	}
 
 	// Activación de pedaleo al pasar por el segundo imán.
-	if (cnf.interrupciones_pedaleo_primer_iman) {
-		interrupciones_activacion_pedaleo = 3;
-	}
+	interrupciones_activacion_pedaleo = 4;
 
 	// Mientras no pedaleamos y aceleramos.
 	while (!pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
@@ -421,6 +419,8 @@ void ayudaArranque() {
 	// Activación de pedaleo al pasar por el primer imán.
 	if (cnf.interrupciones_pedaleo_primer_iman) {
 		interrupciones_activacion_pedaleo = 2;
+	} else if (cnf.interrupciones_pedaleo_segundo_iman) {
+		interrupciones_activacion_pedaleo = 3;
 	}
 
 	if (!pedaleo && leeAcelerador(3) <= a0_valor_reposo) {
@@ -619,6 +619,7 @@ void setup() {
 		} else if (cnf.interrupciones_pedaleo_segundo_iman) {
 			// Un segundo.
 			tiempo_act = 1000;
+			interrupciones_activacion_pedaleo = 3;
 		}
 
 		// Ajusta configuración.
