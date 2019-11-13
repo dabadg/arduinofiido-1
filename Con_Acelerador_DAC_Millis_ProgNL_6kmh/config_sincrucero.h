@@ -32,7 +32,7 @@ struct ConfigContainer {
 
 	// (True) si se desea activar la posibilidad de acelerar desde
 	// parado a 6 km/h arrancando con el freno pulsado.
-	boolean freno_pulsado = false;
+	boolean freno_pulsado = true;
 
 	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
 	unsigned int retardo_ayuda_arranque = 600;
