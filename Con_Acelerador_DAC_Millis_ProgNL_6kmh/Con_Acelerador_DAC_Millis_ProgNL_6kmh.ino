@@ -25,6 +25,7 @@ VERSIÓN CRUCERO SOLTANDO DE GOLPE (CONTÍNUO) --> FIJADO Y DESFIJADO DEL
 NIVEL DE ASISTENCIA:
  * Se trata de guardar el último valor del acelerador
  * para no tener que estar sujetando el acelerador.
+ *
  * La idea es fijar el acelerador a la velocidad deseada y soltar de
  * de golpe para guardar el voltaje como de crucero.
  * Al parar y volver a pedalear, se va incrementando voltaje
@@ -33,9 +34,11 @@ NIVEL DE ASISTENCIA:
  * Usamos un pin analógico de entrada conectado al
  * acelerador, por otra parte, mandaremos a la placa DAC mediante
  * comunicacion i2c el valor de salida hacia la controladora.
+ *
  * El acelerador da un voltaje variable entre 0.85 y 3.9
  * Se puede configurar que el freno anule el crucero.
  * Sólo se fija el valor si pedaleamos.
+ *
  * Con toque corto del freno no se anula crucero, con toque largo, sí.
  * También se puede anular el valor del crucero con el acelerador,
  * abriendo un poco de gas y desacelerando hasta el final sin soltar
@@ -47,33 +50,35 @@ NIVEL DE ASISTENCIA:
  * motor para no tener que estar sujetando el acelerador.
  * La idea principal es que mientras se pedalea, una vez se llegue a la
  * velocidad deseada, se mantenga la posición del acelerador durante
- * varios segundos para fijar la potencia de crucero y desde ese instante
- * se pueda soltar el acelerador.
+ * varios segundos para fijar la potencia de crucero y desde ese
+ * instante se pueda soltar el acelerador.
  *
  * Con la configuración por defecto mientras el crucero permanezca
- * fijado, el acelerador actuará de un modo similar al sistema de crucero
- * que utilizan los coches.
+ * fijado, el acelerador actuará de un modo similar al sistema de
+ * crucero que utilizan los coches.
  * Si se actúa sobre el acelerador estando su valor por debajo de la
  * potencia fijada, se mantendrá la potencia de crucero hasta que el
- * valor del acelerador la supere, momento en el que el valor del acelerador
- * prevalecerá y actualizará la potencia del motor.
+ * valor del acelerador la supere, momento en el que el valor del
+ * acelerador prevalecerá y actualizará la potencia del motor.
  *
- * En todo momento mientras se pedalea, se podrá cambiar la potencia de
- * crucero manteniendo el acelerador en la posición deseada durante
+ * En todo momento mientras se pedalea, se podrá cambiar la potencia
+ * de crucero manteniendo el acelerador en la posición deseada durante
  * 3 segundos ya sea por encima o por debajo de la potencia de crucero
  * seleccionada anteriormente.
  *
- * Para anular la potencia de crucero, existen dos procedimientos principales.
- * Uno manteniendo pulsada la maneta de freno unos segundos y otro, sin pedalear,
- * subiendo el acelerador a un nivel alto y soltando de golpe.
- * En cualquier caso, si se utiliza el sistema con la asistencia 6kmh activada,
- * al salir de la misma, siempre será anulada la potencia de crucero.
+ * Para anular la potencia de crucero, existen dos procedimientos
+ * principales --> Uno manteniendo pulsada la maneta de freno unos
+ * segundos y otro, sin pedalear,subiendo el acelerador a un nivel
+ * alto y soltando de golpe.
+ * En cualquier caso, si se utiliza el sistema con la asistencia 6km/h
+ * activada, al salir de la misma, siempre será anulada la potencia de
+ * crucero.
  *
- * Al dejar de pedalear con el crucero fijado, la potencia del motor caerá
- * hasta la potencia de reposo y no se aplicará ninguna asistencia. Una vez
- * que se reinicie la marcha y se empiece a pedalear, la potencia se irá
- * incrementando progresivamente hasta llegar a la potencia de crucero
- * previamente fijada.
+ * Al dejar de pedalear con el crucero fijado, la potencia del motor
+ * caerá hasta la potencia de reposo y no se aplicará ninguna
+ * asistencia. Una vez que se reinicie la marcha y se empiece a
+ * pedalear, la potencia se irá incrementando progresivamente hasta
+ * llegar a la potencia de crucero previamente fijada.
 ------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
  * Básicamente lo que hace es detectar pulsos mediante una
@@ -92,6 +97,7 @@ AUTO PROGRESIVOS:
  * continuamos pedaleando antes de transcurridos 10 segundos no inciará
  * el progresivo desde 0 si no que el motor continuará a una velocidad
  * ligeramente inferior a la que íbamos.
+ *
  * Si se frena antes de los 10 segundos se anula la función y comenzará
  * progresivo desde cero.
 ------------------------------------------------------------------------
@@ -103,17 +109,18 @@ ASISTENCIA A 6 KM/H DESDE PARADO:
  * En caso de tener una potencia de crucero fijada, si se utiliza la
  * asistencia 6kmh, al salir de la misma el crucero será anulado.
  *
- * Según la configuración por defecto, la asistencia 6kmh empezará aplicando
- * una potencia alta y bajará hasta la potencia que se ajusta a la normativa.
+ * Según la configuración por defecto, la asistencia 6kmh empezará
+ * aplicando una potencia alta y bajará hasta la potencia que se ajusta
+ * a la normativa.
  * Este sistema de potencia invertida ha sido implementado para que las
- * salidas desde parado alcancen la potencia 6kmh rápidamente.
+ * salidas desde parado alcancen la potencia 6km/h rápidamente.
 ------------------------------------------------------------------------
 VALIDACIÓN DEL ACELERADOR
  * Se ha implementado una validación de seguridad para que en caso de
  * detectarse una medida erronea del acelerador al inicializar el
  * sistema, este quede anulado y permita monitorizar todos los sensores
- * de la bicicleta durante 60 segundos. Para la monitorización, será necesario
- * Activar un serial plotter.
+ * de la bicicleta durante 60 segundos.
+ * Para la monitorización, será necesario activar un serial plotter.
 ------------------------------------------------------------------------
 LINKS:
  * Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram:
@@ -550,6 +557,7 @@ void testSensoresPlotter(){
 	// Durante 60s monitorizamos los valores de los sensores cada 200 ms.
 	unsigned long inicio_ejecucion_millis = millis();
 	byte pp = 0;
+
 	while ((unsigned long)(millis() - inicio_ejecucion_millis) < 60000) {
 		delay(200);
 		Serial.print(leeAcelerador(3, false));
