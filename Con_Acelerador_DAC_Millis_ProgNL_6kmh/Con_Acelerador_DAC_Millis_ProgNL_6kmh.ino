@@ -63,8 +63,14 @@ NIVEL DE ASISTENCIA:
  *
  * En todo momento mientras se pedalea, se podrá cambiar la potencia
  * de crucero manteniendo el acelerador en la posición deseada durante
- * 3 segundos ya sea por encima o por debajo de la potencia de crucero
+ * 1.5 segundos ya sea por encima o por debajo de la potencia de crucero
  * seleccionada anteriormente.
+ *
+ * Existe una variante que es la versión tiempo_min que permite interactuar
+ * con el acelerador fijando el crucero manteniendo 3s el acelerador en la
+ * misma posición, pero permitiendo cambiar el crucero a un valor más bajo
+ * cambiando el el valor del acelerador y manteniendo la posición más baja
+ * durante 280ms
  *
  * Para anular la potencia de crucero, existen dos procedimientos
  * principales --> Uno manteniendo pulsada la maneta de freno unos
@@ -137,10 +143,11 @@ DEVELOPERS:
  * aportaciones de chusquete.
 ------------------------------------------------------------------------
 AGRADECIMIENTOS:
- * Grupo de Telegram de desarrollo privado y toda su gente --> pruebas,
- * ideas, feedback, etc.
- * Gracias a zereal por sus ideas de concepto y a faeletronic y
- * basbonald por el testing.
+ * Grupo de Telegram de desarrollo privado y toda su gente
+ * pruebas, ideas, feedback, etc.
+ *
+ * Gracias a zereal por sus ideas de concepto y a faeletronic,
+ * basbonald, Manoplas y demás compañeros por el testing.
  */
 
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
@@ -159,7 +166,9 @@ AGRADECIMIENTOS:
 // con el acelerador legalizado.
 //#include "config_sincrucero.h"
 // Versión con fijación de crucero a los 2,8 segundos.
-#include "config_tiempo.h"
+//#include "config_tiempo.h"
+// Versión con fijación de crucero a los 2,8 segundos y bajada de crucero a 280ms.
+#include "config_tiempo_min.h"
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
