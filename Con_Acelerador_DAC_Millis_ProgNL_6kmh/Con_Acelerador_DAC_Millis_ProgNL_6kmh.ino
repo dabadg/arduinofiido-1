@@ -250,6 +250,9 @@ volatile byte interrupciones_activacion_pedaleo = 2;
 // Variable donde se suman los pulsos del freno.
 //volatile byte p_frenadas = 0;
 
+// Pulsos de fijación crucero a partir de los que se emite el tono por el buzzer.
+const int limite_tono_pulsos_fijar_crucero = 14;
+
 //======= FUNCIONES ====================================================
 
 // --------- Utilidades
@@ -307,16 +310,11 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 					v_crucero = vl_acelerador;
 					contador_crucero_mismo_valor = 0;
 					crucero_fijado_millis = millis();
-					// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
-					// Valores altos se considera a partir de 2 segundos.
-					if (cnf.pulsos_fijar_crucero >= 14) {
-						// Si el crucero se fija a la alta. Tono largo.
-						if (crucero_arriba) {
-							repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1);
-							// Si el crucero se fija a la baja. Tono corto.
-						} else {
-							repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 80, 0);
-						}
+					// Solo permitimos que suene el buzzer avisando de que se ha fijado
+					// el crucero con valores altos. Valores altos se considera a partir de
+					// 2 segundos (14 pasos).
+					if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero) {
+						repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80 , 1);
 					}
 				}
 			}
