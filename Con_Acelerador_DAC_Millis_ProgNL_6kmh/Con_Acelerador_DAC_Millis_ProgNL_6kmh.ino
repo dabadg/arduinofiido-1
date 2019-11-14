@@ -4,7 +4,7 @@
 #include "Level.h"
 #include "Tones.h"
 
-const char* version = "2.5.1_Develop";
+const char* version = "2.5.2_Develop";
 
 /*
                      Versión Con Acelerador y DAC
@@ -290,7 +290,7 @@ void estableceCrucero(int vl_acelerador) {
 
 void estableceCruceroPorTiempo(int vl_acelerador) {
 	// Ejecutamos método cada 100 ms.
-	if ((unsigned long)(millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
+	if ((unsigned long) (millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
 		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior.
 		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
 
@@ -299,17 +299,25 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 			contador_crucero_mismo_valor++;
 
 			// Si el contador de crucero ha llegado a su tope, se fija el crucero o si el acelerador está por debajo del crucero y el contador de debajo crucero ha llegado a su tope.
-			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero || (cnf.bloqueo_acelerador_debajo_crucero && contador_crucero_mismo_valor == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero)) {
+			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero || (cnf.pulsos_fijar_debajo_crucero > 0 && contador_crucero_mismo_valor == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero)) {
 				// Solo se fija el crucero si se ha notado una variación de más de +-20 pasos entre la medida actual y la de crucero ya fijada.
 				if (!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
+					boolean crucero_arriba = vl_acelerador > v_crucero;
 					crucero_fijado = true;
 					v_crucero = vl_acelerador;
 					contador_crucero_mismo_valor = 0;
 					crucero_fijado_millis = millis();
 					// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
 					// Valores altos se considera a partir de 2 segundos.
-					if (cnf.pulsos_fijar_crucero >= 14)
-						repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1);
+					if (cnf.pulsos_fijar_crucero >= 14) {
+						// Si el crucero se fija a la alta. Tono largo.
+						if (crucero_arriba) {
+							repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1);
+							// Si el crucero se fija a la baja. Tono corto.
+						} else {
+							repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 80, 0);
+						}
+					}
 				}
 			}
 		} else {
@@ -506,7 +514,7 @@ void mandaAcelerador(int vf_acelerador) {
 				// Si el crucero está fijado.
 				if (crucero_fijado) {
 					// Si no se está acelerando o si mientras está activa la opción de acelerador bloqueado por debajo de crucero,  teniendo los pulsos de fijación crucero están por encima de 10 (fijación por tiempo) y se acciona el acelerador por debajo de la velocidad de crucero.
-					if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 50) || (cnf.bloqueo_acelerador_debajo_crucero && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero )) {
+					if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 50) || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero )) {
 						nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
 					// Si se acelera.
 					} else {

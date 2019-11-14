@@ -61,13 +61,9 @@ struct ConfigContainer {
   
 	// Para que el acelerador funcione como en el coche. Si se fija el
 	// crucero, la potencia del motor solo cambia si se supera con el
-	// acelerador la velocidad de crucero fijada.
-	// NO PONER a TRUE si la variable [modo_crucero_continuo] está
-	// activada.
-	// False --> El acelerador actúa siempre.
-	// True --> El acelerador solo funciona por encima de la velocidad
-	// de crucero.
-	boolean bloqueo_acelerador_debajo_crucero = false;
+	// acelerador la velocidad de crucero fijada o si se mueve el acelerador
+	// por debajo de la potencia de crucero durante los ciclos definidos en esta variable.
+
 	// Pulsos que tarda en fijar velocidad por debajo de crucero (0 si bloqueo_acelerador_debajo_crucero = false).
 	byte pulsos_fijar_debajo_crucero = 0;
 
