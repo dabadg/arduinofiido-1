@@ -262,6 +262,10 @@ volatile byte interrupciones_activacion_pedaleo = 2;
 // Pulsos de fijación crucero a partir de los que se emite el tono por el buzzer.
 const int limite_tono_pulsos_fijar_crucero = 14;
 
+boolean test_sensores_habilitado;
+boolean tiempo_sensores_habilitado=60000;
+
+
 //======= FUNCIONES ====================================================
 
 // --------- Utilidades
@@ -420,6 +424,7 @@ boolean validaMinAcelerador(byte nmuestras) {
 	// del acelerador y desactivamos el acelerador.
 	} else {
 		a0_valor_reposo = 0;
+		test_sensores_habilitado=true;
 		SOS_TONE(pin_piezo);
 	}
 
@@ -547,6 +552,17 @@ void mandaAcelerador(int vf_acelerador) {
 	}
 }
 
+void ejecutar_bloqueo_loop(){
+	// Bloqueamos el loop.
+	int contador_bloqueo_sistema = 6;
+	while (true) {
+		delay(500);
+		if (contador_bloqueo_sistema > 0) {
+			repeatTones(pin_piezo, cnf.buzzer_activo, 1, (contador_bloqueo_sistema--) % 2 ?3000:2000, 1000, 0);
+		}
+	}
+}
+
 // --------- Generales
 
 void paraMotor() {
@@ -561,7 +577,7 @@ void freno() {
 	paraMotor();
 }
 
-void testSensoresPlotter(){
+void testSensoresPlotter(int tiempoMs){
 	delay(1000);
 	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
 
@@ -573,7 +589,7 @@ void testSensoresPlotter(){
 	unsigned long inicio_ejecucion_millis = millis();
 	byte pp = 0;
 
-	while ((unsigned long)(millis() - inicio_ejecucion_millis) < 60000) {
+	while ((unsigned long)(millis() - inicio_ejecucion_millis) < tiempoMs) {
 		delay(200);
 		Serial.print(leeAcelerador(3, false));
 		Serial.print("\t");
@@ -586,6 +602,8 @@ void testSensoresPlotter(){
 	}
 
 	Serial.end();
+	test_sensores_habilitado=false;
+
 }
 
 void setup() {
@@ -751,20 +769,13 @@ void loop() {
 			anulaCruceroConFreno();
 
 		mandaAcelerador(v_acelerador);
-	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador.
+	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador o que no se ha detectado.
 	} else {
 		// Ejecutamos el procedimiento de monitorización de sensores.
-		testSensoresPlotter();
-		// Bloqueamos el loop.
-		int contador_bloqueo_sistema = 6;
+		if(test_sensores_habilitado)
+			testSensoresPlotter(tiempo_sensores_habilitado);
+		ejecutar_bloqueo_loop();
 
-		while (true) {
-			delay(500);
-			if (contador_bloqueo_sistema > 0) {
-				repeatTones(pin_piezo, cnf.buzzer_activo, 1, (contador_bloqueo_sistema--) % 2 ?3000:2000, 1000, 0);
-			}
-		}
 	}
 }
-
 // EOF
