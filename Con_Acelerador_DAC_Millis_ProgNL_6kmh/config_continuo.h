@@ -4,12 +4,6 @@
 
 struct ConfigContainer {
 
-	// -------------- DAC
-
-	// Dirección del bus I2C [DAC] (0x60) si está soldado,
-	// si no (0x62).
-	int dir_dac = 0x60;
-
 	// -------------- TONOS
 
 	// Habilita los tonos de inicialización del sistema.
