@@ -262,7 +262,7 @@ volatile byte interrupciones_activacion_pedaleo = 2;
 const int limite_tono_pulsos_fijar_crucero = 14;
 
 boolean test_sensores_habilitado;
-boolean tiempo_sensores_habilitado=60000;
+unsigned long tiempo_sensores_habilitado=60000;
 
 
 //======= FUNCIONES ====================================================
