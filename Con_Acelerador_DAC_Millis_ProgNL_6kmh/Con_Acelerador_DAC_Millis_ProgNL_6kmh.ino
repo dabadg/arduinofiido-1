@@ -4,7 +4,7 @@
 #include "Tones.h"
 #include "I2CScanner.h"
 
-const char* version = "2.5.3_Develop";
+const char* version = "2.5.3";
 
 /*
                      Versión Con Acelerador y DAC
