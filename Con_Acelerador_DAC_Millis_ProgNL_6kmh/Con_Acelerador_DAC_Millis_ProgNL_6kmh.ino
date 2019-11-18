@@ -21,7 +21,7 @@ PRINCIPALES NOVEDADES:
 WIKI:
  * https://github.com/d0s1s/arduinofiido/wiki/Wiki-Arduino-Fiido
 ------------------------------------------------------------------------
-VERSIÓN CRUCERO SOLTANDO DE GOLPE (CONTÍNUO) --> FIJADO Y DESFIJADO DEL
+VERSIÓN CRUCERO SOLTANDO DE GOLPE (CONTINUO) --> FIJADO Y DESFIJADO DEL
 NIVEL DE ASISTENCIA:
  * Se trata de guardar el último valor del acelerador
  * para no tener que estar sujetando el acelerador.
@@ -256,15 +256,12 @@ volatile byte p_pulsos = 0;
 volatile boolean pedaleo = false;
 // Número de interrupciones para activar pedaleo.
 volatile byte interrupciones_activacion_pedaleo = 2;
-// Variable donde se suman los pulsos del freno.
-//volatile byte p_frenadas = 0;
 
 // Pulsos de fijación crucero a partir de los que se emite el tono por el buzzer.
 const int limite_tono_pulsos_fijar_crucero = 14;
 
 boolean test_sensores_habilitado;
-boolean tiempo_sensores_habilitado=60000;
-
+unsigned long tiempo_sensores_habilitado = 60000;
 
 //======= FUNCIONES ====================================================
 
@@ -327,7 +324,7 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 					// el crucero con valores altos. Valores altos se considera a partir de
 					// 2 segundos (14 pasos).
 					if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero) {
-						repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80 , 1);
+						repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80, 1);
 					}
 				}
 			}
@@ -371,6 +368,13 @@ void anulaCruceroConFreno() {
 
 		anula_crucero_con_freno_ultima_ejecucion_millis = millis();
 	}
+}
+
+// --------- Motor
+
+void paraMotor() {
+	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
+	nivel_aceleracion_prev = a0_valor_reposo;
 }
 
 // --------- Acelerador
@@ -497,8 +501,7 @@ void ayudaArranque() {
 	}
 
 	if (!pedaleo && leeAcelerador(3) <= a0_valor_reposo) {
-		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
-		nivel_aceleracion_prev = a0_valor_reposo;
+		paraMotor();
 	}
 }
 
@@ -565,16 +568,11 @@ void ejecutar_bloqueo_loop(){
 
 // --------- Generales
 
-void paraMotor() {
-	contador_retardo_aceleracion = 0;
-}
-
 void freno() {
 	pedaleo = false;
-	//p_frenadas++;
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
+	contador_retardo_aceleracion = 0;
 	bkp_contador_retardo_aceleracion = 0;
-	paraMotor();
 }
 
 void testSensoresPlotter(int tiempoMs){
@@ -585,6 +583,7 @@ void testSensoresPlotter(int tiempoMs){
 		Serial.begin(19200);
 
 	delay(1000);
+
 	// Durante 60s monitorizamos los valores de los sensores cada 200 ms.
 	unsigned long inicio_ejecucion_millis = millis();
 	byte pp = 0;
@@ -603,7 +602,6 @@ void testSensoresPlotter(int tiempoMs){
 
 	Serial.end();
 	test_sensores_habilitado=false;
-
 }
 
 void setup() {
@@ -719,7 +717,6 @@ void loop() {
 		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 			pulsos = p_pulsos;
 			p_pulsos = 0;
-			//p_frenadas = 0;
 
 			// Desactivamos pedaleo por cadencia.	
 			if (cnf.interrupciones_pedaleo_primer_iman) {
@@ -740,8 +737,7 @@ void loop() {
 				}
 
 				paraMotor();
-				dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
-				nivel_aceleracion_prev = a0_valor_reposo;
+				contador_retardo_aceleracion = 0;
 			// Si se pedalea.
 			} else {
 				if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
@@ -772,10 +768,11 @@ void loop() {
 	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador o que no se ha detectado.
 	} else {
 		// Ejecutamos el procedimiento de monitorización de sensores.
-		if(test_sensores_habilitado)
+		if (test_sensores_habilitado)
 			testSensoresPlotter(tiempo_sensores_habilitado);
-		ejecutar_bloqueo_loop();
 
+		ejecutar_bloqueo_loop();
 	}
 }
+
 // EOF
