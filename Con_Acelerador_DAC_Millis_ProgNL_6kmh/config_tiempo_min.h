@@ -6,9 +6,10 @@ struct ConfigContainer {
 
 	// -------------- DAC
 
-	// Dirección del bus I2C [DAC] (0x60) si está soldado,
-	// si no (0x62).
-	int dir_dac = 0x60;
+  // Dirección del bus I2C [DAC] (0x60) suele ser el valor por defecto.
+  // Si dejamos el valor a 0 realizará la detección automática al arranque.
+  // No cambiar si no sabemos con certeza la dirección de memoria de nuestro DAC.
+  uint8_t dir_dac = 0;
 
 	// -------------- TONOS
 
