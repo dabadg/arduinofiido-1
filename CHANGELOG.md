@@ -1,4 +1,4 @@
-CGANGELOG 2.5.0 --> 2.5.3
+CHANGELOG 2.5.0 --> 2.5.3
 - Refactorización de código.
 - Añadida detección de DAC al inicio.
 - Añadida variable de pulsos para fijar velocidad por debajo de crucero por tiempo.
