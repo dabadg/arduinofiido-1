@@ -664,6 +664,14 @@ void setup() {
 				}
 			}
 
+			// Estabiliza interrupciones para activar pedaleo.
+			if (cnf.interrupciones_pedaleo_segundo_iman == true)
+				cnf.interrupciones_pedaleo_primer_iman = false;
+
+			// Estabiliza interrupciones para activar pedaleo.
+			if (cnf.interrupciones_pedaleo_primer_iman == false && cnf.interrupciones_pedaleo_segundo_iman == false)
+				cnf.interrupciones_pedaleo_primer_iman = true;
+
 			// Tiempo para las comprobaciones de cadencia según el número de
 			// interrupciones para activar / desactivar el pedaleo.
 			if (cnf.interrupciones_pedaleo_primer_iman) {
@@ -687,14 +695,6 @@ void setup() {
 				fac_b = (1.0 / cnf.retardo_aceleracion - 1.0) / (pow((cnf.retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
 				fac_a = 1.0 - pow(1.0, fac_c) * fac_b;
 			}
-
-			// Estabiliza interrupciones para activar pedaleo.
-			if (cnf.interrupciones_pedaleo_segundo_iman == true)
-				cnf.interrupciones_pedaleo_primer_iman = false;
-
-			// Estabiliza interrupciones para activar pedaleo.
-			if (cnf.interrupciones_pedaleo_primer_iman == false && cnf.interrupciones_pedaleo_segundo_iman == false)
-				cnf.interrupciones_pedaleo_primer_iman = true;
 
 			// Estabiliza pulsos_fijar_crucero para que sean siempre superiores a 2.
 			if (cnf.pulsos_fijar_crucero < 2)
