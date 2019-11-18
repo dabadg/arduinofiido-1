@@ -1,8 +1,8 @@
 #include <Adafruit_MCP4725.h>
 #include <Arduino.h>
+#include "I2CScanner.h"
 #include "Level.h"
 #include "Tones.h"
-#include "I2CScanner.h"
 
 const char* version = "2.5.3";
 
@@ -66,11 +66,11 @@ NIVEL DE ASISTENCIA:
  * 1.5 segundos ya sea por encima o por debajo de la potencia de crucero
  * seleccionada anteriormente.
  *
- * Existe una variante que es la versión tiempo_min que permite interactuar
- * con el acelerador fijando el crucero manteniendo 3s el acelerador en la
- * misma posición, pero permitiendo cambiar el crucero a un valor más bajo
- * cambiando el el valor del acelerador y manteniendo la posición más baja
- * durante 280ms
+ * Existe una variante que es la versión tiempo_min que permite
+ * interactuar con el acelerador fijando el crucero manteniendo 3s el
+ * acelerador en la misma posición, pero permitiendo cambiar el crucero
+ * a un valor más bajo cambiando el el valor del acelerador y
+ * manteniendo la posición más baja durante 280ms.
  *
  * Para anular la potencia de crucero, existen dos procedimientos
  * principales --> Uno manteniendo pulsada la maneta de freno unos
@@ -167,13 +167,16 @@ AGRADECIMIENTOS:
 //#include "config_sincrucero.h"
 // Versión con fijación de crucero a los 2,8 segundos.
 //#include "config_tiempo.h"
-// Versión con fijación de crucero a los 2,8 segundos y bajada de crucero a 280ms.
+// Versión con fijación de crucero a los 2,8 segundos y bajada de
+// crucero a 280ms.
 #include "config_tiempo_min.h"
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
+
 I2CScanner i2cScanner;
 Adafruit_MCP4725 dac;
 ConfigContainer cnf;
+
 //======= PINES ========================================================
 
 // Pin del acelerador.
@@ -247,6 +250,13 @@ byte contador_crucero_mismo_valor = 0;
 // Cantidad de loops para cortar crucero con freno.
 byte contador_freno_anulacion_crucero;
 
+// Pulsos de fijación crucero a partir de los que se emite el tono por
+// el buzzer.
+const int limite_tono_pulsos_fijar_crucero = 14;
+
+boolean test_sensores_habilitado;
+unsigned long tiempo_sensores_habilitado = 60000;
+
 //======= Variables de interrupción ====================================
 
 // Variable donde se suman los pulsos del sensor PAS.
@@ -255,12 +265,6 @@ volatile byte p_pulsos = 0;
 volatile boolean pedaleo = false;
 // Número de interrupciones para activar pedaleo.
 volatile byte interrupciones_activacion_pedaleo = 2;
-
-// Pulsos de fijación crucero a partir de los que se emite el tono por el buzzer.
-const int limite_tono_pulsos_fijar_crucero = 14;
-
-boolean test_sensores_habilitado;
-unsigned long tiempo_sensores_habilitado = 60000;
 
 //======= FUNCIONES ====================================================
 
@@ -319,9 +323,9 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 					v_crucero = vl_acelerador;
 					contador_crucero_mismo_valor = 0;
 					crucero_fijado_millis = millis();
-					// Solo permitimos que suene el buzzer avisando de que se ha fijado
-					// el crucero con valores altos. Valores altos se considera a partir de
-					// 2 segundos (14 pasos).
+
+					// Solo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+					// Valores altos se considera a partir de 2 segundos (14 pasos).
 					if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero) {
 						repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80, 1);
 					}
@@ -422,12 +426,13 @@ boolean validaMinAcelerador(byte nmuestras) {
 		if (cnf.recalcular_rango_min_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
 		}
+
 		status = true;
 	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
 	// del acelerador y desactivamos el acelerador.
 	} else {
 		a0_valor_reposo = 0;
-		test_sensores_habilitado=true;
+		test_sensores_habilitado = true;
 		SOS_TONE(pin_piezo);
 	}
 
@@ -492,7 +497,7 @@ void ayudaArranque() {
 		}
 	}
 
-	// Activación de pedaleo al pasar por el primer imán.
+	// Volvemos a los valores predefinidos.
 	if (cnf.interrupciones_pedaleo_primer_iman) {
 		interrupciones_activacion_pedaleo = 2;
 	} else if (cnf.interrupciones_pedaleo_segundo_iman) {
@@ -557,8 +562,10 @@ void mandaAcelerador(int vf_acelerador) {
 void ejecutar_bloqueo_loop(){
 	// Bloqueamos el loop.
 	int contador_bloqueo_sistema = 6;
+
 	while (true) {
 		delay(500);
+
 		if (contador_bloqueo_sistema > 0) {
 			repeatTones(pin_piezo, cnf.buzzer_activo, 1, (contador_bloqueo_sistema--) % 2 ?3000:2000, 1000, 0);
 		}
@@ -574,7 +581,7 @@ void freno() {
 	bkp_contador_retardo_aceleracion = 0;
 }
 
-void testSensoresPlotter(unsigned long tiempoMs){
+void testSensoresPlotter(unsigned long tiempoMs) {
 	delay(1000);
 	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
 
@@ -602,7 +609,7 @@ void testSensoresPlotter(unsigned long tiempoMs){
 	}
 
 	Serial.end();
-	test_sensores_habilitado=false;
+	test_sensores_habilitado = false;
 }
 
 void setup() {
@@ -615,14 +622,13 @@ void setup() {
 	}
 
 	// Si cnf.dir_dac está a 0 se autodetecta la dirección del dac.
-	if (cnf.dir_dac==0) {
+	if (cnf.dir_dac == 0) {
 		i2cScanner.Init();
 	} else {
 		i2cScanner.Init(cnf.dir_dac);
 	}
 
 	if (i2cScanner.isDacDetected()) {
-
 		// Configura DAC.
 		dac.begin(i2cScanner.getDacAddress());
 		// Fija voltaje inicial en DAC.
@@ -672,6 +678,7 @@ void setup() {
 			// Ajusta configuración.
 			cnf.retardo_aceleracion = cnf.retardo_aceleracion * (1000 / tiempo_act);
 			cnf.retardo_inicio_progresivo = cnf.retardo_inicio_progresivo * (1000 / tiempo_act);
+
 			// Anulamos el retardo por seguridad para que empiece progresivo al encender la bici.
 			contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 
@@ -706,10 +713,9 @@ void setup() {
 			// Tono de finalización configuración del sistema.
 			repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 90, 90);
 		}
-
 	} else {
-		// tonos de error en detección de dac
-    DAC_ERR_TONE(pin_piezo);
+		// Tonos de error en detección de DAC.
+		DAC_ERR_TONE(pin_piezo);
 	}
 }
 
@@ -717,7 +723,6 @@ void loop() {
 	if (a0_valor_reposo > 0) {
 		// Solo se ejecutará en caso de que el dac haya sido detectado.
 		if (i2cScanner.isDacDetected()) {
-    
 			v_acelerador = leeAcelerador(30);
 
 			if (cnf.modo_crucero) {
@@ -790,4 +795,5 @@ void loop() {
 		ejecutar_bloqueo_loop();
 	}
 }
-//
+
+// EOF

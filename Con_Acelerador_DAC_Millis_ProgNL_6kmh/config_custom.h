@@ -3,14 +3,14 @@
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
 
 struct ConfigContainer {
-  
-  // -------------- DAC
+	// -------------- DAC
 
-  // Dirección del bus I2C [DAC] (0x60) suele ser el valor por defecto.
-  // Si dejamos el valor a 0 realizará la detección automática al arranque.
-  // No cambiar si no sabemos con certeza la dirección de memoria de nuestro DAC.
-  uint8_t dir_dac = 0;
-  
+	// Dirección del bus I2C [DAC] --> (0x60) suele ser por defecto.
+	// Si dejamos el valor a 0 realizará la detección automática al
+	// arranque. No cambiar si no sabemos con certeza la dirección de
+	// memoria denuestro DAC.
+	uint8_t dir_dac = 0;
+
 	// -------------- TONOS
 
 	// Habilita los tonos de inicialización del sistema.
@@ -59,15 +59,17 @@ struct ConfigContainer {
 	// 2 * 140 = 280 ms. Crucero continuo.
 	// 20 * 140 = 2800 ms. Crucero por tiempo.
 	byte pulsos_fijar_crucero = 2;
-  
+
 	// Para que el acelerador funcione como en el coche. Si se fija el
 	// crucero, la potencia del motor solo cambia si se supera con el
-	// acelerador la velocidad de crucero fijada o si se mueve el acelerador
-	// por debajo de la potencia de crucero durante los ciclos definidos en esta variable.
+	// acelerador la velocidad de crucero fijada o si se mueve el
+	// acelerador por debajo de la potencia de crucero durante los
+	// ciclos definidos en esta variable.
 
-	// Pulsos que tarda en fijar velocidad por debajo de crucero (0 si bloqueo_acelerador_debajo_crucero = false).
+	// Pulsos que tarda en fijar velocidad por debajo de crucero.
+	// 0 si bloqueo_acelerador_debajo_crucero = false.
+	// No Cambiar Valor. Solo para fijar por tiempo.
 	byte pulsos_fijar_debajo_crucero = 0;
-
 
 	// --------- +++
 

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+
 //======= FUNCIONES DE TONOS ===========================================
 
 //================== TONES ===================
@@ -35,9 +36,9 @@ void SOS_TONE(int pin_piezo) {
 }
 
 void DAC_ERR_TONE(int pin_piezo) {
-  for (int i = 1; i <= 6; i++) {
-    nota(pin_piezo, i%2?b[3]:c[3],90);delay(500);
-  }
+	for (int i = 1; i <= 6; i++) {
+		nota(pin_piezo, i%2?b[3]:c[3],90);delay(500);
+	}
 }
 void repeatTones(int pin_piezo, boolean trigger, int steps, int frequency, int duration, int delayTime) {
 	if (trigger) {

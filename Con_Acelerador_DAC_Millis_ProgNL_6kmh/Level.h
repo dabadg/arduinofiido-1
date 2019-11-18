@@ -1,32 +1,32 @@
 #include <Arduino.h>
 
-void nivelarRango(int &value, int minValue, int maxValue){
-	// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
+void nivelarRango(int &value, int minValue, int maxValue) {
+	// Nivelamos los valores de la media para no salir del mínimo.
 	if (value < minValue) {
 		value = minValue;
-	// Nivelamos los valores de la media para que no se salgan del rango de máximo.
+	// Nivelamos los valores de la media para no salir del máximo.
 	} else if (value > maxValue) {
-		value=maxValue;
+		value = maxValue;
 	}
 }
 
-void nivelarRango(long &value, long minValue, long maxValue){
-	// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
+void nivelarRango(long &value, long minValue, long maxValue) {
+	// Nivelamos los valores de la media para no salir del mínimo.
 	if (value < minValue) {
 		value = minValue;
-	// Nivelamos los valores de la media para que no se salgan del rango de máximo.
+	// Nivelamos los valores de la media para no salir del máximo.
 	} else if (value > maxValue) {
-		value=maxValue;
+		value = maxValue;
 	}
 }
 
-void nivelarRango(float &value, float minValue, float maxValue){
-	// Nivelamos los valores de la media para que no se salgan del rango de mínimo.
+void nivelarRango(float &value, float minValue, float maxValue) {
+	// Nivelamos los valores de la media para no salir del mínimo.
 	if (value < minValue) {
 		value = minValue;
-	// Nivelamos los valores de la media para que no se salgan del rango de máximo.
+	// Nivelamos los valores de la media para no salir del máximo.
 	} else if (value > maxValue) {
-		value=maxValue;
+		value = maxValue;
 	}
 }
 

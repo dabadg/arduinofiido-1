@@ -12,16 +12,14 @@
 typedef void(*I2C_Callback)(byte);
 
 class I2CScanner {
-
  protected:
 	byte inline scan(byte address);
 	boolean dacDetected;
 	uint8_t dacAddr;
 
  public:
-	// DAC ABAILABLE ADDRESSES
+	// DAC ABAILABLE ADDRESSES.
 	const uint8_t addresses[6] = { 0x60, 0x61, 0x62, 0x63, 0x64, 0x65 };
-
 	void Init();
 	void Init(uint8_t address);
 	bool Check(byte address);
@@ -30,3 +28,5 @@ class I2CScanner {
 };
 
 #endif
+
+// EOF
