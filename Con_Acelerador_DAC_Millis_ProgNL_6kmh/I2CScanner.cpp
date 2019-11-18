@@ -17,6 +17,11 @@ void I2CScanner::Init(){
 	}
 }
 
+void I2CScanner::Init(uint8_t address){
+  Wire.begin();
+  dacAddr=Check(address)?address:0;
+}
+
 bool I2CScanner::Check(byte address){
 	return (scan(address) == 0);
 }

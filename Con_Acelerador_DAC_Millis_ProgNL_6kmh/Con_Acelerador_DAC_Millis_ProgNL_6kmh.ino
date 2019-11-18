@@ -616,7 +616,13 @@ void setup() {
 		Serial.println(version);
 	}
 
-	i2cScanner.Init();
+	// Si cnf.dir_dac está a 0 se autodetecta la dirección del dac.
+	if (cnf.dir_dac==0) {
+		i2cScanner.Init();
+	} else {
+		i2cScanner.Init(cnf.dir_dac);
+	}
+
 	if (i2cScanner.isDacDetected()) {
 
 		// Configura DAC.
@@ -705,10 +711,7 @@ void setup() {
 
 	} else {
 		// tonos de error en detección de dac
-		for (int i = 0; i < 3; i++) {
-			repeatTones(pin_piezo, cnf.buzzer_activo, 1, 1000, 90, 500);
-			repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2000, 90, 500);
-		}
+    DAC_ERR_TONE(pin_piezo);
 	}
 }
 
