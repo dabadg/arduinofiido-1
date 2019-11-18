@@ -26,7 +26,7 @@ bool I2CScanner::Check(byte address) {
 	return (scan(address) == 0);
 }
 
-boolean I2CScanner::isDacDetected() {
+bool I2CScanner::isDacDetected() {
 	return dacAddr != 0;
 }
 
