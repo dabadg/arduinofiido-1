@@ -18,7 +18,7 @@ class I2CScanner {
 	uint8_t dacAddr;
 
  public:
-	// DAC ABAILABLE ADDRESSES.
+	// DAC AVAILABLE ADDRESSES.
 	const uint8_t addresses[6] = { 0x60, 0x61, 0x62, 0x63, 0x64, 0x65 };
 	void Init();
 	void Init(uint8_t address);

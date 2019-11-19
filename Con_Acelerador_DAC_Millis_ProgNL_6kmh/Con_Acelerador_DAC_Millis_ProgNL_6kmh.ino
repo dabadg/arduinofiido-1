@@ -441,23 +441,29 @@ boolean validaMinAcelerador(byte nmuestras) {
 	return status;
 }
 
-void ayudaArranque() {
-	unsigned long timer_progresivo_ayuda_arranque = millis();
-	boolean ayuda_arranque_fijada = false;
-	float v_salida_progresivo = cnf.v_salida_progresivo_ayuda_arranque;
-
+void anulaCruceroAcelerador(){
+	unsigned long timer_liberar_crucero = millis();
 	// Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
-	if (cnf.liberar_crucero_con_acelerador) {
+	// El procedimiento se ejecuta mientras no se pedalea, acelerando por encima del la
+	// velocidad de crucero y soltando el acelerador hasta el mínimo.
+	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador && leeAcelerador(3) > a0_valor_6kmh) {
 		// Delay a la espera de que se suelte el acelerador para anular crucero.
-		while ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) < 250) {
-			delay(1);
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 0);
+		while ((unsigned long)(millis() - timer_liberar_crucero) < 250) {
+			delay(10);
 			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-			if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 50)) {
+			if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 100)) {
 				anulaCrucero();
 				break;
 			}
 		}
 	}
+}
+
+void ayudaArranque() {
+	unsigned long timer_progresivo_ayuda_arranque = millis();
+	boolean ayuda_arranque_fijada = false;
+	float v_salida_progresivo = cnf.v_salida_progresivo_ayuda_arranque;
 
 	// Si está configurado el retardo de ayuda al arranque, retardamos la entrada
 	// de la ayuda durante los ms leidos de la variable cnf.retardo_ayuda_arranque.
@@ -533,7 +539,7 @@ void mandaAcelerador(int vf_acelerador) {
 				// Si el crucero está fijado.
 				if (crucero_fijado) {
 					// Si no se está acelerando o si mientras está activa la opción de acelerador bloqueado por debajo de crucero,  teniendo los pulsos de fijación crucero están por encima de 10 (fijación por tiempo) y se acciona el acelerador por debajo de la velocidad de crucero.
-					if (vf_acelerador < a0_valor_minimo || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero)) {
+					if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 100) || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero)) {
 						nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
 					// Si se acelera.
 					} else {
@@ -781,8 +787,10 @@ void loop() {
 				loop_ultima_ejecucion_millis = millis();
 			}
 
-			if (cnf.modo_crucero)
+			if (cnf.modo_crucero){
 				anulaCruceroConFreno();
+				anulaCruceroAcelerador();
+			}
 
 			mandaAcelerador(v_acelerador);
 		}
