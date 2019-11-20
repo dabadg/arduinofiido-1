@@ -84,6 +84,11 @@ struct ConfigContainer {
 	// 33 * 140 = 4620 ms.
 	byte pulsos_liberar_crucero = 0;
 
+  // Tiempo necesario para ejecutar el procedimiento de cancelar 
+  // crucero por acelerador. Hay que acelerar y soltar el acelerador sin 
+  // pedalear dentro de los segundos definidos en esta variable.
+  unsigned int tiempo_anula_crucero_acelerador = 350;
+  
 	// -------------- PROGRESIVOS
   
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.

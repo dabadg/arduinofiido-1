@@ -373,6 +373,24 @@ void anulaCruceroConFreno() {
 	}
 }
 
+void anulaCruceroAcelerador(){
+  unsigned long timer_liberar_crucero = millis();
+  // Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
+  // El procedimiento se ejecuta mientras no se pedalea, acelerando por encima del la
+  // velocidad de crucero y soltando el acelerador hasta el mínimo.
+  if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador && leeAcelerador(3) > a0_valor_6kmh) {
+    // Delay a la espera de que se suelte el acelerador para anular crucero.
+    repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 0);
+    while ((unsigned long)(millis() - timer_liberar_crucero) < cnf.tiempo_anula_crucero_acelerador) {
+      delay(10);
+      // Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
+      if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 100)) {
+        anulaCrucero();
+        break;
+      }
+    }
+  }
+}
 // --------- Motor
 
 void paraMotor() {
@@ -439,25 +457,6 @@ boolean validaMinAcelerador(byte nmuestras) {
 	delay(100);
 
 	return status;
-}
-
-void anulaCruceroAcelerador(){
-	unsigned long timer_liberar_crucero = millis();
-	// Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
-	// El procedimiento se ejecuta mientras no se pedalea, acelerando por encima del la
-	// velocidad de crucero y soltando el acelerador hasta el mínimo.
-	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador && leeAcelerador(3) > a0_valor_6kmh) {
-		// Delay a la espera de que se suelte el acelerador para anular crucero.
-		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 0);
-		while ((unsigned long)(millis() - timer_liberar_crucero) < 250) {
-			delay(10);
-			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-			if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 100)) {
-				anulaCrucero();
-				break;
-			}
-		}
-	}
 }
 
 void ayudaArranque() {
