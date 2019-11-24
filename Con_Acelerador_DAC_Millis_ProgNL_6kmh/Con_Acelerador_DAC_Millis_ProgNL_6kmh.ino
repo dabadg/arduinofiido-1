@@ -222,6 +222,7 @@ int nivel_aceleracion_prev = a0_valor_reposo;
 boolean ayuda_salida = false;
 // Ciclos de decremento cada 50 ms. De 0 a 255.
 const byte ciclo_decremento_progresivo_ayuda_arranque = 50;
+// Progresivo inverso para la asistencia de 6 km/h.
 int decremento_progresivo_ayuda_arranque;
 
 // Valor recogido del acelerador.
@@ -357,8 +358,8 @@ int calculaAceleradorProgresivoNoLineal() {
 	int fac_m = 0;
 
 	// Progresivo no lineal.
-	fac_m = (a0_valor_max - a0_valor_minimo) / pow(cnf.retardo_aceleracion, fac_p);
-	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow(contador_retardo_aceleracion, fac_p);
+	fac_m = (a0_valor_max - a0_valor_minimo) / pow (cnf.retardo_aceleracion, fac_p);
+	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow (contador_retardo_aceleracion, fac_p);
 
 	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero > a0_valor_reposo ? v_crucero:a0_valor_max);
 
@@ -381,7 +382,7 @@ void estableceCrucero(int vl_acelerador) {
 }
 
 void estableceCruceroPorTiempo(int vl_acelerador) {
-	// Ejecutamos método cada 100 ms.
+	// Esperamos 100 ms para ejecutar.
 	if ((unsigned long) (millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
 		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior.
 		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
@@ -425,12 +426,12 @@ void anulaCrucero() {
 }
 
 void anulaCruceroConFreno() {
-	// Ejecutamos método cada 100 ms.
+	// Esperamos 100 ms para ejecutar.
 	if ((unsigned long)(millis() - anula_crucero_con_freno_ultima_ejecucion_millis) > 100) {
 		if (digitalRead(pin_freno) == LOW) {
 			contador_freno_anulacion_crucero++;
 
-			if (crucero_fijado){
+			if (crucero_fijado) {
 				// Añadido % 8 para solo ejecutar la acción para los múltiplos de 8 y evitar excesivos tonos.
 				if (contador_freno_anulacion_crucero % 8 == 0) {
 					repeatTones(pin_piezo, cnf.buzzer_activo, 1, (3000 + (contador_freno_anulacion_crucero * 20)), 90, 200);
@@ -455,7 +456,7 @@ void anulaCruceroAcelerador() {
 	// Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
 	// El procedimiento se ejecuta mientras no se pedalea, acelerando por encima del la
 	// velocidad de crucero y soltando el acelerador hasta el mínimo.
-	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador && leeAcelerador(3) > a0_valor_6kmh) {
+	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador && leeAcelerador(30) > a0_valor_6kmh) {
 		// Delay a la espera de que se suelte el acelerador para anular crucero.
 		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 0);
 
@@ -463,7 +464,7 @@ void anulaCruceroAcelerador() {
 			delay(10);
 
 			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-			if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 100)) {
+			if (!pedaleo && comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 100)) {
 				anulaCrucero();
 				break;
 			}
@@ -542,7 +543,7 @@ void mandaAcelerador(int vf_acelerador) {
 				if (crucero_fijado) {
 					// Si no se está acelerando o si mientras está activa la opción de acelerador bloqueado por debajo de crucero,  teniendo los pulsos de fijación crucero están por encima de 10 (fijación por tiempo) y se acciona el acelerador por debajo de la velocidad de crucero.
 					//if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 100) || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero)) {
-					if (vf_acelerador < a0_valor_minimo || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero)) {
+					if (vf_acelerador < a0_valor_minimo || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >= 10 && vf_acelerador < v_crucero)) {
 						nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
 					// Si se acelera.
 					} else {
@@ -601,7 +602,7 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 
 	delay(1000);
 
-	// Durante 60s monitorizamos los valores de los sensores cada 200 ms.
+	// Durante 60 sg monitorizamos los valores de los sensores cada 200 ms.
 	unsigned long inicio_ejecucion_millis = millis();
 	byte pp = 0;
 
@@ -701,7 +702,7 @@ void setup() {
 
 			// Cálculo de factores para auto_progresivo.
 			if (cnf.retardo_inicio_progresivo > 0) {
-				fac_b = (1.0 / cnf.retardo_aceleracion - 1.0) / (pow((cnf.retardo_inicio_progresivo - 1.0), fac_c) - pow(1.0, fac_c));
+				fac_b = (1.0 / cnf.retardo_aceleracion - 1.0) / (pow ((cnf.retardo_inicio_progresivo - 1.0), fac_c) - pow (1.0, fac_c));
 				fac_a = 1.0 - pow(1.0, fac_c) * fac_b;
 			}
 
@@ -781,7 +782,7 @@ void loop() {
 						bkp_contador_retardo_aceleracion = cnf.retardo_aceleracion;
 					}
 
-					contador_retardo_aceleracion = (int) bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_max;
+					contador_retardo_aceleracion = (int) bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow (contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_max;
 					auto_progresivo = false;
 				} else {
 					auto_progresivo = false;
@@ -794,7 +795,7 @@ void loop() {
 				}
 			}
 
-			if (cnf.modo_crucero){
+			if (cnf.modo_crucero) {
 				anulaCruceroConFreno();
 				anulaCruceroAcelerador();
 			}
