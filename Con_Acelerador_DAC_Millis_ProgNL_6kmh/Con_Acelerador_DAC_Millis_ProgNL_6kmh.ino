@@ -26,8 +26,8 @@ NIVEL DE ASISTENCIA:
  * Se trata de guardar el último valor del acelerador
  * para no tener que estar sujetando el acelerador.
  *
- * La idea es fijar el acelerador a la velocidad deseada y soltar de
- * de golpe para guardar el voltaje como de crucero.
+ * La idea es fijar el acelerador a la velocidad deseada, aguantar unos
+ * 300 ms y soltar de golpe para guardar el voltaje como de crucero.
  * Al parar y volver a pedalear, se va incrementando voltaje
  * gradualmente hasta llegar al valor de crucero.
  * Si se vuelve a mover el acelerador se toma este como nuevo crucero.
@@ -35,14 +35,8 @@ NIVEL DE ASISTENCIA:
  * acelerador, por otra parte, mandaremos a la placa DAC mediante
  * comunicacion i2c el valor de salida hacia la controladora.
  *
- * El acelerador da un voltaje variable entre 0.85 y 3.9
- * Se puede configurar que el freno anule el crucero.
+ * El acelerador da un voltaje variable entre 0.85 y 3.9 v.
  * Sólo se fija el valor si pedaleamos.
- *
- * Con toque corto del freno no se anula crucero, con toque largo, sí.
- * También se puede anular el valor del crucero con el acelerador,
- * abriendo un poco de gas y desacelerando hasta el final sin soltar
- * de golpe.
 ------------------------------------------------------------------------
 VERSIÓN CRUCERO TIPO "MONOPATÍN" (POR TIEMPO) --> FIJADO Y DESFIJADO DEL
 NIVEL DE ASISTENCIA:
@@ -196,6 +190,7 @@ const byte pin_piezo = 11;
 int a0_valor_reposo = 174;		// 0.85
 const int a0_valor_minimo = 235;	// 1.15
 const int a0_valor_suave = 307;		// 1.50
+const int a0_valor_ayuda = 409;		// 2.00
 const int a0_valor_6kmh = 448;		// 2.19
 int a0_valor_alto = 798;		// 3.90
 const int a0_valor_max = 809;		// 3.95
@@ -221,7 +216,7 @@ const float fac_c = cnf.suavidad_autoprogresivos / 10.0;
 // Los voltios que se mandan a la controladora.
 int nivel_aceleracion = a0_valor_reposo;
 // Almacena el último valor asignado al DAC.
-int nivel_aceleracion_prev = 0;
+int nivel_aceleracion_prev = a0_valor_reposo;
 
 // Permite usar el acelerador desde parado a 6 km/h.
 boolean ayuda_salida = false;
@@ -230,7 +225,7 @@ const byte ciclo_decremento_progresivo_ayuda_arranque = 50;
 int decremento_progresivo_ayuda_arranque;
 
 // Valor recogido del acelerador.
-int v_acelerador;
+int v_acelerador = a0_valor_reposo;
 // Valor de crucero del acelerador.
 int v_crucero = a0_valor_reposo;
 // Variable que almacena el estado de notificación de fijar crucero.
@@ -242,6 +237,7 @@ unsigned long loop_ultima_ejecucion_millis;
 unsigned long crucero_fijado_millis;
 unsigned long establece_crucero_ultima_ejecucion_millis;
 unsigned long anula_crucero_con_freno_ultima_ejecucion_millis;
+boolean actualizacion_contadores = false;
 
 // Almacena la velocidad de crucero del loop anterior.
 int vl_acelerador_prev = 0;
@@ -288,14 +284,94 @@ void pedal() {
 	}
 }
 
+// --------- Motor
+
+void paraMotor() {
+	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
+	nivel_aceleracion_prev = a0_valor_reposo;
+}
+
+// --------- Acelerador
+
+int leeAcelerador(byte nmuestras, boolean nivelar) {
+	int cl_acelerador = 0;
+
+	// Leemos nivel de acelerador tomando n medidas.
+	for (byte f = 1; f <= nmuestras; f++) {
+		cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
+	}
+
+	cl_acelerador = (int) cl_acelerador / nmuestras;
+
+	// Para corregir el valor por el real obtenido de la lectura.
+ 	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
+ 		a0_valor_alto = cl_acelerador;
+
+	if (nivelar) {
+		nivelarRango(cl_acelerador, a0_valor_reposo, a0_valor_alto);
+	}
+
+	return cl_acelerador;
+}
+
+int leeAcelerador(byte nmuestras) {
+	return leeAcelerador(nmuestras, true);
+}
+
+boolean validaMinAcelerador(byte nmuestras) {
+	boolean status = false;
+	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
+	// En caso de no tener acelerador, mantenemos valor por defecto.
+	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
+	int l_acelerador_reposo = 0;
+
+	// Tomamos 30 medidas para calcular la media.
+	for (byte f = 1; f <= nmuestras; f++) {
+		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador);
+	}
+
+	l_acelerador_reposo = (int) l_acelerador_reposo / nmuestras;
+
+	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 50)) {
+		// Si queremos arrancar con la actualización de los valores reales tomados por el acelerador.
+		if (cnf.recalcular_rango_min_acelerador) {
+			a0_valor_reposo = l_acelerador_reposo;
+		}
+
+		status = true;
+	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
+	// del acelerador y desactivamos el acelerador.
+	} else {
+		a0_valor_reposo = 0;
+		test_sensores_habilitado = true;
+		SOS_TONE(pin_piezo);
+	}
+
+	delay(100);
+
+	return status;
+}
+
+int calculaAceleradorProgresivoNoLineal() {
+	int nivel_aceleraciontmp;
+	int fac_m = 0;
+
+	// Progresivo no lineal.
+	fac_m = (a0_valor_max - a0_valor_minimo) / pow(cnf.retardo_aceleracion, fac_p);
+	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow(contador_retardo_aceleracion, fac_p);
+
+	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero > a0_valor_reposo ? v_crucero:a0_valor_max);
+
+	return nivel_aceleraciontmp;
+}
+
 // --------- Crucero
 
 void estableceCrucero(int vl_acelerador) {
-	// Ejecutamos método cada 280 ms.
-	if ((unsigned long)(millis() - establece_crucero_ultima_ejecucion_millis) > 280) {
-		// El crucero se actualiza mientras se esté pedaleando con la lectura del acelerador siempre
-		// que esta sea superior al valor de referencia.
-		if (pedaleo && vl_acelerador > a0_valor_minimo) {
+	// Esperamos 250 ms para ejecutar.
+	if ((unsigned long)(millis() - establece_crucero_ultima_ejecucion_millis) > 250) {
+		// El crucero se actualiza mientras se esté pedaleando.
+		if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(leeAcelerador(30), vl_acelerador, 10)) {
 			v_crucero = vl_acelerador;
 			crucero_fijado = true;
 		}
@@ -373,91 +449,29 @@ void anulaCruceroConFreno() {
 	}
 }
 
-void anulaCruceroAcelerador(){
-  unsigned long timer_liberar_crucero = millis();
-  // Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
-  // El procedimiento se ejecuta mientras no se pedalea, acelerando por encima del la
-  // velocidad de crucero y soltando el acelerador hasta el mínimo.
-  if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador && leeAcelerador(3) > a0_valor_6kmh) {
-    // Delay a la espera de que se suelte el acelerador para anular crucero.
-    repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 0);
-    while ((unsigned long)(millis() - timer_liberar_crucero) < cnf.tiempo_anula_crucero_acelerador) {
-      delay(10);
-      // Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-      if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 100)) {
-        anulaCrucero();
-        break;
-      }
-    }
-  }
-}
-// --------- Motor
+void anulaCruceroAcelerador() {
+	unsigned long timer_liberar_crucero = millis();
 
-void paraMotor() {
-	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
-	nivel_aceleracion_prev = a0_valor_reposo;
-}
+	// Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
+	// El procedimiento se ejecuta mientras no se pedalea, acelerando por encima del la
+	// velocidad de crucero y soltando el acelerador hasta el mínimo.
+	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador && leeAcelerador(3) > a0_valor_6kmh) {
+		// Delay a la espera de que se suelte el acelerador para anular crucero.
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 0);
 
-// --------- Acelerador
+		while ((unsigned long)(millis() - timer_liberar_crucero) < cnf.tiempo_anula_crucero_acelerador) {
+			delay(10);
 
-int leeAcelerador(byte nmuestras, boolean nivelar) {
-	int cl_acelerador = 0;
-
-	// Leemos nivel de acelerador tomando n medidas.
-	for (byte f = 1; f <= nmuestras; f++) {
-		cl_acelerador = cl_acelerador + analogRead(pin_acelerador);
-	}
-
-	cl_acelerador = (int) cl_acelerador / nmuestras;
-
-	// Para corregir el valor por el real obtenido de la lectura.
- 	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_alto && cl_acelerador <= a0_valor_max)
- 		a0_valor_alto = cl_acelerador;
-
-	if (nivelar) {
-		nivelarRango(cl_acelerador, a0_valor_reposo, a0_valor_alto);
-	}
-
-	return cl_acelerador;
-}
-
-int leeAcelerador(byte nmuestras) {
-	return leeAcelerador(nmuestras, true);
-}
-
-boolean validaMinAcelerador(byte nmuestras) {
-	boolean status = false;
-	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
-	// En caso de no tener acelerador, mantenemos valor por defecto.
-	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
-	int l_acelerador_reposo = 0;
-
-	// Tomamos 30 medidas para calcular la media.
-	for (byte f = 1; f <= nmuestras; f++) {
-		l_acelerador_reposo = l_acelerador_reposo + analogRead(pin_acelerador);
-	}
-
-	l_acelerador_reposo = (int) l_acelerador_reposo / nmuestras;
-
-	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 50)) {
-		// Si queremos arrancar con la actualización de los valores reales tomados por el ecelerador.
-		if (cnf.recalcular_rango_min_acelerador) {
-			a0_valor_reposo = l_acelerador_reposo;
+			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
+			if (!pedaleo && comparaConTolerancia(leeAcelerador(3), a0_valor_reposo, 100)) {
+				anulaCrucero();
+				break;
+			}
 		}
-
-		status = true;
-	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
-	// del acelerador y desactivamos el acelerador.
-	} else {
-		a0_valor_reposo = 0;
-		test_sensores_habilitado = true;
-		SOS_TONE(pin_piezo);
 	}
-
-	delay(100);
-
-	return status;
 }
+
+// --------- Asistencia 6 Km/h
 
 void ayudaArranque() {
 	unsigned long timer_progresivo_ayuda_arranque = millis();
@@ -478,7 +492,7 @@ void ayudaArranque() {
 	interrupciones_activacion_pedaleo = 4;
 
 	// Mientras no pedaleamos y aceleramos.
-	while (!pedaleo && leeAcelerador(3) > a0_valor_6kmh) {
+	while (!pedaleo && leeAcelerador(30,true) > a0_valor_ayuda) {
 		// Iniciamos la salida progresiva inversa.
 		if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh) {
 			// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
@@ -509,27 +523,16 @@ void ayudaArranque() {
 		interrupciones_activacion_pedaleo = 3;
 	}
 
-	if (!pedaleo && leeAcelerador(3) <= a0_valor_reposo) {
+	if (!pedaleo && leeAcelerador(30) <= a0_valor_reposo) {
 		paraMotor();
 	}
 }
 
-int calculaAceleradorProgresivoNoLineal() {
-	int nivel_aceleraciontmp;
-	int fac_m = 0;
-
-	// Progresivo no lineal.
-	fac_m = (a0_valor_max - a0_valor_minimo) / pow(cnf.retardo_aceleracion, fac_p);
-	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow(contador_retardo_aceleracion, fac_p);
-
-	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero > a0_valor_reposo ? v_crucero:a0_valor_max);
-
-	return nivel_aceleraciontmp;
-}
+// --------- Establecimiento de voltaje
 
 void mandaAcelerador(int vf_acelerador) {
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if (ayuda_salida && !pedaleo && leeAcelerador(3) > a0_valor_suave + 5) {
+	if (ayuda_salida && !pedaleo && vf_acelerador > a0_valor_ayuda && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
@@ -538,7 +541,8 @@ void mandaAcelerador(int vf_acelerador) {
 				// Si el crucero está fijado.
 				if (crucero_fijado) {
 					// Si no se está acelerando o si mientras está activa la opción de acelerador bloqueado por debajo de crucero,  teniendo los pulsos de fijación crucero están por encima de 10 (fijación por tiempo) y se acciona el acelerador por debajo de la velocidad de crucero.
-					if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 100) || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero)) {
+					//if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 100) || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero)) {
+					if (vf_acelerador < a0_valor_minimo || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero)) {
 						nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
 					// Si se acelera.
 					} else {
@@ -558,21 +562,8 @@ void mandaAcelerador(int vf_acelerador) {
 
 		// Fijamos el acelerador si el valor anterior es distinto al actual.
 		if (nivel_aceleracion_prev != nivel_aceleracion) {
-			  dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
-			  nivel_aceleracion_prev = nivel_aceleracion;
-		}
-	}
-}
-
-void ejecutar_bloqueo_loop(){
-	// Bloqueamos el loop.
-	int contador_bloqueo_sistema = 6;
-
-	while (true) {
-		delay(500);
-
-		if (contador_bloqueo_sistema > 0) {
-			repeatTones(pin_piezo, cnf.buzzer_activo, 1, (contador_bloqueo_sistema--) % 2 ?3000:2000, 1000, 0);
+			dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
+			nivel_aceleracion_prev = nivel_aceleracion;
 		}
 	}
 }
@@ -584,6 +575,19 @@ void freno() {
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	contador_retardo_aceleracion = 0;
 	bkp_contador_retardo_aceleracion = 0;
+}
+
+void ejecutar_bloqueo_loop() {
+	// Bloqueamos el loop.
+	int contador_bloqueo_sistema = 6;
+
+	while (true) {
+		delay(500);
+
+		if (contador_bloqueo_sistema > 0) {
+			repeatTones(pin_piezo, cnf.buzzer_activo, 1, (contador_bloqueo_sistema--) % 2 ?3000:2000, 1000, 0);
+		}
+	}
 }
 
 void testSensoresPlotter(unsigned long tiempoMs) {
@@ -637,7 +641,7 @@ void setup() {
 		// Configura DAC.
 		dac.begin(i2cScanner.getDacAddress());
 		// Fija voltaje inicial en DAC.
-		dac.setVoltage(810, false);
+		dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 
 		// Configura pines.
 		pinMode(pin_piezo, OUTPUT);
@@ -726,19 +730,9 @@ void setup() {
 
 void loop() {
 	if (a0_valor_reposo > 0) {
-		// Solo se ejecutará en caso de que el dac haya sido detectado.
+		// Si el DAC es detectado.
 		if (i2cScanner.isDacDetected()) {
-			v_acelerador = leeAcelerador(30);
-
-			if (cnf.modo_crucero) {
-				if (cnf.pulsos_fijar_crucero <= 2) {
-					estableceCrucero(v_acelerador);
-				} else {
-					estableceCruceroPorTiempo(v_acelerador);
-				}
-			}
-
-			// Ejecutamos en función del [tiempo_act].
+			// Esperamos [tiempo_act] para ejecutar.
 			if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 				pulsos = p_pulsos;
 				p_pulsos = 0;
@@ -751,39 +745,53 @@ void loop() {
 					if (pulsos < 3)
 						pedaleo = false;
 				}
+				
+				actualizacion_contadores = true;
+				loop_ultima_ejecucion_millis = millis();
+			}
 
-				// Si no se pedalea.
-				if (!pedaleo) {
-					contador_retardo_inicio_progresivo++;
-					auto_progresivo = true;
+			v_acelerador = leeAcelerador(30);
 
-					if (contador_retardo_aceleracion > 4) {
-						bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
-					}
-
-					paraMotor();
-					contador_retardo_aceleracion = 0;
-				// Si se pedalea.
+			if (cnf.modo_crucero) {
+				if (cnf.pulsos_fijar_crucero <= 2) {
+					estableceCrucero(v_acelerador);
 				} else {
-					if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
-						if (bkp_contador_retardo_aceleracion > cnf.retardo_aceleracion) {
-							bkp_contador_retardo_aceleracion = cnf.retardo_aceleracion;
-						}
+					estableceCruceroPorTiempo(v_acelerador);
+				}
+			}
 
-						contador_retardo_aceleracion = (int) bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_alto;
-						auto_progresivo = false;
-					} else {
-						auto_progresivo = false;
-					}
+			// Si no se pedalea.
+			if (!pedaleo) {
+				if (actualizacion_contadores)
+					contador_retardo_inicio_progresivo++;
 
-					contador_retardo_inicio_progresivo = 0;
+				// Lanzamos auto_progresivo.
+				auto_progresivo = true;
 
-					if (contador_retardo_aceleracion < cnf.retardo_aceleracion) {
-						contador_retardo_aceleracion++;
-					}
+				if (contador_retardo_aceleracion > 4) {
+					bkp_contador_retardo_aceleracion = contador_retardo_aceleracion;
 				}
 
-				loop_ultima_ejecucion_millis = millis();
+				contador_retardo_aceleracion = 0;
+				paraMotor();
+			// Si se pedalea.
+			} else {
+				if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
+					if (bkp_contador_retardo_aceleracion > cnf.retardo_aceleracion) {
+						bkp_contador_retardo_aceleracion = cnf.retardo_aceleracion;
+					}
+
+					contador_retardo_aceleracion = (int) bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow(contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_max;
+					auto_progresivo = false;
+				} else {
+					auto_progresivo = false;
+				}
+
+				contador_retardo_inicio_progresivo = 0;
+
+				if (actualizacion_contadores && contador_retardo_aceleracion < cnf.retardo_aceleracion) {
+					contador_retardo_aceleracion++;
+				}
 			}
 
 			if (cnf.modo_crucero){
@@ -792,6 +800,9 @@ void loop() {
 			}
 
 			mandaAcelerador(v_acelerador);
+
+			// Reinicio de variable.
+			actualizacion_contadores = false;
 		}
 	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador o que no se ha detectado.
 	} else {
