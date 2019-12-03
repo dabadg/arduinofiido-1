@@ -17,9 +17,9 @@ FIJADO Y DESFIJADO DEL NIVEL DE ASISTENCIA:
  * Se trata de guardar el último valor del acelerador
  * para no tener que estar sujetando el acelerador.
  *
- * La idea es fijar el acelerador a la velocidad deseada, aguantar unos
- * 250 ms y soltar de golpe o acompañar rápidamente hasta el valor 0,
- * para guardar el voltaje como nivel de asistencia.
+ * La idea es fijar el acelerador a la velocidad deseada y soltar de
+ * golpe o acompañar rápidamente hasta el valor 0, para guardar el
+ * voltaje como nivel de asistencia.
  * Al parar y volver a pedalear, se va incrementando voltaje
  * gradualmente hasta llegar al nivel fijado.
  * Si se vuelve a mover el acelerador se toma este como nuevo valor.
@@ -27,7 +27,7 @@ FIJADO Y DESFIJADO DEL NIVEL DE ASISTENCIA:
  * acelerador, por otra parte, mandaremos a la placa DAC mediante
  * comunicacion i2c el valor de salida hacia la controladora.
  *
- * Sólo se fija / desfija el valor si pedaleamos. Para desfijarlo, abrir
+ * Se fija o desfija el valor si pedaleamos. Para desfijarlo, abrir
  * un poco de gas y soltar acelerador.
 ------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
@@ -216,7 +216,7 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 void validaMinAcelerador(byte nmuestras) {
 	// Inicializamos el valor mínimo del acelerador, calculando la media de las medidas si tiene acelerador.
 	// En caso de no tener acelerador o dar medida errónea, mantenemos valor por defecto.
-	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
+	// Esto es útil para controlar el correcto funcionamiento del acelerador, si este está presente.
 	int l_acelerador_reposo = 0;
 
 	// Tomamos 30 medidas para calcular la media.
