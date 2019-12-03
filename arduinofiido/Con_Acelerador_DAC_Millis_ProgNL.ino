@@ -239,12 +239,9 @@ void validaMinAcelerador(byte nmuestras) {
 }
 
 int calculaAceleradorProgresivoNoLineal() {
-	// Progresivo no lineal.
 	fac_m = (a0_valor_limite - a0_valor_minimo) / pow (cnf.retardo_aceleracion, fac_p);
 	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow (contador_retardo_aceleracion, fac_p);
-	
 	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero > a0_valor_reposo ? v_crucero:a0_valor_limite);
-
 	return nivel_aceleraciontmp;
 }
 
@@ -389,9 +386,8 @@ void setup() {
 
 	// Configura DAC.
 	dac.begin(i2cScanner.getDacAddress());
-	// Fija voltaje inicial en DAC.
-	// 810 --> Son 0.85 en escala de 4.3 voltios.
-	dac.setVoltage(aceleradorEnDac(203), false);
+	// Fija voltaje inicial en DAC en reposo.
+	dac.setVoltage(aceleradorEnDac(a0_valor_reposo), false);
 
 	// Configura pines.
 	pinMode(pin_piezo, OUTPUT);
