@@ -1,0 +1,13 @@
+Programa para Arduino en las bicicletas Fiido.
+
+- Versión con acelerador y DAC.
+- La detección de pulsos se hace con millis().
+- Progresivos y autoprogresivos no lineales.
+- Añadido buzzer para emitir avisos en la inicialización.
+------------------------------------------------------------------------------------------------------------------------------------------
+
+Ayuda, sugerencias, preguntas, etc. en el grupo Fiido Telegram: http://t.me/FiidoD1Spain
+
+Grupo Telegram de Desarrollo privado, si vas a montar el circuito y necesitas ayuda o colaborar pide acceso en el general de arriba.
+
+Canal con montaje, enlaces, programas, etc. http://t.me/fiidolegal
