@@ -247,7 +247,7 @@ void estableceNivel(int vl_acelerador) {
 			contador_crucero_mismo_valor++;
 
 			// Si el contador de crucero ha llegado a su tope, se fija el crucero.
-			if (contador_crucero_mismo_valor == 2) {
+			if (contador_crucero_mismo_valor == 3) {
 				// Solo se fija el crucero si se ha notado una variación de más de +-20 pasos entre la medida actual y la de crucero ya fijada.
 				if (!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
 					v_crucero = vl_acelerador;
