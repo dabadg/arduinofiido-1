@@ -400,6 +400,18 @@ void setup() {
 
 	// Tono aviso de inicio de configuración del sistema.
 	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 90, 350);
+	
+	delay(200);
+	
+	// Si arrancamos con el freno pulsado.
+	if (digitalRead(pin_freno) == LOW) {
+		// Desactivamos el modo crucero.
+		cnf.modo_crucero = false;
+		delay(200);
+		// Tono aviso de modo de fábrica legalizado.
+		repeatTones(pin_piezo, cnf.buzzer_activo, 2, 2900, 90, 200);
+		delay(200);
+	}
 
 	// Tiempo para las comprobaciones de cadencia según el número de
 	// interrupciones para activar / desactivar el pedaleo.
