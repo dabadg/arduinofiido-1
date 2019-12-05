@@ -495,7 +495,7 @@ void loop() {
 		}
 
 		if (cnf.modo_crucero)
-			anulaCruceroAcelerador(int v_acelerador)
+			anulaCruceroAcelerador(v_acelerador);
 
 		mandaAcelerador(v_acelerador);
 
