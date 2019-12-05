@@ -21,7 +21,7 @@ struct ConfigContainer {
 
 	// True --> Activa pedaleo al paso del pedal por el 2 imán.
 	// False --> Activa pedaleo al paso del pedal por el 1 imán.
-	boolean interrupciones_pedaleo_segundo_iman = false;
+	boolean interrupciones_pedaleo_segundo_iman = true;
 
 	// -------------- CRUCERO
 
@@ -40,7 +40,7 @@ struct ConfigContainer {
 
 	// Suavidad de los progresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
-	int suavidad_progresivos = 5;
+	int suavidad_progresivos = 4;
 
 	// Suavidad de los autoprogresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
