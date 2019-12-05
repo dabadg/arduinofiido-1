@@ -110,8 +110,7 @@ const byte pin_piezo = 11;
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 int a0_valor_reposo = 197; // 0.83 voltios [Escala 4.3].
-const int a0_valor_minimo = 238;
-const int a0_valor_corte = 272;
+const int a0_valor_minimo = 330;
 const int a0_valor_maximo = 808;
 
 // Variables para la detección del pedaleo.
@@ -125,7 +124,6 @@ int bkp_contador_retardo_aceleracion = 0;
 boolean auto_progresivo = false;
 
 // Variables para progresivos.
-float fac_n = 0.0;
 float fac_m = 0.0;
 const float fac_p = 1.056 - 0.056 * cnf.suavidad_progresivos;
 
@@ -265,11 +263,18 @@ void estableceNivel(int vl_acelerador) {
 	}
 }
 
+void anulaCruceroAcelerador(int vf_acelerador) {
+	if (!pedaleo && vf_acelerador > a0_valor_minimo) {
+		v_crucero = a0_valor_reposo;
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2000, 290, 100);
+	}
+}
+
 // --------- Establecimiento de voltaje
 
 void mandaAcelerador(int vf_acelerador) {
 	if (cnf.modo_crucero) {
-		if (v_crucero < a0_valor_corte)
+		if (v_crucero < a0_valor_minimo)
 			v_crucero = a0_valor_reposo;
 	}
 
@@ -278,12 +283,10 @@ void mandaAcelerador(int vf_acelerador) {
 		if (cnf.modo_crucero) {
 			// Si no se está acelerando.
 			if (vf_acelerador < a0_valor_minimo) {
-				fac_n = a0_valor_reposo + 0.18 * v_crucero;
-				nivelarRango(fac_n, 272.0, 333.0);
 				fac_m = (a0_valor_maximo - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
-				nivel_aceleracion = (int) fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p);
+				nivel_aceleracion = (int) a0_valor_minimo + fac_m * pow (contador_retardo_aceleracion, fac_p);
 
-				if (nivel_aceleracion == (int) fac_n)
+				if (nivel_aceleracion == a0_valor_minimo)
 					nivel_aceleracion = a0_valor_reposo;
 
 				nivelarRango(nivel_aceleracion, a0_valor_reposo, v_crucero);
@@ -316,15 +319,13 @@ void paraMotor() {
 // --------- Generales
 
 void freno() {
-	//pedaleo = false;
+	pedaleo = false;
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	contador_retardo_aceleracion = 0;
 	bkp_contador_retardo_aceleracion = 0;
 }
 
 void ejecutar_bloqueo_loop() {
-	// Paramos motor.
-	paraMotor();
 	// Bloqueamos el loop.
 	int contador_bloqueo_sistema = 6;
 
@@ -492,6 +493,9 @@ void loop() {
 				contador_retardo_aceleracion++;
 			}
 		}
+
+		if (cnf.modo_crucero)
+			anulaCruceroAcelerador(int v_acelerador)
 
 		mandaAcelerador(v_acelerador);
 
