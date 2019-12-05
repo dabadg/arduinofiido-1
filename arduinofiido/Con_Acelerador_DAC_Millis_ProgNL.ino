@@ -111,6 +111,7 @@ const byte pin_piezo = 11;
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 int a0_valor_reposo = 197; // 0.83 voltios [Escala 4.3].
 const int a0_valor_minimo = 238;
+const int a0_valor_corte = 272;
 const int a0_valor_maximo = 808;
 
 // Variables para la detección del pedaleo.
@@ -268,7 +269,7 @@ void estableceNivel(int vl_acelerador) {
 
 void mandaAcelerador(int vf_acelerador) {
 	if (cnf.modo_crucero) {
-		if (v_crucero < a0_valor_minimo)
+		if (v_crucero < a0_valor_corte)
 			v_crucero = a0_valor_reposo;
 	}
 
