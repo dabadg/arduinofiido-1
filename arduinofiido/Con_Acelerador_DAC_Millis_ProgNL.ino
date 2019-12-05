@@ -109,10 +109,9 @@ const byte pin_piezo = 11;
 //======= VARIABLES PARA CÁLCULOS ======================================
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
-int a0_valor_reposo = 202; // 0.85 voltios [Escala 4.3].
+int a0_valor_reposo = 197; // 0.83 voltios [Escala 4.3].
 const int a0_valor_minimo = 238;
-const int a0_valor_max = 798;
-const int a0_valor_limite = 839;
+const int a0_valor_maximo = 808;
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
@@ -124,7 +123,8 @@ unsigned long contador_retardo_inicio_progresivo = 0;
 int bkp_contador_retardo_aceleracion = 0;
 boolean auto_progresivo = false;
 
-// Constante progresivos.
+// Variables para progresivos.
+float fac_n = 0.0;
 float fac_m = 0.0;
 const float fac_p = 1.056 - 0.056 * cnf.suavidad_progresivos;
 
@@ -134,15 +134,11 @@ float fac_a = 0.0;
 const float fac_c = cnf.suavidad_autoprogresivos / 10.0;
 
 // Los voltios que se mandan a la controladora.
-unsigned int nivel_aceleracion = a0_valor_reposo;
+int nivel_aceleracion = a0_valor_reposo;
 // Almacena el último valor asignado al DAC.
-unsigned int nivel_aceleracion_prev = a0_valor_reposo;
-// Almacena el valor para el progresivo.
-int nivel_aceleraciontmp = a0_valor_minimo;
+int nivel_aceleracion_prev = a0_valor_reposo;
 // Valor recogido del acelerador.
 int v_acelerador;
-// Valor retornado de la lectura del acelerador.
-int cl_acelerador;
 // Almacena la velocidad de crucero del loop anterior.
 int vl_acelerador_prev;
 // Valor de crucero.
@@ -196,7 +192,7 @@ void pedal() {
 // --------- Acelerador
 
 int leeAcelerador(byte nmuestras, boolean nivelar) {
-	cl_acelerador = 0;
+	int cl_acelerador = 0;
 
 	// Leemos nivel de acelerador tomando n medidas.
 	for (byte f = 1; f <= nmuestras; f++) {
@@ -205,9 +201,10 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
-	// Nivelamos los rangos del acelerador.
-	if (nivelar) {
-		nivelarRango(cl_acelerador, a0_valor_reposo, a0_valor_max);
+	//  Nivela valor máximo del acelerador.
+	if (nivelar) { 
+		if (cl_acelerador > a0_valor_maximo)
+			cl_acelerador = a0_valor_maximo;
 	}
 
 	return cl_acelerador;
@@ -226,7 +223,7 @@ void validaMinAcelerador(byte nmuestras) {
 
 	l_acelerador_reposo = (int) l_acelerador_reposo / nmuestras;
 
-	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 32)) {
+	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
 		// Si queremos arrancar con la actualización de los valores reales tomados por el acelerador.
 		a0_valor_reposo = l_acelerador_reposo;
 	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
@@ -236,13 +233,6 @@ void validaMinAcelerador(byte nmuestras) {
 	}
 
 	delay(100);
-}
-
-int calculaAceleradorProgresivoNoLineal() {
-	fac_m = (a0_valor_limite - a0_valor_minimo) / pow (cnf.retardo_aceleracion, fac_p);
-	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow (contador_retardo_aceleracion, fac_p);
-	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero > a0_valor_reposo ? v_crucero:a0_valor_limite);
-	return nivel_aceleraciontmp;
 }
 
 // --------- Niveles de asistencia para crucero.
@@ -277,12 +267,25 @@ void estableceNivel(int vl_acelerador) {
 // --------- Establecimiento de voltaje
 
 void mandaAcelerador(int vf_acelerador) {
+	if (cnf.modo_crucero) {
+		if (v_crucero < a0_valor_minimo)
+			v_crucero = a0_valor_reposo;
+	}
+
 	if (pedaleo) {
 		// Modo crucero activado.
 		if (cnf.modo_crucero) {
 			// Si no se está acelerando.
 			if (vf_acelerador < a0_valor_minimo) {
-				nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
+				fac_n = a0_valor_reposo + 0.18 * v_crucero;
+				nivelarRango(fac_n, 272.0, 333.0);
+				fac_m = (a0_valor_maximo - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
+				nivel_aceleracion = (int) fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p);
+
+				if (nivel_aceleracion == (int) fac_n)
+					nivel_aceleracion = a0_valor_reposo;
+
+				nivelarRango(nivel_aceleracion, a0_valor_reposo, v_crucero);
 			// Si se acelera.
 			} else {
 				nivel_aceleracion = vf_acelerador;
@@ -293,17 +296,6 @@ void mandaAcelerador(int vf_acelerador) {
 		}
 	} else {
 		nivel_aceleracion = a0_valor_reposo;
-	}
-
-	if (cnf.modo_crucero) {
-		if (v_crucero < a0_valor_minimo)
-			v_crucero = a0_valor_reposo;
-
-		if (nivel_aceleracion == a0_valor_minimo)
-			nivel_aceleracion = a0_valor_reposo;
-
-		if (nivel_aceleracion > v_crucero)
-			nivel_aceleracion = v_crucero;
 	}
 
 	// Fijamos el acelerador si el valor anterior es distinto al actual.
@@ -323,7 +315,7 @@ void paraMotor() {
 // --------- Generales
 
 void freno() {
-	pedaleo = false;
+	//pedaleo = false;
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	contador_retardo_aceleracion = 0;
 	bkp_contador_retardo_aceleracion = 0;
@@ -459,7 +451,11 @@ void loop() {
 			loop_ultima_ejecucion_millis = millis();
 		}
 
-		v_acelerador = leeAcelerador(30, false);
+		if (cnf.modo_crucero) {
+			v_acelerador = leeAcelerador(30, true);
+		} else {
+			v_acelerador = leeAcelerador(30, false);
+		}
 
 		if (cnf.modo_crucero)
 			estableceNivel(v_acelerador);
@@ -477,7 +473,7 @@ void loop() {
 			}
 
 			contador_retardo_aceleracion = 0;
-			paraMotor();
+			//paraMotor();
 		// Si se pedalea.
 		} else {
 			if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
@@ -485,7 +481,7 @@ void loop() {
 					bkp_contador_retardo_aceleracion = cnf.retardo_aceleracion;
 				}
 
-				contador_retardo_aceleracion = (int) bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow (contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_limite;
+				contador_retardo_aceleracion = (int) bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow (contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_maximo;
 			}
 
 			auto_progresivo = false;
