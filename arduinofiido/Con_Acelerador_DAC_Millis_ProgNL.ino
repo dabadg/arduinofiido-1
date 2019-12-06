@@ -146,7 +146,7 @@ int v_crucero = a0_valor_reposo;
 unsigned int contador_crucero_mismo_valor = 0;
 
 // Controles de tiempo.
-unsigned long tiempo_act = 500;
+const int tiempo_act = 500;
 unsigned long loop_ultima_ejecucion_millis = 0;
 unsigned long establece_crucero_ultima_ejecucion_millis = 0;
 boolean actualizacion_contadores = false;
@@ -416,8 +416,6 @@ void setup() {
 	// Tiempo para las comprobaciones de cadencia según el número de
 	// interrupciones para activar / desactivar el pedaleo.
 	if (cnf.interrupciones_pedaleo_segundo_iman) {
-		// Un segundo.
-		tiempo_act = 1000;
 		interrupciones_activacion_pedaleo = 3;
 	}
 
@@ -447,7 +445,7 @@ void setup() {
 void loop() {
 	// Si no está el modo Debug y la dirección del DAC es detectada, adelante.
 	if (!cnf.habilitar_consola && i2cScanner.isDacDetected()) {
-		// Esperamos [tiempo_act] para ejecutar.
+		// Esperamos 500 ms para ejecutar.
 		if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 			pulsos = p_pulsos;
 			p_pulsos = 0;
