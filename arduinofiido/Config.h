@@ -40,11 +40,11 @@ struct ConfigContainer {
 
 	// Suavidad de los progresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
-	int suavidad_progresivos = 4;
+	int suavidad_progresivos = 2;
 
 	// Suavidad de los autoprogresivos, varía entre 1-10.
 	// Al crecer se hacen más bruscos.
-	int suavidad_autoprogresivos = 5;
+	int suavidad_autoprogresivos = 2;
 
 	// -------------- DEBUG
 
