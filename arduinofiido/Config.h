@@ -17,6 +17,12 @@ struct ConfigContainer {
 	// Recomendado poner a True si se tiene zumbador en el pin 11.
 	boolean buzzer_activo = true;
 
+	// -------------- ASISTENCIA 6 KM/H
+
+	// Habilita la posibilidad de asistir desde 6 km/h sin pedalear,
+	// usando el acelerador.
+	boolean asistencia6 = false;
+
 	// -------------- PEDALEO
 
 	// True --> Activa pedaleo al paso del pedal por el 2 imán.
