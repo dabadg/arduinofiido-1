@@ -27,8 +27,8 @@ FIJADO Y DESFIJADO DEL NIVEL DE ASISTENCIA:
  * acelerador, por otra parte, mandaremos a la placa DAC mediante
  * comunicacion i2c el valor de salida hacia la controladora.
  *
- * Se fija o desfija el valor si pedaleamos. Para desfijarlo, abrir
- * un poco de gas y soltar acelerador.
+ * Para desfijar el nivel de asistencia, simplemente usar el acelerador
+ * sin pedalear.
 ------------------------------------------------------------------------
 LEGALIZACIÓN ACELERADOR:
  * Básicamente lo que hace es detectar pulsos mediante una
@@ -111,6 +111,7 @@ const byte pin_piezo = 11;
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 int a0_valor_reposo = 197; // 0.83 voltios [Escala 4.3].
 const int a0_valor_minimo = 330;
+const int a0_valor_6kmh = 440;
 const int a0_valor_maximo = 808;
 
 // Variables para la detección del pedaleo.
@@ -299,7 +300,11 @@ void mandaAcelerador(int vf_acelerador) {
 			nivel_aceleracion = vf_acelerador;
 		}
 	} else {
-		nivel_aceleracion = a0_valor_reposo;
+		if (cnf.modo_crucero && vf_acelerador > a0_valor_minimo && cnf.asistencia6) {
+			nivel_aceleracion = a0_valor_6kmh;
+		} else {
+			nivel_aceleracion = a0_valor_reposo;
+		}
 	}
 
 	// Fijamos el acelerador si el valor anterior es distinto al actual.
