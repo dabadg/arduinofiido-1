@@ -331,8 +331,9 @@ boolean validaMinAcelerador(byte nmuestras) {
 
 	// Esperamos a que se suelte el freno si está pulsado para tomar la medida del acelerador
 	// evitando lectura erronea por la caida de tensión.
-	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 100, 0);
 	while (digitalRead(pin_freno) == LOW) {
+		if(!skmhfl)
+			repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 100, 0);
 		// Habilitamos el flag que dispara la activación de ayuda 6kmh
 		skmhfl = true;
 	}
