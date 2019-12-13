@@ -4,7 +4,7 @@
 #include "Level.h"
 #include "Tones.h"
 
-const char* version = "2.6.2 Develop";
+const char* version = "2.6.3 Develop";
 
 /*
                      Versión Con Acelerador y DAC
@@ -160,10 +160,10 @@ AGRADECIMIENTOS:
 // con el acelerador legalizado.
 //#include "config_sincrucero.h"
 // Versión con fijación de crucero a los 2,8 segundos.
-//#include "config_tiempo.h"
+#include "config_tiempo.h"
 // Versión con fijación de crucero a los 2,8 segundos y bajada de
 // crucero a 280ms.
-#include "config_tiempo_min.h"
+//#include "config_tiempo_min.h"
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
@@ -383,6 +383,7 @@ int calculaAceleradorProgresivoNoLineal() {
 void estableceCruceroPorTiempo(int vl_acelerador) {
 	// Esperamos 100 ms para ejecutar.
 	if ((unsigned long) (millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
+
 		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior.
 		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
 
@@ -392,6 +393,7 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 
 			// Si el contador de crucero ha llegado a su tope, se fija el crucero o si el acelerador está por debajo del crucero y el contador de debajo crucero ha llegado a su tope.
 			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero || (cnf.pulsos_fijar_debajo_crucero > 0 && contador_crucero_mismo_valor == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero)) {
+
 				// Solo se fija el crucero si se ha notado una variación de más de +-20 pasos entre la medida actual y la de crucero ya fijada.
 				if (!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
 					boolean crucero_arriba = vl_acelerador > v_crucero;
@@ -407,6 +409,7 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 					}
 				}
 			}
+
 		} else {
 			contador_crucero_mismo_valor = 0;
 		}
@@ -427,6 +430,7 @@ void anulaCrucero() {
 void anulaCruceroConFreno() {
 	// Esperamos 100 ms para ejecutar.
 	if ((unsigned long)(millis() - anula_crucero_con_freno_ultima_ejecucion_millis) > 100) {
+
 		if (digitalRead(pin_freno) == LOW) {
 			contador_freno_anulacion_crucero++;
 
@@ -441,6 +445,7 @@ void anulaCruceroConFreno() {
 				}
 			}
 		} else {
+
 			if (contador_freno_anulacion_crucero > 0)
 				contador_freno_anulacion_crucero--;
 		}
@@ -742,6 +747,7 @@ void loop() {
 
 				contador_retardo_aceleracion = 0;
 				//paraMotor();
+
 			// Si se pedalea.
 			} else {
 				if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
