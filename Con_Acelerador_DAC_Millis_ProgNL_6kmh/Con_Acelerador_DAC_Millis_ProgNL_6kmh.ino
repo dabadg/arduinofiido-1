@@ -249,9 +249,6 @@ byte contador_freno_anulacion_crucero = 0;
 // el buzzer.
 const int limite_tono_pulsos_fijar_crucero = 14;
 
-// Número de interrupciones para activar pedaleo.
-byte interrupciones_activacion_pedaleo = 2;
-
 boolean test_sensores_habilitado;
 unsigned long tiempo_sensores_habilitado = 60000;
 
@@ -281,7 +278,7 @@ void pedal() {
 	p_pulsos++;
 
 	// Activamos pedaleo por interrupciones.
-	if (++a_pulsos >= interrupciones_activacion_pedaleo) {
+	if (++a_pulsos >= cnf.interrupciones_activacion_pedaleo) {
 		pedaleo = true;
 		a_pulsos = 0;
 	}
@@ -671,10 +668,6 @@ void setup() {
 					delay(200);
 			}
 
-			// Número de interrupciones para activar el pedaleo.
-			if (cnf.interrupciones_pedaleo_segundo_iman) {
-				interrupciones_activacion_pedaleo = 3;
-			}
 
 			// Ajusta configuración.
 			cnf.retardo_aceleracion = cnf.retardo_aceleracion * (1000 / tiempo_act);
@@ -722,12 +715,8 @@ void loop() {
 				p_pulsos = 0;
 
 				// Desactivamos pedaleo por cadencia.
-				if (cnf.interrupciones_pedaleo_segundo_iman) {
-					if (pulsos < 3)
-						pedaleo = false;
-				} else {
-					if (pulsos < 2)
-						pedaleo = false;
+				if (pulsos < cnf.interrupciones_activacion_pedaleo) {
+					pedaleo = false;
 				}
 				
 				actualizacion_contadores = true;

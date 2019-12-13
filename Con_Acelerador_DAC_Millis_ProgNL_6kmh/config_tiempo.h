@@ -24,10 +24,8 @@ struct ConfigContainer {
 
 	// -------------- PEDALEO
 
-	// Activa pedaleo al paso del pedal por el primer imán.
-	boolean interrupciones_pedaleo_primer_iman = true;
-	// Activa pedaleo al paso del pedal por el segundo imán.
-	boolean interrupciones_pedaleo_segundo_iman = false;
+	// Número de interrupciones para activar pedaleo (valores 2,3...)
+	byte interrupciones_activacion_pedaleo = 2;
 
 	// -------------- ASISTENCIA 6 KM/H
 
