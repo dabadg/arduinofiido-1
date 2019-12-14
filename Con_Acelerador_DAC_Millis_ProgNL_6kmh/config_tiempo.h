@@ -62,8 +62,8 @@ struct ConfigContainer {
 
 	// Pulsos que tarda en fijar velocidad por debajo de crucero.
 	// 0 si bloqueo_acelerador_debajo_crucero = false.
-	// No Cambiar Valor. Solo para fijar por tiempo. 10 --> 1400 ms.
-	byte pulsos_fijar_debajo_crucero = 10;
+	// No Cambiar Valor. Solo para fijar por tiempo. 5 --> 700 ms.
+	byte pulsos_fijar_debajo_crucero = 5;
 
 	// --------- +++
 
