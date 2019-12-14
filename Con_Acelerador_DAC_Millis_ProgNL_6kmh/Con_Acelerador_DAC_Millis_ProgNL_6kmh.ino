@@ -4,7 +4,7 @@
 #include "Level.h"
 #include "Tones.h"
 
-const char* version = "2.6.3 Develop N";
+const char* version = "2.7.0 Develop N";
 
 /*
                      Versión Con Acelerador y DAC
@@ -182,6 +182,13 @@ const byte pin_freno = 3;
 // Pin del zumbador.
 const byte pin_piezo = 11;
 
+//======= CONSTANTES MODOS ======================================
+
+const byte MODO_ACELERADOR = 0; // Solo Acelerador.
+const byte MODO_CRUCERO = 1; // Acelerador con crucero y progresivos.
+const byte MODO_CRUCERO6KMH = 2; // Acelerador con crucero, asistencia 6kmh y progresivos.
+const byte MODO_PLOTTER = 20; // Serial Plotter.
+
 //======= VARIABLES PARA CÁLCULOS ======================================
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
@@ -247,11 +254,11 @@ byte contador_freno_anulacion_crucero = 0;
 // el buzzer.
 const int limite_tono_pulsos_fijar_crucero = 14;
 
-boolean test_sensores_habilitado;
 unsigned long tiempo_sensores_habilitado = 60000;
 
 // Flag de activación de asistencia 6kmh y crucero, al arrancar con el freno pulsado.
-volatile boolean flag_asistencias_activas = false;
+volatile byte flag_modo_asistencia = MODO_ACELERADOR;
+
 
 
 //======= Variables de interrupción ====================================
@@ -317,6 +324,80 @@ int leeAcelerador(byte nmuestras) {
 	return leeAcelerador(nmuestras, true);
 }
 
+void testSensoresPlotter(unsigned long tiempoMs) {
+	delay(1000);
+	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
+
+	if (!cnf.habilitar_consola){
+		Serial.begin(19200);
+		while (!Serial) {};
+	}
+
+	delay(1000);
+
+	// Durante [N] sg monitorizamos los valores de los sensores cada 200 ms.
+	unsigned long inicio_ejecucion_millis = millis();
+	byte pp = 0;
+
+	while (tiempoMs==0 || (tiempoMs > 0 && (unsigned long)(millis() - inicio_ejecucion_millis) < tiempoMs)) {
+		delay(200);
+		Serial.print(leeAcelerador(3, false));
+		Serial.print("\t");
+		p_pulsos = (p_pulsos > pp)?p_pulsos:0;
+		pp = p_pulsos;
+		Serial.print(p_pulsos * 2);
+		Serial.print("\t");
+		Serial.print(digitalRead(pin_freno) ? 10 : 500);
+		Serial.println("");
+	}
+
+	Serial.end();
+}
+
+void seleccionaModo(){
+	// Ejecutamos la selección de modos y esperamos a que se suelte el freno para dejar
+	// paso a tomar la medida del acelerador evitando una lectura erronea por la caida de tensión.
+
+	//Según el tiempo que se tenga el freno pulsado, se cambiará de modo.
+
+	// MODO 0 - Solo Acelerador
+	// MODO 1 (1 segundo) - Crucero
+	// MODO 2 (3 segundos) - Crucero + asistencia 6kmh
+	// MODO 20 (20 segundos) - Modo debug Serial Plotter
+
+	unsigned long loop_seleccion_modos=millis();
+	byte ccont = 0;
+	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 100, 1000);
+	while (digitalRead(pin_freno) == LOW) {
+		if ((unsigned long)(millis() - loop_seleccion_modos) > 1000) {
+			ccont++;
+			switch (ccont) {
+			  case 1:
+				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3100, 100, 0);
+				flag_modo_asistencia = MODO_CRUCERO;
+				break ;
+
+			  case 3:
+				// Solo se selecciona este modo si en el cnf está la variable ayuda_salida_activa a true
+				// Se mantiene esta opción por si alquien no quiere llevarla activa bajo nungún concepto.
+				if(cnf.ayuda_salida_activa){
+					repeatTones(pin_piezo, cnf.buzzer_activo, 2, 3100, 100, 100);
+					flag_modo_asistencia = MODO_CRUCERO6KMH ;
+					decremento_progresivo_ayuda_arranque = (int) (cnf.v_salida_progresivo_ayuda_arranque - a0_valor_minimo) / ((cnf.tiempo_ejecucion_progresivo_ayuda_arranque / ciclo_decremento_progresivo_ayuda_arranque));
+				}
+				break;
+
+			  case 20:
+				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 4000, 500, 0);
+				testSensoresPlotter(0);
+				break;
+
+			}
+			loop_seleccion_modos=millis();
+		}
+	}
+}
+
 boolean validaMinAcelerador(byte nmuestras) {
 	boolean status = false;
 
@@ -324,15 +405,6 @@ boolean validaMinAcelerador(byte nmuestras) {
 	// En caso de no tener acelerador, mantenemos valor por defecto.
 	// Esto es útil para controlar el corecto funcionamiento del acelerador, si este está presente.
 	int l_acelerador_reposo = 0;
-
-	// Esperamos a que se suelte el freno si está pulsado para tomar la medida del acelerador
-	// evitando lectura erronea por la caida de tensión.
-	while (digitalRead(pin_freno) == LOW) {
-		if(!flag_asistencias_activas)
-			repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 100, 0);
-		// Habilitamos el flag que dispara la activación de ayuda 6kmh
-		flag_asistencias_activas = true;
-	}
 
 	// Tomamos 30 medidas para calcular la media.
 	for (byte f = 1; f <= nmuestras; f++) {
@@ -342,18 +414,15 @@ boolean validaMinAcelerador(byte nmuestras) {
 	l_acelerador_reposo = (int) l_acelerador_reposo / nmuestras;
 
 	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 45)) {
-		// Si queremos arrancar con la actualización de los valores reales tomados por el acelerador.
+		// Si queremos actualizar la variable de valor reposo con los valores reales tomados por el acelerador.
 		if (cnf.recalcular_rango_min_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
 		}
 
 		status = true;
-	// Si la medida el acelerador no es correcta, emitimos un aviso sonoro SOS para avisar del posible error
-	// del acelerador y desactivamos el acelerador.
+	// Si la medida del acelerador no es correcta, desactivamos el acelerador.
 	} else {
 		a0_valor_reposo = 0;
-		test_sensores_habilitado = true;
-		SOS_TONE(pin_piezo);
 	}
 
 	delay(100);
@@ -528,12 +597,12 @@ void ayudaArranque() {
 void mandaAcelerador(int vf_acelerador) {
 
 	// Asistencia desde parado a 6 km/h mientras se use el acelerador sin pedalear.
-	if ((flag_asistencias_activas && cnf.ayuda_salida_activa) && !pedaleo && vf_acelerador > a0_valor_minimo && contador_retardo_aceleracion == 0) {
+	if ( flag_modo_asistencia == MODO_CRUCERO6KMH && !pedaleo && vf_acelerador > a0_valor_minimo && contador_retardo_aceleracion == 0) {
 		ayudaArranque();
 	} else {
 		if (pedaleo) {
 			// Modo crucero activado.
-			if (flag_asistencias_activas) {
+			if (flag_modo_asistencia >= MODO_CRUCERO) {
 				// Si el crucero está fijado.
 				if (crucero_fijado) {
 					// Si no se está acelerando o si mientras está activa la opción de acelerador bloqueado por debajo de crucero,  teniendo los pulsos de fijación crucero están por encima de 10 (fijación por tiempo) y se acciona el acelerador por debajo de la velocidad de crucero.
@@ -573,50 +642,15 @@ void freno() {
 	bkp_contador_retardo_aceleracion = 0;
 }
 
-void ejecutar_bloqueo_loop() {
+void ejecutar_bloqueo_loop (int contador_bloqueo_sistema) {
 	// Bloqueamos el loop.
-	int contador_bloqueo_sistema = 6;
-
 	while (true) {
 		delay(500);
-
 		if (contador_bloqueo_sistema > 0) {
 			repeatTones(pin_piezo, cnf.buzzer_activo, 1, (contador_bloqueo_sistema--) % 2 ?3000:2000, 1000, 0);
 		}
 	}
 }
-
-void testSensoresPlotter(unsigned long tiempoMs) {
-	delay(1000);
-	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
-
-	if (!cnf.habilitar_consola){
-		Serial.begin(19200);
-		while (!Serial) {};
-	}
-
-	delay(1000);
-
-	// Durante 60 sg monitorizamos los valores de los sensores cada 200 ms.
-	unsigned long inicio_ejecucion_millis = millis();
-	byte pp = 0;
-
-	while ((unsigned long)(millis() - inicio_ejecucion_millis) < tiempoMs) {
-		delay(200);
-		Serial.print(leeAcelerador(3, false));
-		Serial.print("\t");
-		p_pulsos = (p_pulsos > pp)?p_pulsos:0;
-		pp = p_pulsos;
-		Serial.print(p_pulsos * 2);
-		Serial.print("\t");
-		Serial.print(digitalRead(pin_freno) ? 10 : 500);
-		Serial.println("");
-	}
-
-	Serial.end();
-	test_sensores_habilitado = false;
-}
-
 
 void setup() {
 	// Inicia serial.
@@ -652,19 +686,11 @@ void setup() {
 		// Interrupción freno.
 		attachInterrupt(digitalPinToInterrupt(pin_freno), freno, FALLING);
 
+		// Seleccionamos el modo de funcionamiento.
+		seleccionaModo();
+
+		// Validamos el acelerador en reposo.
 		if (validaMinAcelerador(30)) {
-			// Tono aviso de inicio de configuración del sistema.
-			repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 90, 350);
-
-			// Si arrancamos con el freno pulsado.
-			if (flag_asistencias_activas) {
-					// Calculamos el decremento de velocidad desde la salida inicial hasta la potencia 6kmh.
-					decremento_progresivo_ayuda_arranque = (int) (cnf.v_salida_progresivo_ayuda_arranque - a0_valor_minimo) / ((cnf.tiempo_ejecucion_progresivo_ayuda_arranque / ciclo_decremento_progresivo_ayuda_arranque));
-					delay(200);
-					// Tono aviso de modo con asistencia desde parado.
-					repeatTones(pin_piezo, cnf.buzzer_activo, 2, 2900, 90, 400);
-			}
-
 
 			// Ajusta configuración.
 			cnf.retardo_aceleracion = cnf.retardo_aceleracion * (1000 / tiempo_act);
@@ -703,6 +729,7 @@ void setup() {
 }
 
 void loop() {
+
 	if (a0_valor_reposo > 0) {
 		// Si el DAC es detectado.
 		if (i2cScanner.isDacDetected()) {
@@ -722,7 +749,7 @@ void loop() {
 
 			v_acelerador = leeAcelerador(30);
 
-			if (flag_asistencias_activas)
+			if (flag_modo_asistencia >= MODO_CRUCERO)
 				estableceCruceroPorTiempo(v_acelerador);
 
 			// Si no se pedalea.
@@ -758,7 +785,7 @@ void loop() {
 				}
 			}
 
-			if (flag_asistencias_activas) {
+			if (flag_modo_asistencia >= MODO_CRUCERO) {
 				anulaCruceroConFreno();
 				anulaCruceroAcelerador();
 			}
@@ -770,11 +797,8 @@ void loop() {
 		}
 	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador o que no se ha detectado.
 	} else {
-		// Ejecutamos el procedimiento de monitorización de sensores.
-		if (test_sensores_habilitado)
-			testSensoresPlotter(tiempo_sensores_habilitado);
-
-		ejecutar_bloqueo_loop();
+		SOS_TONE(pin_piezo);
+		ejecutar_bloqueo_loop(0);
 	}
 }
 
