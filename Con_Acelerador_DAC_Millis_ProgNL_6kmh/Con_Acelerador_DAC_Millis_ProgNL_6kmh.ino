@@ -194,11 +194,11 @@ const byte MODO_PLOTTER = 20; // Serial Plotter.
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 // Al inicializar, lee el valor real (a0_valor_reposo).
 
-int a0_valor_reposo = 174;		// 0.85
+int a0_valor_reposo = 174;			// 0.85
 const int a0_valor_minimo = 330;	// 1.15
 const int a0_valor_6kmh = 440;		// 2.19
-int a0_valor_maximo = 808;		// 4.10
-const int a0_valor_LIMITE = 850;
+int a0_valor_maximo = 808;			// 4.10
+const int a0_valor_LIMITE = 850;	// 4.31
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
@@ -355,6 +355,7 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 }
 
 void seleccionaModo(){
+	
 	// Ejecutamos la selección de modos y esperamos a que se suelte el freno para dejar
 	// paso a tomar la medida del acelerador evitando una lectura erronea por la caida de tensión.
 
@@ -365,11 +366,14 @@ void seleccionaModo(){
 	// MODO 2 (3 segundos) - Crucero + asistencia 6kmh
 	// MODO 20 (20 segundos) - Modo debug Serial Plotter
 
-	unsigned long loop_seleccion_modos=millis();
+	// Modo por defecto
+	flag_modo_asistencia = MODO_ACELERADOR;
+
+	unsigned long timer_seleccion_modos=millis();
 	byte ccont = 0;
 	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 100, 1000);
 	while (digitalRead(pin_freno) == LOW) {
-		if ((unsigned long)(millis() - loop_seleccion_modos) > 1000) {
+		if ((unsigned long)(millis() - timer_seleccion_modos) > 1000) {
 			ccont++;
 			switch (ccont) {
 			  case 1:
@@ -393,7 +397,7 @@ void seleccionaModo(){
 				break;
 
 			}
-			loop_seleccion_modos=millis();
+			timer_seleccion_modos=millis();
 		}
 	}
 }
@@ -524,22 +528,33 @@ void anulaCruceroConFreno() {
 }
 
 void anulaCruceroAcelerador() {
-	unsigned long timer_liberar_crucero = millis();
-
-	// Espera hasta 250ms la liberación de crucero por acelerador si se encuentra activa.
-	// El procedimiento se ejecuta mientras no se pedalea, acelerando por encima del la
-	// velocidad de crucero y soltando el acelerador hasta el mínimo.
-	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador && leeAcelerador(30) > a0_valor_minimo) {
-		// Delay a la espera de que se suelte el acelerador para anular crucero.
-		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 0);
-
-		while ((unsigned long)(millis() - timer_liberar_crucero) < cnf.tiempo_anula_crucero_acelerador) {
-			delay(10);
-
-			// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-			if (!pedaleo && comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 30)) {
-				anulaCrucero();
-				break;
+	// El procedimiento se ejecuta mientras no se pedalea, haciendo un cambio rápido
+	// desde reposo hasta velocidad minima y vuelta a reposo.
+	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador){
+		// Inicia en valor reposo
+		if(comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 30)) {
+			boolean unlock = false;
+			// Espera a detectar interacción con el acelerador.
+			unsigned long timer_liberar_crucero = millis();
+			while((unsigned long)(millis() - timer_liberar_crucero) < 50){
+				delay(1);
+				if(leeAcelerador(10) > a0_valor_reposo + 100){
+					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 120);
+					unlock = true;
+					break;
+				}
+			}
+			if(unlock){
+				// Espera a que se suelte el acelerador para anular el crucero.
+				timer_liberar_crucero = millis();
+				while ((unsigned long)(millis() - timer_liberar_crucero) < cnf.tiempo_anula_crucero_acelerador) {
+					delay(1);
+					// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
+					if (!pedaleo && comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 30)) {
+						anulaCrucero();
+						break;
+					}
+				}
 			}
 		}
 	}
