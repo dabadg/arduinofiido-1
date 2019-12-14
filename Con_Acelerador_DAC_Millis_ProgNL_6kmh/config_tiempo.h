@@ -31,7 +31,7 @@ struct ConfigContainer {
 
 	// (True) si se desea activar la posibilidad de acelerar desde
 	// parado a 6 km/h arrancando con el freno pulsado.
-	boolean freno_pulsado = true;
+	boolean ayuda_salida_activa = true;
 
 	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
 	unsigned int retardo_ayuda_arranque = 600;
@@ -46,10 +46,6 @@ struct ConfigContainer {
 	int v_salida_progresivo_ayuda_arranque = 700;
 
 	// -------------- CRUCERO
-
-	// True --> Modo crucero.
-	// False --> Manda señal del acelerador.
-	boolean modo_crucero = true;
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// Con el valor 2 se va actualizando la configuración constantemente
