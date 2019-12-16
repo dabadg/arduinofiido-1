@@ -147,23 +147,11 @@ AGRADECIMIENTOS:
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
 
 /*
- * Externalización de fichero de configuración. Podrás seleccionar el
- * tipo de versión que quieres utilizar o utilizar el Custom con los
- * cambios que más te gusten.
+ * Externalización de fichero de configuración. Podrás seleccionar las
+ * configuraciones que más te gusten.
  */
 
-// Versión con fijación contínua de crucero (soltando de golpe).
-//#include "config_continuo.h"
-// Versión para jugar con los parámetros. ;)
-//#include "config_custom.h"
-// Versión sin fijación de crucero --> Comportamiento como de fábrica
-// con el acelerador legalizado.
-//#include "config_sincrucero.h"
-// Versión con fijación de crucero a los 2,8 segundos.
-#include "config_tiempo.h"
-// Versión con fijación de crucero a los 2,8 segundos y bajada de
-// crucero a 280ms.
-//#include "config_tiempo_min.h"
+#include "config.h"
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 

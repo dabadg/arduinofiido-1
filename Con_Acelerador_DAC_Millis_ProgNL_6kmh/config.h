@@ -24,7 +24,7 @@ struct ConfigContainer {
 
 	// -------------- PEDALEO
 
-	// Número de interrupciones para activar pedaleo (valores 2,3...)
+	// Número de interrupciones para activar pedaleo (Valores 2,3...).
 	byte interrupciones_activacion_pedaleo = 2;
 
 	// -------------- ASISTENCIA 6 KM/H
@@ -38,7 +38,7 @@ struct ConfigContainer {
 
 	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
 	// progresivo desde alta potencia.
-	boolean activar_progresivo_ayuda_arranque = false;
+	boolean activar_progresivo_ayuda_arranque = true;
 
 	// Valor inicial de salida en la asistencia 6 km/h.
 	// Como mínimo tendrá que tener el valor de la constante
@@ -48,11 +48,11 @@ struct ConfigContainer {
 	// -------------- CRUCERO
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
-	// Con el valor 2 se va actualizando la configuración constantemente
-	// y mantiene la última medida al soltar el acelerador (0-255).
+	// Con el valor 2 se va actualizando constantemente y mantiene la
+	// última medida al soltar el acelerador (0-255).
 	// 2 * 140 = 280 ms. Crucero continuo.
 	// 20 * 140 = 2800 ms. Crucero por tiempo.
-	byte pulsos_fijar_crucero = 2;
+	byte pulsos_fijar_crucero = 20;
 
 	// Para que el acelerador funcione como en el coche. Si se fija el
 	// crucero, la potencia del motor solo cambia si se supera con el
@@ -62,8 +62,9 @@ struct ConfigContainer {
 
 	// Pulsos que tarda en fijar velocidad por debajo de crucero.
 	// 0 si bloqueo_acelerador_debajo_crucero = false.
-	// No Cambiar Valor. Solo para fijar por tiempo.
-	byte pulsos_fijar_debajo_crucero = 0;
+	// No Cambiar Valor. Solo para fijar por tiempo. 5 --> 700 ms.
+	// Con crucero continuo poner a 0.
+	byte pulsos_fijar_debajo_crucero = 5;
 
 	// --------- +++
 
@@ -75,16 +76,16 @@ struct ConfigContainer {
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// De 0 a 255.
-	// 33 * 140 = 4620 ms.
-	byte pulsos_liberar_crucero = 33;
+	// 36 * 140 = 5040 ms.
+	byte pulsos_liberar_crucero = 36;
 
-  // Tiempo necesario para ejecutar el procedimiento de cancelar 
-  // crucero por acelerador. Hay que acelerar y soltar el acelerador sin 
-  // pedalear dentro de los segundos definidos en esta variable.
-  unsigned int tiempo_anula_crucero_acelerador = 150;
+	// Tiempo necesario para ejecutar el procedimiento de cancelar 
+	// crucero por acelerador. Hay que acelerar y soltar el acelerador sin 
+	// pedalear dentro de los segundos definidos en esta variable.
+	unsigned int tiempo_anula_crucero_acelerador = 150;
   
 	// -------------- PROGRESIVOS
-
+  
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.
 	int retardo_aceleracion = 5;
 
