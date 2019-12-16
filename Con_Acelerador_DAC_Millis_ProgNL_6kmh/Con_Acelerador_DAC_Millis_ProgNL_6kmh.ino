@@ -305,7 +305,7 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
  		a0_valor_maximo = cl_acelerador;
 
 	if (nivelar) {
-		nivelarRango(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
+		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
 	}
 
 	return cl_acelerador;
@@ -493,7 +493,6 @@ void anulaCrucero() {
 void anulaCruceroConFreno() {
 	// Esperamos 100 ms para ejecutar.
 	if ((unsigned long)(millis() - anula_crucero_con_freno_ultima_ejecucion_millis) > 100) {
-
 		if (digitalRead(pin_freno) == LOW) {
 			contador_freno_anulacion_crucero++;
 
