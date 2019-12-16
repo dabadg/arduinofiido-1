@@ -644,7 +644,7 @@ void mandaAcelerador(int vf_acelerador) {
 
 // --------- Generales
 
-void freno() {
+void frena() {
 	contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 	contador_retardo_aceleracion = 0;
 	bkp_contador_retardo_aceleracion = 0;
@@ -804,7 +804,7 @@ void loop() {
 			// Si el freno está pulsado.
 			if (freno == 0)
 				// Reinicia contadores.
-				freno();
+				frena();
 
 			if (flag_modo_asistencia >= MODO_CRUCERO) {
 				anulaCruceroConFreno();
