@@ -181,12 +181,13 @@ const byte MODO_PLOTTER = 20; // Serial Plotter.
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 // Al inicializar, lee el valor real (a0_valor_reposo).
+// 0 --> 1023 = 0 --> 5V.
 
-int a0_valor_reposo = 174;			// 0.85
-const int a0_valor_minimo = 330;	// 1.15
-const int a0_valor_6kmh = 440;		// 2.19
-int a0_valor_maximo = 808;			// 4.10
-const int a0_valor_LIMITE = 850;	// 4.31
+int a0_valor_reposo = 194;			// 0.95
+const int a0_valor_minimo = 330;	// 1.62
+const int a0_valor_6kmh = 440;		// 2.16
+int a0_valor_maximo = 808;			// 3.95
+const int a0_valor_LIMITE = 832;	// 4.06
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
@@ -199,6 +200,7 @@ int bkp_contador_retardo_aceleracion = 0;
 boolean auto_progresivo = false;
 
 // Constante progresivos.
+float fac_n = 0.0;
 const float fac_p = 1.056 - 0.056 * cnf.suavidad_progresivos;
 
 // Variables para auto_progresivos.
@@ -422,18 +424,16 @@ boolean validaMinAcelerador(byte nmuestras) {
 	return status;
 }
 
+// Progresivo no lineal.
 int calculaAceleradorProgresivoNoLineal() {
 	int nivel_aceleraciontmp;
 	float fac_m = 0.0;
+	float resultado = 0.0;
 
-	// Progresivo no lineal.
-	fac_m = (a0_valor_maximo - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
-	nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow (contador_retardo_aceleracion, fac_p);
-
-	if (nivel_aceleracion == a0_valor_minimo)
-		nivel_aceleracion = a0_valor_reposo;
-
-	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
+	fac_n = a0_valor_reposo + 0.2 * v_crucero;
+	fac_m = (v_crucero - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
+	resultado = fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p);
+	nivel_aceleraciontmp = (int) constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
 
 	return nivel_aceleraciontmp;
 }
