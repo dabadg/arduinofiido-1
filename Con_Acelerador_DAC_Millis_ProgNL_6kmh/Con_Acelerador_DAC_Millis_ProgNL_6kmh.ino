@@ -187,7 +187,7 @@ const byte MODO_PLOTTER = 20;
 // 0 --> 1023 = 0 --> 5V.
 
 int a0_valor_reposo = 196;		// 0.96
-const int a0_valor_minimo = 246;	// 1.20
+const int a0_valor_minimo = 330;	// 1.62
 const int a0_valor_6kmh = 440;		// 2.16
 int a0_valor_maximo = 808;		// 3.95
 const int a0_valor_LIMITE = 832;	// 4.06
@@ -242,6 +242,12 @@ int vl_acelerador_prev = 0;
 byte contador_crucero_mismo_valor = 0;
 // Cantidad de loops para cortar crucero con freno.
 byte contador_freno_anulacion_crucero = 0;
+// Contador para la lectura 0 del crucero.
+byte contador_cero_crucero = 0;
+// Contador para la lectura del crucero.
+byte contador_crucero = 0;
+// Contador para el loop del crucero.
+byte contador_loop_crucero = 0;
 
 // Pulsos de fijación crucero a partir de los que se emite el tono por
 // el buzzer.
@@ -455,6 +461,49 @@ int calculaAceleradorProgresivoNoLineal() {
 
 
 // --------- Crucero
+
+void estableceNivel(int vl_acelerador) {
+	if (millis() - establece_crucero_ultima_ejecucion_millis > 50) {
+		contador_loop_crucero++;
+
+		if (vl_acelerador > 0) {
+			contador_crucero++;
+			contador_cero_crucero = 0;
+		} else {
+			contador_cero_crucero++;
+
+			if (contador_crucero > 7 || contador_cero_crucero > 10) {
+				contador_crucero = 0;
+			}
+		}
+
+		// Cortamos crucero con toque corto.
+		if (contador_crucero > 2 && contador_crucero < 8 && contador_cero_crucero > 0) { 
+			v_crucero = a0_valor_reposo;
+			contador_crucero = 0;
+			anulaCrucero();
+		}
+
+		establece_crucero_ultima_ejecucion_millis = millis();
+	}
+
+	// 20 pulsos * 90 --> 1800 ms.
+	if (contador_loop_crucero > cnf.pulsos_fijar_crucero) {
+		contador_loop_crucero = 0;
+
+		// Fijación crucero.
+		if (vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > 5) {
+			crucero_fijado = true;
+			v_crucero = vl_acelerador;
+			vl_acelerador_prev = 0;
+			// Tono de aviso para crucero fijado.
+			repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1);
+		} else {
+			vl_acelerador_prev = vl_acelerador;
+		}
+	}
+}
+
 void estableceCruceroPorTiempo(int vl_acelerador) {
 	// Esperamos 100 ms para ejecutar.
 	if ((unsigned long) (millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
@@ -784,7 +833,8 @@ void loop() {
 			v_acelerador = leeAcelerador();
 
 			if (flag_modo_asistencia >= MODO_CRUCERO)
-				estableceCruceroPorTiempo(v_acelerador);
+				estableceNivel(v_acelerador);
+				//estableceCruceroPorTiempo(v_acelerador);
 
 			// Si no se pedalea.
 			if (!pedaleo) {
