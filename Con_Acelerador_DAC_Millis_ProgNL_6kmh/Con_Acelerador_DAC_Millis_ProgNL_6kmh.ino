@@ -1,7 +1,6 @@
 #include <Adafruit_MCP4725.h>
 #include <Arduino.h>
 #include "I2CScanner.h"
-#include "Level.h"
 #include "Tones.h"
 
 const char* version = "2.7.0 Develop N";
@@ -147,12 +146,11 @@ AGRADECIMIENTOS:
 //=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
 
 /*
- * Externalización de fichero de configuración. Podrás seleccionar el
- * tipo de versión que quieres utilizar o utilizar el Custom con los
- * cambios que más te gusten.
+ * Externalización de fichero de configuración. Podrás seleccionar las
+ * configuraciones que más te gusten.
  */
 
-#include "Config.h"
+#include "config.h"
 
 //======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
 
@@ -182,12 +180,13 @@ const byte MODO_PLOTTER = 20; // Serial Plotter.
 
 // Valores mínimos y máximos del acelerador leídos por el pin A0.
 // Al inicializar, lee el valor real (a0_valor_reposo).
+// 0 --> 1023 = 0 --> 5V.
 
-int a0_valor_reposo = 174;			// 0.85
+int a0_valor_reposo = 194;			// 0.95
 const int a0_valor_minimo = 330;	// 1.62
 const int a0_valor_6kmh = 440;		// 2.16
 int a0_valor_maximo = 808;			// 3.95
-const int a0_valor_LIMITE = 850;	// 4.15
+const int a0_valor_LIMITE = 832;	// 4.06
 
 // Variables para la detección del pedaleo.
 byte pulsos = 0;
@@ -260,6 +259,13 @@ volatile boolean pedaleo = false;
 
 // --------- Utilidades
 
+// Calcula si el valor se encuantra entre el rango de valores con
+// tolerancia calculados con el valor2.
+// valor2-tolerancia > valor < valor2+tolerancia
+boolean comparaConTolerancia(int valor, int valorReferencia, byte toleranciaValor2) {
+	return (valor > (valorReferencia - toleranciaValor2)) && (valor < (valorReferencia + toleranciaValor2));
+}
+
 // Pasamos de escala acelerador -> DAC.
 int aceleradorEnDac(int vl_acelerador) {
 	return vl_acelerador * (4096 / 1024);
@@ -302,7 +308,7 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
  		a0_valor_maximo = cl_acelerador;
 
 	if (nivelar) {
-		nivelarRango(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
+		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
 	}
 
 	return cl_acelerador;
@@ -434,7 +440,7 @@ int calculaAceleradorProgresivoNoLineal() {
 	if (nivel_aceleracion == a0_valor_minimo)
 		nivel_aceleracion = a0_valor_reposo;
 
-	nivelarRango(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
+	nivel_aceleraciontmp = constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
 
 	return nivel_aceleraciontmp;
 }
@@ -612,7 +618,6 @@ void mandaAcelerador(int vf_acelerador) {
 				// Si el crucero está fijado.
 				if (crucero_fijado) {
 					// Si no se está acelerando o si mientras está activa la opción de acelerador bloqueado por debajo de crucero,  teniendo los pulsos de fijación crucero están por encima de 10 (fijación por tiempo) y se acciona el acelerador por debajo de la velocidad de crucero.
-					//if (comparaConTolerancia(vf_acelerador, a0_valor_reposo, 100) || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >=10 && vf_acelerador < v_crucero)) {
 					if (vf_acelerador < a0_valor_minimo || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >= 10 && vf_acelerador < v_crucero)) {
 						nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
 					// Si se acelera.
@@ -720,10 +725,9 @@ void setup() {
 				cnf.v_salida_progresivo_ayuda_arranque = 710;
 
 			// Estabiliza suavidad de los progresivos.
-			nivelarRango(cnf.suavidad_progresivos, 1, 10);
-
+			cnf.suavidad_progresivos = constrain(cnf.suavidad_progresivos, 1, 10);
 			// Estabiliza suavidad de los auto_progresivos.
-			nivelarRango(cnf.suavidad_autoprogresivos, 1, 10);
+			cnf.suavidad_autoprogresivos = constrain(cnf.suavidad_autoprogresivos, 1, 10);
 
 			// Tono de finalización configuración del sistema.
 			repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 90, 90);
@@ -748,7 +752,9 @@ void loop() {
 					pedaleo = false;
 				}
 				
-				actualizacion_contadores = true;
+				if (flag_modo_asistencia >= MODO_CRUCERO)
+					actualizacion_contadores = true;
+
 				loop_ultima_ejecucion_millis = millis();
 			}
 
@@ -798,7 +804,8 @@ void loop() {
 			mandaAcelerador(v_acelerador);
 
 			// Reinicio de variable.
-			actualizacion_contadores = false;
+			if (flag_modo_asistencia >= MODO_CRUCERO)
+				actualizacion_contadores = false;
 		}
 	// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador o que no se ha detectado.
 	} else {
