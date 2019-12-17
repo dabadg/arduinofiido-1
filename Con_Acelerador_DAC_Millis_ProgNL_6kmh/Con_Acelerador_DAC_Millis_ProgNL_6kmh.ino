@@ -1,7 +1,6 @@
 #include <Adafruit_MCP4725.h>
 #include <Arduino.h>
 #include "I2CScanner.h"
-#include "Level.h"
 #include "Tones.h"
 
 const char* version = "2.7.0 Develop N Ruidos";
@@ -170,12 +169,16 @@ const byte pin_freno = 3;
 // Pin del zumbador.
 const byte pin_piezo = 11;
 
-//======= CONSTANTES MODOS ======================================
+//======= CONSTANTES MODOS =============================================
 
-const byte MODO_ACELERADOR = 0; // Solo Acelerador.
-const byte MODO_CRUCERO = 1; // Acelerador con crucero y progresivos.
-const byte MODO_CRUCERO6KMH = 2; // Acelerador con crucero, asistencia 6kmh y progresivos.
-const byte MODO_PLOTTER = 20; // Serial Plotter.
+// Sólo Acelerador.
+const byte MODO_ACELERADOR = 0;
+// Acelerador con crucero y progresivos.
+const byte MODO_CRUCERO = 1;
+// Acelerador con crucero, asistencia 6km/h y progresivos.
+const byte MODO_CRUCERO6KMH = 2;
+// Serial Plotter.
+const byte MODO_PLOTTER = 20;
 
 //======= VARIABLES PARA CÁLCULOS ======================================
 
@@ -246,7 +249,8 @@ const int limite_tono_pulsos_fijar_crucero = 14;
 
 unsigned long tiempo_sensores_habilitado = 60000;
 
-// Flag de activación de asistencia 6kmh y crucero, al arrancar con el freno pulsado.
+// Flag de activación de asistencia 6kmh y crucero, al arrancar con el
+// freno pulsado.
 volatile byte flag_modo_asistencia = MODO_ACELERADOR;
 
 // ¿Freno activado?.
@@ -266,6 +270,13 @@ volatile boolean pedaleo = false;
 // Pasamos de escala acelerador -> DAC.
 int aceleradorEnDac(int vl_acelerador) {
 	return vl_acelerador * (4096 / 1024);
+}
+
+// Calcula si el valor se encuantra entre el rango de valores con
+// tolerancia calculados con el valor2.
+// valor2-tolerancia > valor < valor2+tolerancia
+boolean comparaConTolerancia(int valor, int valorReferencia, byte toleranciaValor2) {
+	return (valor > (valorReferencia - toleranciaValor2)) && (valor < (valorReferencia + toleranciaValor2));
 }
 
 // --------- Pedal
@@ -347,14 +358,14 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 
 void seleccionaModo() {
 	// Ejecutamos la selección de modos y esperamos a que se suelte el freno para dejar
-	// paso a tomar la medida del acelerador evitando una lectura erronea por la caida de tensión.
+	// paso a tomar la medida del acelerador evitando una lectura errónea por la caída de tensión.
 
-	//Según el tiempo que se tenga el freno pulsado, se cambiará de modo.
+	// Según el tiempo que se tenga el freno pulsado, se cambiará de modo.
 
-	// MODO 0 - Solo Acelerador
-	// MODO 1 (1 segundo) - Crucero
-	// MODO 2 (3 segundos) - Crucero + asistencia 6kmh
-	// MODO 20 (20 segundos) - Modo debug Serial Plotter
+	// MODO 0 - Solo Acelerador.
+	// MODO 1 (1 segundo) - Crucero.
+	// MODO 2 (3 segundos) - Crucero + asistencia 6 km/h.
+	// MODO 20 (20 segundos) - Modo debug Serial Plotter.
 
 	// Modo por defecto.
 	flag_modo_asistencia = MODO_ACELERADOR;
@@ -374,9 +385,9 @@ void seleccionaModo() {
 				break ;
 
 			  case 3:
-				// Solo se selecciona este modo si en el cnf está la variable ayuda_salida_activa a true
+				// Sólo se selecciona este modo si en el cnf está la variable ayuda_salida_activa a true
 				// Se mantiene esta opción por si alquien no quiere llevarla activa bajo nungún concepto.
-				if(cnf.ayuda_salida_activa){
+				if (cnf.ayuda_salida_activa) {
 					repeatTones(pin_piezo, cnf.buzzer_activo, 2, 3100, 100, 100);
 					flag_modo_asistencia = MODO_CRUCERO6KMH ;
 					decremento_progresivo_ayuda_arranque = (int) (cnf.v_salida_progresivo_ayuda_arranque - a0_valor_minimo) / ((cnf.tiempo_ejecucion_progresivo_ayuda_arranque / ciclo_decremento_progresivo_ayuda_arranque));
@@ -389,7 +400,8 @@ void seleccionaModo() {
 				break;
 
 			}
-			timer_seleccion_modos=millis();
+
+			timer_seleccion_modos = millis();
 		}
 	}
 }
@@ -455,7 +467,7 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 			// Si el contador de crucero ha llegado a su tope, se fija el crucero o si el acelerador está por debajo del crucero y el contador de debajo crucero ha llegado a su tope.
 			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero || (cnf.pulsos_fijar_debajo_crucero > 0 && contador_crucero_mismo_valor == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero)) {
 
-				// Solo se fija el crucero si se ha notado una variación de más de +-20 pasos entre la medida actual y la de crucero ya fijada.
+				// Sólo se fija el crucero si se ha notado una variación de más de +-20 pasos entre la medida actual y la de crucero ya fijada.
 				if (!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
 					boolean crucero_arriba = vl_acelerador > v_crucero;
 					crucero_fijado = true;
@@ -517,17 +529,18 @@ void anulaCruceroConFreno() {
 
 void anulaCruceroAcelerador() {
 	// El procedimiento se ejecuta mientras no se pedalea, haciendo un cambio rápido
-	// desde reposo hasta velocidad minima y vuelta a reposo.
+	// desde reposo hasta velocidad mínima y vuelta a reposo.
 	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador){
-		// Inicia en valor reposo
+		// Inicia en valor reposo.
 		if (comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 30)) {
 			boolean unlock = false;
 			// Espera a detectar interacción con el acelerador.
 			unsigned long timer_liberar_crucero = millis();
+
 			while((unsigned long)(millis() - timer_liberar_crucero) < 50) {
 				delay(1);
 
-				if(leeAcelerador(10) > a0_valor_reposo + 100) {
+				if (leeAcelerador(10) > a0_valor_reposo + 100) {
 					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 120);
 					unlock = true;
 					break;
@@ -722,10 +735,10 @@ void setup() {
 				cnf.v_salida_progresivo_ayuda_arranque = 710;
 
 			// Estabiliza suavidad de los progresivos.
-			nivelarRango(cnf.suavidad_progresivos, 1, 10);
+			cnf.suavidad_progresivos = constrain(cnf.suavidad_progresivos, 1, 10);
 
 			// Estabiliza suavidad de los auto_progresivos.
-			nivelarRango(cnf.suavidad_autoprogresivos, 1, 10);
+			cnf.suavidad_autoprogresivos = constrain(cnf.suavidad_autoprogresivos, 1, 10);
 
 			// Tono de finalización configuración del sistema.
 			repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 90, 90);
@@ -740,7 +753,7 @@ void loop() {
 	if (a0_valor_reposo > 0) {
 		// Si el DAC es detectado.
 		if (i2cScanner.isDacDetected()) {
-			// Esperamos [tiempo_act - 500ms] para ejecutar.
+			// Esperamos [tiempo_act - 500 ms] para ejecutar.
 			if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
 				pulsos = p_pulsos;
 				p_pulsos = 0;
