@@ -301,7 +301,21 @@ void paraMotor() {
 
 // --------- Acelerador
 
-int leeAcelerador(byte nmuestras, boolean nivelar) {
+int leeAcelerador() {
+	// Leemos nivel de acelerador.
+	int cl_acelerador = analogRead(pin_acelerador);
+
+	// Nivelamos y mapeamos valores --> 0 - 1023.
+	cl_acelerador = constrain(map(cl_acelerador, a0_valor_reposo, a0_valor_maximo, 0, 1023), 0, 1023);
+
+	// Filtro para el ruido en la lectura.
+	if (cl_acelerador < 5)
+		cl_acelerador = 0;
+
+	return cl_acelerador;
+}
+
+int leeAceleradorDebug(byte nmuestras) {
 	int cl_acelerador = 0;
 
 	// Leemos nivel de acelerador tomando n medidas.
@@ -311,19 +325,7 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
-	// Para corregir el valor por el real obtenido de la lectura.
- 	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_maximo && cl_acelerador <= a0_valor_LIMITE)
- 		a0_valor_maximo = cl_acelerador;
-
-	if (nivelar) {
-		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
-	}
-
 	return cl_acelerador;
-}
-
-int leeAcelerador(byte nmuestras) {
-	return leeAcelerador(nmuestras, true);
 }
 
 void testSensoresPlotter(unsigned long tiempoMs) {
@@ -343,7 +345,7 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 
 	while (tiempoMs==0 || (tiempoMs > 0 && (unsigned long)(millis() - inicio_ejecucion_millis) < tiempoMs)) {
 		delay(200);
-		Serial.print(leeAcelerador(3, false));
+		Serial.print(leeAceleradorDebug(3));
 		Serial.print("\t");
 		p_pulsos = (p_pulsos > pp)?p_pulsos:0;
 		pp = p_pulsos;
@@ -532,7 +534,7 @@ void anulaCruceroAcelerador() {
 	// desde reposo hasta velocidad mínima y vuelta a reposo.
 	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador){
 		// Inicia en valor reposo.
-		if (comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 30)) {
+		if (comparaConTolerancia(leeAcelerador(), a0_valor_reposo, 30)) {
 			boolean unlock = false;
 			// Espera a detectar interacción con el acelerador.
 			unsigned long timer_liberar_crucero = millis();
@@ -540,7 +542,7 @@ void anulaCruceroAcelerador() {
 			while((unsigned long)(millis() - timer_liberar_crucero) < 50) {
 				delay(1);
 
-				if (leeAcelerador(10) > a0_valor_reposo + 100) {
+				if (leeAcelerador() > a0_valor_reposo + 100) {
 					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 120);
 					unlock = true;
 					break;
@@ -555,7 +557,7 @@ void anulaCruceroAcelerador() {
 					delay(1);
 
 					// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-					if (!pedaleo && comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 30)) {
+					if (!pedaleo && comparaConTolerancia(leeAcelerador(), a0_valor_reposo, 30)) {
 						anulaCrucero();
 						break;
 					}
@@ -576,14 +578,14 @@ void ayudaArranque() {
 	// de la ayuda durante los ms leidos de la variable cnf.retardo_ayuda_arranque.
 	// Con esto conseguimos evitar que si se toca acelerador se ejecute automáticamente
 	// la asistencia y la bicicleta se ponga en marcha.
-	if (cnf.retardo_ayuda_arranque > 0 && leeAcelerador(3) > a0_valor_minimo) {
+	if (cnf.retardo_ayuda_arranque > 0 && leeAcelerador() > a0_valor_minimo) {
 		while (!pedaleo && (unsigned long)(millis() - timer_progresivo_ayuda_arranque) < cnf.retardo_ayuda_arranque) {
 			delay(1);
 		}
 	}
 
 	// Mientras no pedaleamos y aceleramos.
-	while (!pedaleo && leeAcelerador(30) > a0_valor_minimo) {
+	while (!pedaleo && leeAcelerador() > a0_valor_minimo) {
 		// Iniciamos la salida progresiva inversa.
 		if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh) {
 			// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
@@ -607,7 +609,7 @@ void ayudaArranque() {
 		}
 	}
 
-	if (!pedaleo && leeAcelerador(30) <= a0_valor_reposo) {
+	if (!pedaleo && leeAcelerador() <= a0_valor_reposo) {
 		paraMotor();
 	}
 }
@@ -777,7 +779,7 @@ void loop() {
 				// Valor de reposo al DAC.
 				paraMotor();
 
-			v_acelerador = leeAcelerador(30);
+			v_acelerador = leeAcelerador();
 
 			if (flag_modo_asistencia >= MODO_CRUCERO)
 				estableceCruceroPorTiempo(v_acelerador);
