@@ -307,21 +307,7 @@ void paraMotor() {
 
 // --------- Acelerador
 
-int leeAcelerador() {
-	// Leemos nivel de acelerador.
-	int cl_acelerador = analogRead(pin_acelerador);
-
-	// Nivelamos y mapeamos valores --> 0 - 1023.
-	cl_acelerador = constrain(map(cl_acelerador, a0_valor_reposo, a0_valor_maximo, 0, 1023), 0, 1023);
-
-	// Filtro para el ruido en la lectura.
-	if (cl_acelerador < 5)
-		cl_acelerador = 0;
-
-	return cl_acelerador;
-}
-
-int leeAceleradorDebug(byte nmuestras) {
+int leeAcelerador(byte nmuestras, boolean nivelar) {
 	int cl_acelerador = 0;
 
 	// Leemos nivel de acelerador tomando n medidas.
@@ -331,7 +317,19 @@ int leeAceleradorDebug(byte nmuestras) {
 
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
+	// Para corregir el valor por el real obtenido de la lectura.
+ 	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_maximo && cl_acelerador <= a0_valor_LIMITE)
+ 		a0_valor_maximo = cl_acelerador;
+
+	if (nivelar) {
+		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
+	}
+
 	return cl_acelerador;
+}
+
+int leeAcelerador(byte nmuestras) {
+	return leeAcelerador(nmuestras, true);
 }
 
 void testSensoresPlotter(unsigned long tiempoMs) {
@@ -351,7 +349,7 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 
 	while (tiempoMs==0 || (tiempoMs > 0 && (unsigned long)(millis() - inicio_ejecucion_millis) < tiempoMs)) {
 		delay(200);
-		Serial.print(leeAceleradorDebug(3));
+		Serial.print(leeAcelerador(3, false));
 		Serial.print("\t");
 		p_pulsos = (p_pulsos > pp)?p_pulsos:0;
 		pp = p_pulsos;
@@ -462,11 +460,19 @@ int calculaAceleradorProgresivoNoLineal() {
 
 // --------- Crucero
 
+void anulaCrucero() {
+	if (crucero_fijado) {
+		v_crucero = a0_valor_reposo;
+		crucero_fijado = false;
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2000, 290, 100);
+	}
+}
+
 void estableceNivel(int vl_acelerador) {
 	if (millis() - establece_crucero_ultima_ejecucion_millis > 50) {
 		contador_loop_crucero++;
 
-		if (vl_acelerador > 0) {
+		if (vl_acelerador > a0_valor_minimo) {
 			contador_crucero++;
 			contador_cero_crucero = 0;
 		} else {
@@ -492,7 +498,7 @@ void estableceNivel(int vl_acelerador) {
 		contador_loop_crucero = 0;
 
 		// Fijación crucero.
-		if (vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > 5) {
+		if (vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > a0_valor_minimo) {
 			crucero_fijado = true;
 			v_crucero = vl_acelerador;
 			vl_acelerador_prev = 0;
@@ -544,14 +550,6 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 	}
 }
 
-void anulaCrucero() {
-	if (crucero_fijado) {
-		v_crucero = a0_valor_reposo;
-		crucero_fijado = false;
-		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2000, 290, 100);
-	}
-}
-
 void anulaCruceroConFreno() {
 	// Esperamos 100 ms para ejecutar.
 	if ((unsigned long)(millis() - anula_crucero_con_freno_ultima_ejecucion_millis) > 100) {
@@ -583,7 +581,7 @@ void anulaCruceroAcelerador() {
 	// desde reposo hasta velocidad mínima y vuelta a reposo.
 	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador){
 		// Inicia en valor reposo.
-		if (comparaConTolerancia(leeAcelerador(), a0_valor_reposo, 30)) {
+		if (comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 30)) {
 			boolean unlock = false;
 			// Espera a detectar interacción con el acelerador.
 			unsigned long timer_liberar_crucero = millis();
@@ -591,7 +589,7 @@ void anulaCruceroAcelerador() {
 			while((unsigned long)(millis() - timer_liberar_crucero) < 50) {
 				delay(1);
 
-				if (leeAcelerador() > a0_valor_reposo + 100) {
+				if (leeAcelerador(10) > a0_valor_reposo + 100) {
 					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 120);
 					unlock = true;
 					break;
@@ -606,7 +604,7 @@ void anulaCruceroAcelerador() {
 					delay(1);
 
 					// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-					if (!pedaleo && comparaConTolerancia(leeAcelerador(), a0_valor_reposo, 30)) {
+					if (!pedaleo && comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 30)) {
 						anulaCrucero();
 						break;
 					}
@@ -627,7 +625,7 @@ void ayudaArranque() {
 	// de la ayuda durante los ms leidos de la variable cnf.retardo_ayuda_arranque.
 	// Con esto conseguimos evitar que si se toca acelerador se ejecute automáticamente
 	// la asistencia y la bicicleta se ponga en marcha.
-	if (cnf.retardo_ayuda_arranque > 0 && leeAcelerador() > a0_valor_minimo) {
+	if (cnf.retardo_ayuda_arranque > 0 && leeAcelerador(3) > a0_valor_minimo) {
 		while (!pedaleo && (unsigned long)(millis() - timer_progresivo_ayuda_arranque) < cnf.retardo_ayuda_arranque) {
 			delay(1);
 		}
@@ -635,19 +633,20 @@ void ayudaArranque() {
 
 	if (cnf.activar_progresivo_ayuda_arranque) {
 		// Si no pedaleamos y aceleramos.
-		while (!pedaleo && leeAcelerador() > a0_valor_minimo) {
+		while (!pedaleo && leeAcelerador(30) > a0_valor_minimo) {
 			// Iniciamos la salida progresiva inversa.
 			if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh) {
-			// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
-			if ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) >= ciclo_decremento_progresivo_ayuda_arranque) {
-				v_salida_progresivo -= decremento_progresivo_ayuda_arranque;
+				// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
+				if ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) >= ciclo_decremento_progresivo_ayuda_arranque) {
+					v_salida_progresivo -= decremento_progresivo_ayuda_arranque;
 
-				if (v_salida_progresivo < a0_valor_6kmh)
-					v_salida_progresivo = a0_valor_6kmh;
+					if (v_salida_progresivo < a0_valor_6kmh)
+						v_salida_progresivo = a0_valor_6kmh;
 
-				dac.setVoltage(aceleradorEnDac(v_salida_progresivo), false);
-				nivel_aceleracion_prev = v_salida_progresivo;
-				timer_progresivo_ayuda_arranque = millis();
+					dac.setVoltage(aceleradorEnDac(v_salida_progresivo), false);
+					nivel_aceleracion_prev = v_salida_progresivo;
+					timer_progresivo_ayuda_arranque = millis();
+				}
 			}
 		}
 	} else {
@@ -660,7 +659,7 @@ void ayudaArranque() {
 	}
 
 	// Si no pedaleamos y soltamos el acelerador.
-	if (!pedaleo && leeAcelerador() <= a0_valor_reposo) {
+	if (!pedaleo && leeAcelerador(30) <= a0_valor_reposo) {
 		paraMotor();
 	}
 }
@@ -830,7 +829,7 @@ void loop() {
 				// Valor de reposo al DAC.
 				paraMotor();
 
-			v_acelerador = leeAcelerador();
+			v_acelerador = leeAcelerador(30);
 
 			if (flag_modo_asistencia >= MODO_CRUCERO)
 				estableceNivel(v_acelerador);
