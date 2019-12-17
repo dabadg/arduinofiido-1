@@ -3,7 +3,7 @@
 #include "I2CScanner.h"
 #include "Tones.h"
 
-const char* version = "2.7.0 Develop N Ruidos";
+const char* version = "2.7.1 Develop N Ruidos";
 
 /*
                      Versión Con Acelerador y DAC
