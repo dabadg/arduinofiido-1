@@ -726,13 +726,14 @@ void setup() {
 				fac_a = 1.0 - pow (1.0, fac_c) * fac_b;
 			}
 
-			// Estabiliza pulsos_fijar_crucero para que sean siempre superiores a 2.
-			if (cnf.pulsos_fijar_crucero < 2)
-				cnf.pulsos_fijar_crucero = 2;
-
-			// Estabiliza el progresivo inverso si se supera el valor de referencia.
-			if (cnf.v_salida_progresivo_ayuda_arranque > 710)
-				cnf.v_salida_progresivo_ayuda_arranque = 710;
+			// Estabiliza número de interrupciones para activar / desactivar pedaleo.
+			cnf.interrupciones_activacion_pedaleo = constrain(cnf.interrupciones_activacion_pedaleo, 2, 4);
+			
+			// Estabiliza pulsos_fijar_crucero.
+			cnf.pulsos_fijar_crucero = constrain(cnf.pulsos_fijar_crucero, 2, 40);
+			
+			// Estabiliza el progresivo inverso.
+			cnf.v_salida_progresivo_ayuda_arranque = constrain(cnf.v_salida_progresivo_ayuda_arranque, 440, 710);
 
 			// Estabiliza suavidad de los progresivos.
 			cnf.suavidad_progresivos = constrain(cnf.suavidad_progresivos, 1, 10);
