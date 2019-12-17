@@ -19,8 +19,8 @@ struct ConfigContainer {
 
 	// -------------- ACELERADOR
 
+	// Recalcula el valor real en reposo del acelerador al inicio.
 	boolean recalcular_rango_min_acelerador = true;
-	boolean recalcular_rango_max_acelerador = true;
 
 	// -------------- PEDALEO
 
