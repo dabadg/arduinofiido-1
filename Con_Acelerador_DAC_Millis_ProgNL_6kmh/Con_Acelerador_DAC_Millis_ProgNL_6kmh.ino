@@ -187,6 +187,7 @@ const byte MODO_PLOTTER = 20;
 // 0 --> 1023 = 0 --> 5V.
 
 int a0_valor_reposo = 196;		// 0.96
+const int a0_valor_corte = 246;		// 1.20
 const int a0_valor_minimo = 330;	// 1.62
 const int a0_valor_6kmh = 440;		// 2.16
 int a0_valor_maximo = 808;		// 3.95
@@ -472,7 +473,7 @@ void estableceNivel(int vl_acelerador) {
 	if (millis() - establece_crucero_ultima_ejecucion_millis > 50) {
 		contador_loop_crucero++;
 
-		if (vl_acelerador > a0_valor_minimo) {
+		if (vl_acelerador > a0_valor_corte) {
 			contador_crucero++;
 			contador_cero_crucero = 0;
 		} else {
@@ -500,7 +501,8 @@ void estableceNivel(int vl_acelerador) {
 		// Fijación crucero.
 		if (vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > a0_valor_minimo) {
 			crucero_fijado = true;
-			v_crucero = vl_acelerador;
+			// Nunca se actualizará la velocidad de crucero por debajo del [a0_valor_minimo].
+			v_crucero = vl_acelerador < a0_valor_minimo ? a0_valor_reposo : vl_acelerador;
 			vl_acelerador_prev = 0;
 			// Tono de aviso para crucero fijado.
 			repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1);
