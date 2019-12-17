@@ -184,7 +184,7 @@ const byte MODO_PLOTTER = 20; // Serial Plotter.
 // 0 --> 1023 = 0 --> 5V.
 
 int a0_valor_reposo = 194;			// 0.95
-const int a0_valor_minimo = 330;	// 1.62
+const int a0_valor_minimo = 246;	// 1.20
 const int a0_valor_6kmh = 440;		// 2.16
 int a0_valor_maximo = 808;			// 3.95
 const int a0_valor_LIMITE = 832;	// 4.06
