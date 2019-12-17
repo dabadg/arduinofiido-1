@@ -24,8 +24,9 @@ struct ConfigContainer {
 
 	// -------------- PEDALEO
 
-	// Número de interrupciones para activar pedaleo (Valores 2,3...).
-	byte interrupciones_activacion_pedaleo = 2;
+	// Número de interrupciones para activar pedaleo.
+	// Valores a elegir --> 2, 3 ó 4.
+	byte interrupciones_activacion_pedaleo = 3;
 
 	// -------------- ASISTENCIA 6 KM/H
 
