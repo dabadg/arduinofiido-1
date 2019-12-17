@@ -698,12 +698,12 @@ void mandaAcelerador(int vf_acelerador) {
 		} else {
 			nivel_aceleracion = a0_valor_reposo;
 		}
+	}
 
-		// Fijamos el acelerador si el valor anterior es distinto al actual.
-		if (nivel_aceleracion_prev != nivel_aceleracion) {
-			dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
-			nivel_aceleracion_prev = nivel_aceleracion;
-		}
+	// Fijamos el acelerador si el valor anterior es distinto al actual.
+	if (nivel_aceleracion_prev != nivel_aceleracion) {
+		dac.setVoltage(aceleradorEnDac(nivel_aceleracion), false);
+		nivel_aceleracion_prev = nivel_aceleracion;
 	}
 }
 
