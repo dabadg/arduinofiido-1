@@ -584,10 +584,11 @@ void ayudaArranque() {
 		}
 	}
 
-	// Mientras no pedaleamos y aceleramos.
-	while (!pedaleo && leeAcelerador() > a0_valor_minimo) {
-		// Iniciamos la salida progresiva inversa.
-		if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh) {
+	if (cnf.activar_progresivo_ayuda_arranque) {
+		// Si no pedaleamos y aceleramos.
+		while (!pedaleo && leeAcelerador() > a0_valor_minimo) {
+			// Iniciamos la salida progresiva inversa.
+			if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh) {
 			// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
 			if ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) >= ciclo_decremento_progresivo_ayuda_arranque) {
 				v_salida_progresivo -= decremento_progresivo_ayuda_arranque;
@@ -599,16 +600,17 @@ void ayudaArranque() {
 				nivel_aceleracion_prev = v_salida_progresivo;
 				timer_progresivo_ayuda_arranque = millis();
 			}
-		} else {
-			if (!ayuda_arranque_fijada) {
-				// Mandamos 6 km/h directamente al DAC.
-				dac.setVoltage(aceleradorEnDac(a0_valor_6kmh), false);
-				nivel_aceleracion_prev = a0_valor_6kmh;
-				ayuda_arranque_fijada = true;
-			}
+		}
+	} else {
+		// No paramos el loop.
+		if (!ayuda_arranque_fijada) {
+			// Nivel de aceleración en 6 km/h.
+			nivel_aceleracion = a0_valor_6kmh;
+			ayuda_arranque_fijada = true;
 		}
 	}
 
+	// Si no pedaleamos y soltamos el acelerador.
 	if (!pedaleo && leeAcelerador() <= a0_valor_reposo) {
 		paraMotor();
 	}
@@ -735,7 +737,7 @@ void setup() {
 			cnf.pulsos_fijar_crucero = constrain(cnf.pulsos_fijar_crucero, 2, 40);
 			
 			// Estabiliza el progresivo inverso.
-			cnf.v_salida_progresivo_ayuda_arranque = constrain(cnf.v_salida_progresivo_ayuda_arranque, 440, 710);
+			cnf.v_salida_progresivo_ayuda_arranque = constrain(cnf.v_salida_progresivo_ayuda_arranque, a0_valor_6kmh + 1, 710);
 
 			// Estabiliza suavidad de los progresivos.
 			cnf.suavidad_progresivos = constrain(cnf.suavidad_progresivos, 1, 10);
