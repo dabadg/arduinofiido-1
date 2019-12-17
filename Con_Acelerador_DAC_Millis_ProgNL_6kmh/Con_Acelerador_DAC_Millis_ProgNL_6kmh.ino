@@ -4,7 +4,7 @@
 #include "Level.h"
 #include "Tones.h"
 
-const char* version = "2.7.0 Develop N";
+const char* version = "2.7.0 Develop N Ruidos";
 
 /*
                      Versión Con Acelerador y DAC
@@ -430,12 +430,11 @@ boolean validaMinAcelerador(byte nmuestras) {
 int calculaAceleradorProgresivoNoLineal() {
 	int nivel_aceleraciontmp;
 	float fac_m = 0.0;
-	float resultado = 0.0;
 
 	fac_n = a0_valor_reposo + 0.2 * v_crucero;
 	fac_m = (v_crucero - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
-	resultado = freno * (fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p));
-	nivel_aceleraciontmp = (int) constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
+	nivel_aceleraciontmp = (int) freno * (fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p));
+	nivel_aceleraciontmp = constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
 
 	return nivel_aceleraciontmp;
 }
