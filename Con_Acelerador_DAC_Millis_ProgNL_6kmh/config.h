@@ -21,6 +21,7 @@ struct ConfigContainer {
 
 	// Recalcula el valor real en reposo del acelerador al inicio.
 	boolean recalcular_rango_min_acelerador = true;
+
 	// Recalcula el valor máximo del acelerador.
 	boolean recalcular_rango_max_acelerador = true;
 
@@ -41,7 +42,7 @@ struct ConfigContainer {
 
 	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
 	// progresivo desde alta potencia.
-	boolean activar_progresivo_ayuda_arranque = true;
+	boolean activar_progresivo_ayuda_arranque = false;
 
 	// Valor inicial de salida en la asistencia 6 km/h.
 	// Como mínimo tendrá que tener el valor de la constante
@@ -49,13 +50,26 @@ struct ConfigContainer {
 	int v_salida_progresivo_ayuda_arranque = 700;
 
 	// -------------- CRUCERO
+	
+	/* PERFILES RECOMENDADOS:
+	 * 1. Crucero Coche:
+	 * 	pulsos_fijar_crucero --> 22.
+	 * 	pulsos_fijar_debajo_crucero --> 0.
+	 * 2. Crucero Continuo:
+	 * 	pulsos_fijar_crucero --> 2.
+	 * 	pulsos_fijar_debajo_crucero = 0;
+	 * 3. Crucero Coche con posibilidad de fijar velocidad custom por
+	 *    debajo del crucero actual:
+	 * 	pulsos_fijar_crucero --> 22.
+	 * 	pulsos_fijar_debajo_crucero --> 5.
+	 */
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
 	// Con el valor 2 se va actualizando constantemente y mantiene la
 	// última medida al soltar el acelerador (0-255).
-	// 2 * 140 = 280 ms. Crucero continuo.
-	// 20 * 140 = 2800 ms. Crucero por tiempo.
-	byte pulsos_fijar_crucero = 20;
+	// 2 * 90 = 180 ms. Crucero continuo.
+	// 22 * 90 = 1980 ms. Crucero por tiempo.
+	byte pulsos_fijar_crucero = 22;
 
 	// Para que el acelerador funcione como en el coche. Si se fija el
 	// crucero, la potencia del motor solo cambia si se supera con el
@@ -64,10 +78,10 @@ struct ConfigContainer {
 	// ciclos definidos en esta variable.
 
 	// Pulsos que tarda en fijar velocidad por debajo de crucero.
-	// No Cambiar Valor. Solo para fijar por tiempo. 5 --> 700 ms.
+	// No Cambiar Valor. 5 --> 700 ms.
 	// Con el valor de [pulsos_fijar_crucero] en 5 o debajo de 5,
 	// poner esta variable [pulsos_fijar_debajo_crucero] a 0.
-	byte pulsos_fijar_debajo_crucero = 5;
+	byte pulsos_fijar_debajo_crucero = 0;
 
 	// --------- +++
 
