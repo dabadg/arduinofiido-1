@@ -495,19 +495,21 @@ void estableceNivel(int vl_acelerador) {
 		establece_crucero_ultima_ejecucion_millis = millis();
 	}
 
-	// 20 pulsos * 90 --> 1800 ms.
+	// 22 pulsos * 90 --> 1980 ms.
 	if (contador_loop_crucero > cnf.pulsos_fijar_crucero || (cnf.pulsos_fijar_debajo_crucero > 0 && contador_loop_crucero == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero)) {
 		contador_loop_crucero = 0;
 
 		// Fijación crucero.
 		if (pedaleo && vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > a0_valor_minimo) {
+			boolean crucero_arriba = vl_acelerador > v_crucero;
 			crucero_fijado = true;
 			// Nunca se actualizará la velocidad de crucero por debajo del [a0_valor_minimo].
 			v_crucero = vl_acelerador < a0_valor_minimo ? a0_valor_reposo : vl_acelerador;
 			vl_acelerador_prev = 0;
+
 			// Sólo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
 			if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero) {
-				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1);
+				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80, 1);
 			}
 		} else {
 			vl_acelerador_prev = vl_acelerador;
