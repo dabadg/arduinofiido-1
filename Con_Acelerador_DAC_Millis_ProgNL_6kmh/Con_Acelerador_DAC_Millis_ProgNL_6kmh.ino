@@ -240,19 +240,19 @@ boolean actualizacion_contadores = false;
 // Almacena la velocidad de crucero del loop anterior.
 int vl_acelerador_prev = 0;
 // Cantidad de loops que lleva la velocidad en el mismo valor.
-byte contador_crucero_mismo_valor = 0;
-// Cantidad de loops para cortar crucero con freno.
-byte contador_freno_anulacion_crucero = 0;
+//byte contador_crucero_mismo_valor = 0;
 // Contador para la lectura 0 del crucero.
 byte contador_cero_crucero = 0;
 // Contador para la lectura del crucero.
 byte contador_crucero = 0;
 // Contador para el loop del crucero.
 byte contador_loop_crucero = 0;
+// Cantidad de loops para cortar crucero con freno.
+byte contador_freno_anulacion_crucero = 0;
 
 // Pulsos de fijación crucero a partir de los que se emite el tono por
 // el buzzer.
-const int limite_tono_pulsos_fijar_crucero = 14;
+const int limite_tono_pulsos_fijar_crucero = 20;
 
 unsigned long tiempo_sensores_habilitado = 60000;
 
@@ -470,7 +470,8 @@ void anulaCrucero() {
 }
 
 void estableceNivel(int vl_acelerador) {
-	if (millis() - establece_crucero_ultima_ejecucion_millis > 50) {
+	// Esperamos 50 ms para ejecutar.
+	if ((unsigned long) (millis() - establece_crucero_ultima_ejecucion_millis) > 50) {
 		contador_loop_crucero++;
 
 		if (vl_acelerador > a0_valor_corte) {
@@ -499,19 +500,22 @@ void estableceNivel(int vl_acelerador) {
 		contador_loop_crucero = 0;
 
 		// Fijación crucero.
-		if (vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > a0_valor_minimo) {
+		if (pedaleo && vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > a0_valor_minimo) {
 			crucero_fijado = true;
 			// Nunca se actualizará la velocidad de crucero por debajo del [a0_valor_minimo].
 			v_crucero = vl_acelerador < a0_valor_minimo ? a0_valor_reposo : vl_acelerador;
 			vl_acelerador_prev = 0;
-			// Tono de aviso para crucero fijado.
-			repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1);
+			// Sólo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+			if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero) {
+				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 190, 1);
+			}
 		} else {
 			vl_acelerador_prev = vl_acelerador;
 		}
 	}
 }
 
+/*
 void estableceCruceroPorTiempo(int vl_acelerador) {
 	// Esperamos 100 ms para ejecutar.
 	if ((unsigned long) (millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
@@ -551,6 +555,7 @@ void estableceCruceroPorTiempo(int vl_acelerador) {
 		establece_crucero_ultima_ejecucion_millis = millis();
 	}
 }
+*/
 
 void anulaCruceroConFreno() {
 	// Esperamos 100 ms para ejecutar.
@@ -581,7 +586,7 @@ void anulaCruceroConFreno() {
 void anulaCruceroAcelerador() {
 	// El procedimiento se ejecuta mientras no se pedalea, haciendo un cambio rápido
 	// desde reposo hasta velocidad mínima y vuelta a reposo.
-	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador){
+	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador) {
 		// Inicia en valor reposo.
 		if (comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 30)) {
 			boolean unlock = false;
