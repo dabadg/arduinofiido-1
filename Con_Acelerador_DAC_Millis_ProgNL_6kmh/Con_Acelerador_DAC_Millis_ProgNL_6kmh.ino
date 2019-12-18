@@ -275,7 +275,7 @@ volatile boolean pedaleo = false;
 
 // Pasamos de escala acelerador -> DAC.
 int aceleradorEnDac(int vl_acelerador) {
-	return vl_acelerador * (4096 / 1024);
+	return map(vl_acelerador, 0, 1023, 0 , 4095);
 }
 
 // Calcula si el valor se encuantra entre el rango de valores con
@@ -318,8 +318,8 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
 	// Para corregir el valor por el real obtenido de la lectura.
- 	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_maximo && cl_acelerador <= a0_valor_LIMITE)
- 		a0_valor_maximo = cl_acelerador;
+	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_maximo)
+	 		a0_valor_maximo = constrain(cl_acelerador, a0_valor_maximo, a0_valor_LIMITE);
 
 	if (nivelar) {
 		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
@@ -446,16 +446,12 @@ boolean validaMinAcelerador(byte nmuestras) {
 
 // Progresivo no lineal.
 int calculaAceleradorProgresivoNoLineal() {
-	int nivel_aceleraciontmp;
-	float fac_n = 0.0;
-	float fac_m = 0.0;
 
-	fac_n = a0_valor_reposo + 0.2 * v_crucero;
-	fac_m = (v_crucero - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
-	nivel_aceleraciontmp = (int) freno * (fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p));
-	nivel_aceleraciontmp = constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
+	float fac_n = a0_valor_reposo + 0.2 * v_crucero;
+	float fac_m = (v_crucero - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
+	int nivel_aceleraciontmp = (int) freno * (fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p));
 
-	return nivel_aceleraciontmp;
+	return constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
 }
 
 
