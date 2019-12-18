@@ -204,7 +204,6 @@ int bkp_contador_retardo_aceleracion = 0;
 boolean auto_progresivo = false;
 
 // Constante progresivos.
-float fac_n = 0.0;
 const float fac_p = 1.056 - 0.056 * cnf.suavidad_progresivos;
 
 // Variables para auto_progresivos.
@@ -232,7 +231,7 @@ boolean crucero_fijado = false;
 // Controles de tiempo.
 const unsigned long tiempo_act = 500;
 unsigned long loop_ultima_ejecucion_millis;
-unsigned long crucero_fijado_millis;
+//unsigned long crucero_fijado_millis;
 unsigned long establece_crucero_ultima_ejecucion_millis;
 unsigned long anula_crucero_con_freno_ultima_ejecucion_millis;
 boolean actualizacion_contadores = false;
@@ -448,6 +447,7 @@ boolean validaMinAcelerador(byte nmuestras) {
 // Progresivo no lineal.
 int calculaAceleradorProgresivoNoLineal() {
 	int nivel_aceleraciontmp;
+	float fac_n = 0.0;
 	float fac_m = 0.0;
 
 	fac_n = a0_valor_reposo + 0.2 * v_crucero;
@@ -755,7 +755,6 @@ void setup() {
 
 		// Configura pines.
 		pinMode(pin_piezo, OUTPUT);
-		//pinMode(pin_freno, OUTPUT);
 		pinMode(pin_pedal, INPUT_PULLUP);
 		pinMode(pin_acelerador, INPUT);
 		
@@ -764,8 +763,6 @@ void setup() {
 
 		// Interrupción pedal.
 		attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE);
-		// Interrupción freno.
-		//attachInterrupt(digitalPinToInterrupt(pin_freno), freno, FALLING);
 
 		// Seleccionamos el modo de funcionamiento.
 		seleccionaModo();
