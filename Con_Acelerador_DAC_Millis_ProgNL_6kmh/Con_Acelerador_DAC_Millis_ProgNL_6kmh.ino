@@ -487,7 +487,6 @@ void estableceNivel(int vl_acelerador) {
 
 		// Cortamos crucero con toque corto.
 		if (contador_crucero > 2 && contador_crucero < 8 && contador_cero_crucero > 0) { 
-			v_crucero = a0_valor_reposo;
 			contador_crucero = 0;
 			anulaCrucero();
 		}
