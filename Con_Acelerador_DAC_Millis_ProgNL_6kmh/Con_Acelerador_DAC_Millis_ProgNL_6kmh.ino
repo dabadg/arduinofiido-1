@@ -187,7 +187,7 @@ const byte MODO_PLOTTER = 20;
 // 0 --> 1023 = 0 --> 5V.
 
 int a0_valor_reposo = 196;		// 0.96
-const int a0_valor_corte = 246;		// 1.20
+const int a0_valor_corte = 236;		// 1.15
 const int a0_valor_minimo = 330;	// 1.62
 const int a0_valor_6kmh = 440;		// 2.16
 int a0_valor_maximo = 808;		// 3.95
@@ -250,8 +250,8 @@ byte contador_loop_crucero = 0;
 byte contador_freno_anulacion_crucero = 0;
 
 // Pulsos de fijación crucero a partir de los que se emite el tono por
-// el buzzer.
-const int limite_tono_pulsos_fijar_crucero = 20;
+// el buzzer. 18 *90 = 1530 ms.
+const int limite_tono_pulsos_fijar_crucero = 18;
 
 unsigned long tiempo_sensores_habilitado = 60000;
 
