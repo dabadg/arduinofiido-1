@@ -496,7 +496,7 @@ void estableceNivel(int vl_acelerador) {
 	}
 
 	// 20 pulsos * 90 --> 1800 ms.
-	if (contador_loop_crucero > cnf.pulsos_fijar_crucero) {
+	if (contador_loop_crucero > cnf.pulsos_fijar_crucero || (cnf.pulsos_fijar_debajo_crucero > 0 && contador_loop_crucero == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero) {
 		contador_loop_crucero = 0;
 
 		// Fijación crucero.
