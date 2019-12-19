@@ -318,7 +318,7 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 
 	// Para corregir el valor por el real obtenido de la lectura.
 	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_maximo)
-	 		a0_valor_maximo = constrain(cl_acelerador, a0_valor_maximo, a0_valor_LIMITE);
+		a0_valor_maximo = constrain(cl_acelerador, a0_valor_maximo, a0_valor_LIMITE);
 
 	if (nivelar) {
 		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
