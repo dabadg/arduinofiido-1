@@ -61,7 +61,7 @@ struct ConfigContainer {
 	 * 3. Crucero Coche con posibilidad de fijar velocidad custom por
 	 *    debajo del crucero actual:
 	 * 	pulsos_fijar_crucero --> 22.
-	 * 	pulsos_fijar_debajo_crucero --> 5.
+	 * 	pulsos_fijar_debajo_crucero --> 8.
 	 */
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
@@ -77,30 +77,30 @@ struct ConfigContainer {
 	// acelerador por debajo de la potencia de crucero durante los
 	// ciclos definidos en esta variable.
 
-	// Pulsos que tarda en fijar velocidad por debajo de crucero.
-	// No Cambiar Valor. 5 --> 700 ms.
-	// Con el valor de [pulsos_fijar_crucero] en 5 o debajo de 5,
+	// Pulsos que tarda en fijar velocidad por debajo de crucero si no 
+	// es continuo. 8 --> 720 ms.
+	// Con el valor de [pulsos_fijar_crucero] en 8 o debajo de 8,
 	// poner esta variable [pulsos_fijar_debajo_crucero] a 0.
 	byte pulsos_fijar_debajo_crucero = 0;
 
 	// --------- +++
 
-	// False --> Mantiene valor que tenía el crucero antes de entrar a
-	// la asistencia de 6km/h.
-	// True -->  En esta situación anula el valor de crucero al
-	// incrementar y soltar acelerador.
+	// Cortar crucero con acelerador si no pedaleamos.
 	boolean liberar_crucero_con_acelerador = true;
+
+	// Tiempo necesario para ejecutar el procedimiento de cancelar 
+	// crucero por acelerador. Hay que acelerar y soltar el acelerador sin 
+	// pedalear dentro de los segundos definidos en esta variable.
+	unsigned int tiempo_anula_crucero_acelerador = 150;
+
+	// Cortar crucero con el freno.
+	boolean liberar_crucero_con_freno = false;
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
 	// De 0 a 255.
 	// 36 * 140 = 5040 ms.
 	byte pulsos_liberar_crucero = 36;
 
-	// Tiempo necesario para ejecutar el procedimiento de cancelar 
-	// crucero por acelerador. Hay que acelerar y soltar el acelerador sin 
-	// pedalear dentro de los segundos definidos en esta variable.
-	unsigned int tiempo_anula_crucero_acelerador = 150;
-  
 	// -------------- PROGRESIVOS
   
 	// Retardo en segundos para ponerse a velocidad máxima o crucero.

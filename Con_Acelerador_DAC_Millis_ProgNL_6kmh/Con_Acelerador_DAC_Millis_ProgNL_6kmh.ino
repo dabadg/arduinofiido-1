@@ -25,8 +25,7 @@ FIJADO Y DESFIJADO DEL NIVEL DE ASISTENCIA (CONTINUO):
  * para no tener que estar sujetando el acelerador.
  *
  * La idea es fijar el acelerador a la velocidad deseada y soltar de
- * golpe o acompañar rápidamente hasta el valor 0, para guardar el
- * voltaje como nivel de asistencia.
+ * golpe para guardar el voltaje como nivel de asistencia.
  * Al parar y volver a pedalear, se va incrementando voltaje
  * gradualmente hasta llegar al nivel fijado.
  * Si se vuelve a mover el acelerador se toma este como nuevo valor.
@@ -34,8 +33,8 @@ FIJADO Y DESFIJADO DEL NIVEL DE ASISTENCIA (CONTINUO):
  * acelerador, por otra parte, mandaremos a la placa DAC mediante
  * comunicacion i2c el valor de salida hacia la controladora.
  *
- * Para desfijar el nivel de asistencia, simplemente usar el acelerador
- * sin pedalear.
+ * Para desfijar el nivel de asistencia, simplemente accionar
+ * rápidamente el acelerador y soltar.
 ------------------------------------------------------------------------
 VERSIÓN CRUCERO TIPO "MONOPATÍN" (POR TIEMPO) --> FIJADO Y DESFIJADO DEL
 NIVEL DE ASISTENCIA:
@@ -53,22 +52,22 @@ NIVEL DE ASISTENCIA:
  * potencia fijada, se mantendrá la potencia de crucero hasta que el
  * valor del acelerador la supere, momento en el que el valor del
  * acelerador prevalecerá y actualizará la potencia del motor.
- *
- * En todo momento mientras se pedalea, se podrá cambiar la potencia
- * de crucero manteniendo el acelerador en la posición deseada durante
- * 1.5 segundos ya sea por encima o por debajo de la potencia de crucero
- * seleccionada anteriormente.
+ * Si se actúa sobre el acelerador estando su valor por encima de la
+ * potencia fijada, la respuesta es instantánea hasta fijar el nuevo
+ * valor de crucero.
  *
  * Existe una variante que es la versión tiempo_min que permite
- * interactuar con el acelerador fijando el crucero manteniendo 3s el
- * acelerador en la misma posición, pero permitiendo cambiar el crucero
- * a un valor más bajo cambiando el el valor del acelerador y
- * manteniendo la posición más baja durante 280ms.
+ * interactuar con el acelerador fijando el crucero el tiempo definido
+ * con el acelerador en la misma posición, pero permitiendo cambiar
+ * el crucero a un valor más bajo cambiando el el valor del acelerador y
+ * manteniendo la posición más baja durante el valor de referencia.
  *
  * Para anular la potencia de crucero, existen dos procedimientos
  * principales --> Uno manteniendo pulsada la maneta de freno unos
- * segundos y otro, sin pedalear,subiendo el acelerador a un nivel
- * alto y soltando de golpe.
+ * segundos y otro, sin pedalear, subiendo el acelerador a un nivel
+ * alto y soltando de golpe. También con el acelerador se puede desfijar
+ * la asistencia pedalenado al igual que el crucero continuo.
+ * 
  * En cualquier caso, si se utiliza el sistema con la asistencia 6km/h
  * activada, al salir de la misma, siempre será anulada la potencia de
  * crucero.
@@ -108,15 +107,15 @@ ASISTENCIA A 6 KM/H DESDE PARADO:
  * En caso de tener una potencia de crucero fijada, si se utiliza la
  * asistencia 6kmh, al salir de la misma el crucero será anulado.
  *
- * Según la configuración por defecto, la asistencia 6kmh empezará
- * aplicando una potencia alta y bajará hasta la potencia que se ajusta
- * a la normativa.
+ * Es posible configurar la asistencia para que empiece aplicando una
+ * potencia alta y bajará hasta la potencia que se ajusta a la
+ * normativa.
  * Este sistema de potencia invertida ha sido implementado para que las
- * salidas desde parado alcancen la potencia 6km/h rápidamente.
+ * salidas desde parado alcancen la potencia de 6km/h rápidamente.
 ------------------------------------------------------------------------
 VALIDACIÓN DEL ACELERADOR
  * Se ha implementado una validación de seguridad para que en caso de
- * detectarse una medida erronea del acelerador al inicializar el
+ * detectarse una medida errónea del acelerador al inicializar el
  * sistema, este quede anulado y permita monitorizar todos los sensores
  * de la bicicleta durante 60 segundos.
  * Para la monitorización, será necesario activar un serial plotter.
@@ -250,12 +249,12 @@ byte contador_loop_crucero = 0;
 byte contador_freno_anulacion_crucero = 0;
 
 // Pulsos de fijación crucero a partir de los que se emite el tono por
-// el buzzer. 18 *90 = 1530 ms.
-const int limite_tono_pulsos_fijar_crucero = 18;
+// el buzzer. 22 * 90 = 1980 ms.
+const int limite_tono_pulsos_fijar_crucero = 22;
 
 unsigned long tiempo_sensores_habilitado = 60000;
 
-// Flag de activación de asistencia 6kmh y crucero, al arrancar con el
+// Flag de activación de asistencia 6km/h y crucero, al arrancar con el
 // freno pulsado.
 volatile byte flag_modo_asistencia = MODO_ACELERADOR;
 
@@ -368,7 +367,7 @@ void seleccionaModo() {
 
 	// Según el tiempo que se tenga el freno pulsado, se cambiará de modo.
 
-	// MODO 0 - Solo Acelerador.
+	// MODO 0 - Sólo Acelerador.
 	// MODO 1 (1 segundo) - Crucero.
 	// MODO 2 (3 segundos) - Crucero + asistencia 6 km/h.
 	// MODO 20 (20 segundos) - Modo debug Serial Plotter.
@@ -446,7 +445,6 @@ boolean validaMinAcelerador(byte nmuestras) {
 
 // Progresivo no lineal.
 int calculaAceleradorProgresivoNoLineal() {
-
 	float fac_n = a0_valor_reposo + 0.2 * v_crucero;
 	float fac_m = (v_crucero - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
 	int nivel_aceleraciontmp = (int) freno * (fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p));
@@ -490,7 +488,7 @@ void estableceNivel(int vl_acelerador) {
 		establece_crucero_ultima_ejecucion_millis = millis();
 	}
 
-	// 22 pulsos * 90 --> 1980 ms.
+	// 22 [cnf.pulsos_fijar_crucero] * 90 --> 1980 ms.
 	if (contador_loop_crucero > cnf.pulsos_fijar_crucero || (cnf.pulsos_fijar_debajo_crucero > 0 && contador_loop_crucero == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero)) {
 		contador_loop_crucero = 0;
 
@@ -571,7 +569,6 @@ void anulaCruceroConFreno() {
 				}
 			}
 		} else {
-
 			if (contador_freno_anulacion_crucero > 0)
 				contador_freno_anulacion_crucero--;
 		}
@@ -681,8 +678,8 @@ void mandaAcelerador(int vf_acelerador) {
 			if (flag_modo_asistencia >= MODO_CRUCERO) {
 				// Si el crucero está fijado.
 				if (crucero_fijado) {
-					// Si no se está acelerando o si mientras está activa la opción de acelerador bloqueado por debajo de crucero,  teniendo los pulsos de fijación crucero están por encima de 10 (fijación por tiempo) y se acciona el acelerador por debajo de la velocidad de crucero.
-					if (vf_acelerador < a0_valor_minimo || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >= 10 && vf_acelerador < v_crucero)) {
+					// Si no se está acelerando o si mientras está activa la opción de acelerador bloqueado por debajo de crucero, teniendo los pulsos de fijación crucero están por encima de 8 y se acciona el acelerador por debajo de la velocidad de crucero.
+					if (vf_acelerador < a0_valor_minimo || (cnf.pulsos_fijar_debajo_crucero > 0 && cnf.pulsos_fijar_crucero >= 8 && vf_acelerador < v_crucero)) {
 						nivel_aceleracion = calculaAceleradorProgresivoNoLineal();
 					// Si se acelera.
 					} else {
@@ -834,7 +831,6 @@ void loop() {
 
 			if (flag_modo_asistencia >= MODO_CRUCERO)
 				estableceNivel(v_acelerador);
-				//estableceCruceroPorTiempo(v_acelerador);
 
 			// Si no se pedalea.
 			if (!pedaleo) {
@@ -873,8 +869,11 @@ void loop() {
 				frena();
 
 			if (flag_modo_asistencia >= MODO_CRUCERO) {
-				anulaCruceroConFreno();
-				anulaCruceroAcelerador();
+				if (cnf.liberar_crucero_con_freno)
+					anulaCruceroConFreno();
+
+				if (liberar_crucero_con_acelerador)
+					anulaCruceroAcelerador();
 			}
 
 			mandaAcelerador(v_acelerador);
