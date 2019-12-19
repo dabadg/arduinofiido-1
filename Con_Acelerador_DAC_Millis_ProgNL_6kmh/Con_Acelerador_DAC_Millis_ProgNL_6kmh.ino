@@ -36,8 +36,7 @@ FIJADO Y DESFIJADO DEL NIVEL DE ASISTENCIA (CONTINUO):
  * Para desfijar el nivel de asistencia, simplemente accionar
  * rápidamente el acelerador y soltar.
 ------------------------------------------------------------------------
-VERSIÓN CRUCERO TIPO "MONOPATÍN" (POR TIEMPO) --> FIJADO Y DESFIJADO DEL
-NIVEL DE ASISTENCIA:
+FIJADO Y DESFIJADO DEL NIVEL DE ASISTENCIA "MONOPATÍN" (POR TIEMPO):
  * Al igual que la versión continua, se trata de fijar la potencia del
  * motor para no tener que estar sujetando el acelerador.
  * La idea principal es que mientras se pedalea, una vez se llegue a la
@@ -230,15 +229,12 @@ boolean crucero_fijado = false;
 // Controles de tiempo.
 const unsigned long tiempo_act = 500;
 unsigned long loop_ultima_ejecucion_millis;
-//unsigned long crucero_fijado_millis;
 unsigned long establece_crucero_ultima_ejecucion_millis;
 unsigned long anula_crucero_con_freno_ultima_ejecucion_millis;
 boolean actualizacion_contadores = false;
 
 // Almacena la velocidad de crucero del loop anterior.
 int vl_acelerador_prev = 0;
-// Cantidad de loops que lleva la velocidad en el mismo valor.
-//byte contador_crucero_mismo_valor = 0;
 // Contador para la lectura 0 del crucero.
 byte contador_cero_crucero = 0;
 // Contador para la lectura del crucero.
@@ -510,48 +506,6 @@ void estableceNivel(int vl_acelerador) {
 		}
 	}
 }
-
-/*
-void estableceCruceroPorTiempo(int vl_acelerador) {
-	// Esperamos 100 ms para ejecutar.
-	if ((unsigned long) (millis() - establece_crucero_ultima_ejecucion_millis) > 100) {
-
-		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior.
-		float media_con_vcrucero_prev = (vl_acelerador_prev + vl_acelerador) / 2;
-
-		// Si la velocidad es la misma incrementa el contador de control de fijación de crucero.
-		if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, (int) media_con_vcrucero_prev, 10)) {
-			contador_crucero_mismo_valor++;
-
-			// Si el contador de crucero ha llegado a su tope, se fija el crucero o si el acelerador está por debajo del crucero y el contador de debajo crucero ha llegado a su tope.
-			if (contador_crucero_mismo_valor == cnf.pulsos_fijar_crucero || (cnf.pulsos_fijar_debajo_crucero > 0 && contador_crucero_mismo_valor == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero)) {
-
-				// Sólo se fija el crucero si se ha notado una variación de más de +-20 pasos entre la medida actual y la de crucero ya fijada.
-				if (!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
-					boolean crucero_arriba = vl_acelerador > v_crucero;
-					crucero_fijado = true;
-					// Nunca se actualizará la velocidad de crucero por debajo del valor_minimo
-					v_crucero = vl_acelerador < a0_valor_minimo ? a0_valor_reposo : vl_acelerador;
-					contador_crucero_mismo_valor = 0;
-					crucero_fijado_millis = millis();
-
-					// Sólo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
-					// Valores altos se considera a partir de 2 segundos (14 pasos).
-					if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero) {
-						repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80, 1);
-					}
-				}
-			}
-
-		} else {
-			contador_crucero_mismo_valor = 0;
-		}
-
-		vl_acelerador_prev = vl_acelerador;
-		establece_crucero_ultima_ejecucion_millis = millis();
-	}
-}
-*/
 
 void anulaCruceroConFreno() {
 	// Esperamos 100 ms para ejecutar.
