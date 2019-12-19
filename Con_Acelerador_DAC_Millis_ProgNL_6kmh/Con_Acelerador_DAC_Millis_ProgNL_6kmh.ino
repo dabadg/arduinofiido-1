@@ -496,7 +496,7 @@ void estableceNivel(int vl_acelerador) {
 			v_crucero = vl_acelerador < a0_valor_minimo ? a0_valor_reposo : vl_acelerador;
 
 			// Sólo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos y si la velocidad a fijar es diferente a la ya fijada.
-			if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero && vl_acelerador != v_crucero) {
+			if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero && !comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
 				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80, 1);
 			}
 
