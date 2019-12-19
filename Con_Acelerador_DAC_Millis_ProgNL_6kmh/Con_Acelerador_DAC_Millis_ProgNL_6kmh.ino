@@ -872,7 +872,7 @@ void loop() {
 				if (cnf.liberar_crucero_con_freno)
 					anulaCruceroConFreno();
 
-				if (liberar_crucero_con_acelerador)
+				if (cnf.liberar_crucero_con_acelerador)
 					anulaCruceroAcelerador();
 			}
 
