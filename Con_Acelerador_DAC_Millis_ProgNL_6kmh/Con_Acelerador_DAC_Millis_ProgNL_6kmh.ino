@@ -499,7 +499,6 @@ void estableceNivel(int vl_acelerador) {
 
 		// Fijación crucero.
 		if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, (int) media_con_vl_acelerador_prev, 20)) {
-
 			// Si la velocidad a fijar es diferente a la ya fijada.
 			if (!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
 				boolean crucero_arriba = vl_acelerador > v_crucero;
@@ -514,6 +513,8 @@ void estableceNivel(int vl_acelerador) {
 
 			}
 		}
+
+		// Asignamos el valor actual a [vl_acelerador_prev].
 		vl_acelerador_prev = vl_acelerador;
 	}
 }
