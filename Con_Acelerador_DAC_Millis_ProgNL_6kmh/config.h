@@ -54,14 +54,13 @@ struct ConfigContainer {
 	/* PERFILES RECOMENDADOS:
 	 * 1. Crucero Coche:
 	 * 	pulsos_fijar_crucero --> 22.
-	 * 	pulsos_fijar_debajo_crucero --> 0.
+	 * 	pulsos_fijar_debajo_crucero --> 8.
 	 * 2. Crucero Continuo:
 	 * 	pulsos_fijar_crucero --> 2.
 	 * 	pulsos_fijar_debajo_crucero = 0;
-	 * 3. Crucero Coche con posibilidad de fijar velocidad custom por
-	 *    debajo del crucero actual:
+	 * 3. Crucero Monopatín:
 	 * 	pulsos_fijar_crucero --> 22.
-	 * 	pulsos_fijar_debajo_crucero --> 8.
+	 * 	pulsos_fijar_debajo_crucero --> 0.
 	 */
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
@@ -84,14 +83,6 @@ struct ConfigContainer {
 	byte pulsos_fijar_debajo_crucero = 0;
 
 	// --------- +++
-
-	// Cortar crucero con acelerador si no pedaleamos.
-	boolean liberar_crucero_con_acelerador = true;
-
-	// Tiempo necesario para ejecutar el procedimiento de cancelar 
-	// crucero por acelerador. Hay que acelerar y soltar el acelerador sin 
-	// pedalear dentro de los segundos definidos en esta variable.
-	unsigned int tiempo_anula_crucero_acelerador = 150;
 
 	// Cortar crucero con el freno.
 	boolean liberar_crucero_con_freno = false;

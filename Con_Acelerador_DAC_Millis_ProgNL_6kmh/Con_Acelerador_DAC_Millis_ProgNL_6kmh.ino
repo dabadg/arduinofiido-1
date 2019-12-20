@@ -537,44 +537,6 @@ void anulaCruceroConFreno() {
 	}
 }
 
-void anulaCruceroAcelerador() {
-	// El procedimiento se ejecuta mientras no se pedalea, haciendo un cambio rápido
-	// desde reposo hasta velocidad mínima y vuelta a reposo.
-	if (!pedaleo && crucero_fijado && cnf.liberar_crucero_con_acelerador) {
-		// Inicia en valor reposo.
-		if (comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 30)) {
-			boolean unlock = false;
-			// Espera a detectar interacción con el acelerador.
-			unsigned long timer_liberar_crucero = millis();
-
-			while((unsigned long)(millis() - timer_liberar_crucero) < 50) {
-				delay(1);
-
-				if (leeAcelerador(10) > a0_valor_reposo + 100) {
-					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2300, 90, 120);
-					unlock = true;
-					break;
-				}
-			}
-
-			if (unlock) {
-				// Espera a que se suelte el acelerador para anular el crucero.
-				timer_liberar_crucero = millis();
-
-				while ((unsigned long)(millis() - timer_liberar_crucero) < cnf.tiempo_anula_crucero_acelerador) {
-					delay(1);
-
-					// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-					if (!pedaleo && comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 30)) {
-						anulaCrucero();
-						break;
-					}
-				}
-			}
-		}
-	}
-}
-
 // --------- Asistencia 6 Km/h
 
 void ayudaArranque() {
@@ -831,9 +793,6 @@ void loop() {
 			if (flag_modo_asistencia >= MODO_CRUCERO) {
 				if (cnf.liberar_crucero_con_freno)
 					anulaCruceroConFreno();
-
-				if (cnf.liberar_crucero_con_acelerador)
-					anulaCruceroAcelerador();
 			}
 
 			mandaAcelerador(v_acelerador);
