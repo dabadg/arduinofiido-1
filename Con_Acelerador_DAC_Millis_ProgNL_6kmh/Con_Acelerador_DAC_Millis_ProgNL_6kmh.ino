@@ -496,17 +496,20 @@ void estableceNivel(int vl_acelerador) {
 
 		// Fijación crucero.
 		if (pedaleo && vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > a0_valor_minimo) {
-			boolean crucero_arriba = vl_acelerador > v_crucero;
-			crucero_fijado = true;
-			// Nunca se actualizará la velocidad de crucero por debajo del [a0_valor_minimo].
-			v_crucero = vl_acelerador < a0_valor_minimo ? a0_valor_reposo : vl_acelerador;
+			// Si la velocidad a fijar es diferente a la ya fijada.
+			if (!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
+				boolean crucero_arriba = vl_acelerador > v_crucero;
+				crucero_fijado = true;
+				// Nunca se actualizará la velocidad de crucero por debajo del [a0_valor_minimo].
+				v_crucero = vl_acelerador < a0_valor_minimo ? a0_valor_reposo : vl_acelerador;
 
-			// Sólo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos y si la velocidad a fijar es diferente a la ya fijada.
-			if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero && !comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
-				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80, 1);
+				// Sólo permitimos que suene el buzzer avisando de que se ha fijado el crucero con valores altos.
+				if (cnf.pulsos_fijar_crucero >= limite_tono_pulsos_fijar_crucero) {
+					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80, 1);
+				}
+
+				vl_acelerador_prev = 0;
 			}
-
-			vl_acelerador_prev = 0;
 		} else {
 			vl_acelerador_prev = vl_acelerador;
 		}
