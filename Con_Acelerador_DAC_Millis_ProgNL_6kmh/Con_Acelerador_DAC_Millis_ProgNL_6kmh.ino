@@ -248,8 +248,6 @@ byte contador_freno_anulacion_crucero = 0;
 // el buzzer. 22 * 90 = 1980 ms.
 const int limite_tono_pulsos_fijar_crucero = 22;
 
-unsigned long tiempo_sensores_habilitado = 60000;
-
 // Flag de activación de asistencia 6km/h y crucero, al arrancar con el
 // freno pulsado.
 volatile byte flag_modo_asistencia = MODO_ACELERADOR;
@@ -354,6 +352,8 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 		Serial.println("");
 	}
 
+	//Nunca va a llegar a este punto si no se produce algún error, ya que el anterior while es bloqueante.
+	repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 1000, 100);
 	Serial.end();
 }
 
@@ -401,7 +401,7 @@ void seleccionaModo() {
 
 			  case 20:
 				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 4000, 500, 0);
-				testSensoresPlotter(tiempo_sensores_habilitado);
+				testSensoresPlotter(0);
 				break;
 
 			}
@@ -494,8 +494,12 @@ void estableceNivel(int vl_acelerador) {
 	if (contador_loop_crucero > cnf.pulsos_fijar_crucero || (cnf.pulsos_fijar_debajo_crucero > 0 && contador_loop_crucero == cnf.pulsos_fijar_debajo_crucero && vl_acelerador < v_crucero)) {
 		contador_loop_crucero = 0;
 
+		// Calculamos la media de la velocidad de crucero actual y la de la vuelta anterior.
+		float media_con_vl_acelerador_prev = (vl_acelerador_prev + vl_acelerador) / 2;
+
 		// Fijación crucero.
-		if (pedaleo && vl_acelerador_prev < vl_acelerador + 20 && vl_acelerador_prev > vl_acelerador - 20 && vl_acelerador > a0_valor_minimo) {
+		if (pedaleo && vl_acelerador > a0_valor_minimo && comparaConTolerancia(vl_acelerador, (int) media_con_vl_acelerador_prev, 20)) {
+
 			// Si la velocidad a fijar es diferente a la ya fijada.
 			if (!comparaConTolerancia(vl_acelerador, v_crucero, 20)) {
 				boolean crucero_arriba = vl_acelerador > v_crucero;
@@ -508,11 +512,9 @@ void estableceNivel(int vl_acelerador) {
 					repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, crucero_arriba?190:80, 1);
 				}
 
-				vl_acelerador_prev = 0;
 			}
-		} else {
-			vl_acelerador_prev = vl_acelerador;
 		}
+		vl_acelerador_prev = vl_acelerador;
 	}
 }
 
