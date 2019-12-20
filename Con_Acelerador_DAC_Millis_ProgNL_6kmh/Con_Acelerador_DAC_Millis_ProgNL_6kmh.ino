@@ -371,10 +371,14 @@ void seleccionaModo() {
 	// Modo por defecto.
 	flag_modo_asistencia = MODO_ACELERADOR;
 
-	unsigned long timer_seleccion_modos=millis();
+	unsigned long timer_seleccion_modos = millis();
 	byte ccont = 0;
-	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 100, 1000);
 
+	// Si se arranca con el freno sin activar, se emite tono de inicialización.
+	if (digitalRead(pin_freno) != LOW)
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 100, 1000);
+
+	// Si se arranca con el freno activado, los tonos de inicialización serán los de selección de modos.
 	while (digitalRead(pin_freno) == LOW) {
 		if ((unsigned long)(millis() - timer_seleccion_modos) > 1000) {
 			ccont++;
@@ -402,6 +406,7 @@ void seleccionaModo() {
 
 			}
 
+			delay(150);
 			timer_seleccion_modos = millis();
 		}
 	}
