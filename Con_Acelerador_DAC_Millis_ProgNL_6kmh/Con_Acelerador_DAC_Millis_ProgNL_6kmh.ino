@@ -329,9 +329,11 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 	delay(1000);
 	repeatTones(pin_piezo, cnf.buzzer_activo, 1, 3000, 1000, 0);
 
-	if (!cnf.habilitar_consola){
+	if (!cnf.habilitar_consola) {
 		Serial.begin(19200);
 		while (!Serial) {};
+		Serial.print("Con_Acelerador_DAC_Millis_ProgNL_6kmh ");
+		Serial.println(version);
 	}
 
 	delay(1000);
@@ -352,7 +354,7 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 		Serial.println("");
 	}
 
-	//Nunca va a llegar a este punto si no se produce algún error, ya que el anterior while es bloqueante.
+	// Nunca va a llegar a este punto si no se produce algún error, ya que el anterior while es bloqueante.
 	repeatTones(pin_piezo, cnf.buzzer_activo, 3, 3000, 1000, 100);
 	Serial.end();
 }
