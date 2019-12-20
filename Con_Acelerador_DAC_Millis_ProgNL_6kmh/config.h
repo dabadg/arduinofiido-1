@@ -40,8 +40,11 @@ struct ConfigContainer {
 	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
 	unsigned int retardo_ayuda_arranque = 600;
 
-	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
+	// Habilita la ayuda la asistencia 6 km/h con inicio
 	// progresivo desde alta potencia.
+	// AVISO: Deshabilitado por defecto.
+	// El uso de esta característica puede contradecir la normativa
+	// en su regulación de la asistencia de 6 km/h desde parado.
 	boolean activar_progresivo_ayuda_arranque = false;
 
 	// Valor inicial de salida en la asistencia 6 km/h.
