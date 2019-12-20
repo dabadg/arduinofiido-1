@@ -401,7 +401,7 @@ void seleccionaModo() {
 
 			  case 20:
 				repeatTones(pin_piezo, cnf.buzzer_activo, 1, 4000, 500, 0);
-				testSensoresPlotter(0);
+				testSensoresPlotter(tiempo_sensores_habilitado);
 				break;
 
 			}
