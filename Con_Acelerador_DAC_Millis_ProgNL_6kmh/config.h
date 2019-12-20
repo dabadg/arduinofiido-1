@@ -80,7 +80,7 @@ struct ConfigContainer {
 	// es continuo. 8 --> 720 ms.
 	// Con el valor de [pulsos_fijar_crucero] en 8 o debajo de 8,
 	// poner esta variable [pulsos_fijar_debajo_crucero] a 0.
-	byte pulsos_fijar_debajo_crucero = 0;
+	byte pulsos_fijar_debajo_crucero = 8;
 
 	// --------- +++
 
