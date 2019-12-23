@@ -38,7 +38,7 @@ struct ConfigContainer {
 
 	// (True) Habilita la ayuda la asistencia 6 km/h con inicio
 	// progresivo desde alta potencia.
-	boolean activar_progresivo_ayuda_arranque = true;
+	boolean activar_progresivo_ayuda_arranque = false;
 
 	// Valor inicial de salida en la asistencia 6 km/h.
 	// Como mínimo tendrá que tener el valor de la constante
@@ -68,9 +68,9 @@ struct ConfigContainer {
 	// --------- +++
 
 	// Cantidad de pasadas con el freno pulsado para liberar crucero.
-	// De 0 a 255.
+	// De 0 a 255. // 0 deshabilita.
 	// 33 * 140 = 4620 ms.
-	byte pulsos_liberar_crucero = 36;
+	byte pulsos_liberar_crucero_con_freno = 36;
 
 	// False --> Mantiene valor que tenía el crucero antes de entrar a
 	// la asistencia de 6km/h.
