@@ -249,6 +249,8 @@ const int limite_tono_pulsos_fijar_crucero = 14;
 // freno pulsado.
 volatile byte flag_modo_asistencia = MODO_ACELERADOR;
 
+volatile int estadoFreno;
+
 //======= Variables de interrupción ====================================
 
 // Variable donde se suman los pulsos del sensor PAS.
@@ -451,14 +453,22 @@ boolean validaMinAcelerador(byte nmuestras) {
 
 // Progresivo no lineal.
 int calculaAceleradorProgresivoNoLineal() {
-	float fac_m = (a0_valor_maximo - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
-	int nivel_aceleraciontmp = (int) a0_valor_minimo + fac_m * pow (contador_retardo_aceleracion, fac_p);
+	float fac_n = a0_valor_reposo + 0.2 * v_crucero;
+	float fac_m = (v_crucero - a0_valor_reposo) / pow (cnf.retardo_aceleracion, fac_p);
+	int nivel_aceleraciontmp = (int) estadoFreno * (fac_n + fac_m * pow (contador_retardo_aceleracion, fac_p));
 
-	return constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);;
+	return constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
 }
 
-
 // --------- Crucero
+
+void anulaCrucero() {
+	if (crucero_fijado) {
+		v_crucero = a0_valor_reposo;
+		crucero_fijado = false;
+		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2000, 290, 100);
+	}
+}
 
 void estableceNivel(int vl_acelerador) {
 	// Esperamos 50 ms para ejecutar.
@@ -497,14 +507,6 @@ void estableceNivel(int vl_acelerador) {
 
 		vl_acelerador_prev = vl_acelerador;
 		establece_crucero_ultima_ejecucion_millis = millis();
-	}
-}
-
-void anulaCrucero() {
-	if (crucero_fijado) {
-		v_crucero = a0_valor_reposo;
-		crucero_fijado = false;
-		repeatTones(pin_piezo, cnf.buzzer_activo, 1, 2000, 290, 100);
 	}
 }
 
@@ -704,10 +706,12 @@ void setup() {
 
 		// Configura pines.
 		pinMode(pin_piezo, OUTPUT);
-		pinMode(pin_freno, OUTPUT);
-		digitalWrite(pin_freno, HIGH);
 		pinMode(pin_pedal, INPUT_PULLUP);
 		pinMode(pin_acelerador, INPUT);
+		pinMode(pin_freno, OUTPUT);
+		
+		// Activamos el pullup del freno.
+		digitalWrite(pin_freno, HIGH);
 
 		// Interrupción pedal.
 		attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE);
@@ -732,10 +736,12 @@ void setup() {
 				fac_a = 1.0 - pow (1.0, fac_c) * fac_b;
 			}
 
+			// Estabiliza número de interrupciones para activar / desactivar pedaleo.
+			cnf.interrupciones_activacion_pedaleo = constrain(cnf.interrupciones_activacion_pedaleo, 2, 4);
+			
 			// Estabiliza pulsos_fijar_crucero.
 			cnf.pulsos_fijar_crucero = constrain(cnf.pulsos_fijar_crucero, 2, 40);
-
-
+			
 			// Estabiliza el progresivo inverso.
 			cnf.v_salida_progresivo_ayuda_arranque = constrain(cnf.v_salida_progresivo_ayuda_arranque, a0_valor_6kmh + 1, 710);
 
@@ -773,6 +779,13 @@ void loop() {
 
 				loop_ultima_ejecucion_millis = millis();
 			}
+
+			estadoFreno = digitalRead(pin_freno);
+			
+			// Si el freno está pulsado.
+			if (freno == 0)
+				// Valor de reposo al DAC.
+				paraMotor();
 
 			v_acelerador = leeAcelerador(30);
 
