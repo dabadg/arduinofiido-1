@@ -456,7 +456,6 @@ int calculaAceleradorProgresivoNoLineal() {
 	return constrain(nivel_aceleraciontmp, a0_valor_reposo, v_crucero);
 }
 
-
 // --------- Crucero
 
 void anulaCrucero() {
