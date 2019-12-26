@@ -586,7 +586,7 @@ void ayudaArranque() {
 	// Mientras no pedaleamos y aceleramos.
 	while (!pedaleo && leeAcelerador(30) > a0_valor_minimo) {
 		// Iniciamos la salida progresiva inversa.
-		if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh && ((unsigned long)(millis() - ayuda_arranque_ultima_ejecucion) > 10000)) {
+		if (cnf.activar_progresivo_ayuda_arranque && v_salida_progresivo > a0_valor_6kmh && ((unsigned long)(millis() - ayuda_arranque_ultima_ejecucion) > cnf.retardo_ejecucion_progresivo_ayuda_arranque)) {
 			// Ejecutamos la bajada de potencia hasta a0_valor_6kmh cada 50 ms.
 			if ((unsigned long)(millis() - timer_progresivo_ayuda_arranque) >= ciclo_decremento_progresivo_ayuda_arranque) {
 				v_salida_progresivo -= decremento_progresivo_ayuda_arranque;

@@ -45,6 +45,10 @@ struct ConfigContainer {
 	// a0_valor_6kmh --> 450.
 	int v_salida_progresivo_ayuda_arranque = 700;
 
+	// Tiempo que tardará en volverse a ejecutar la asistencia
+	// 6 km/h con inicio progresivo desde alta potencia.
+	int retardo_ejecucion_progresivo_ayuda_arranque = 10000;
+
 	// -------------- CRUCERO
 
 	// Cantidad de pasadas para fijar el crucero por tiempo.
