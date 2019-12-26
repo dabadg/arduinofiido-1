@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "I2CScanner.h"
 #include "Tones.h"
+#include "config.h"
 
 const char* version = "2.7.5 Develop N";
 
@@ -141,20 +142,9 @@ AGRADECIMIENTOS:
  * basbonald, Manoplas y demás compañeros por el testing.
  */
 
-//=================== VARIABLES CONFIGURABLES POR EL USUARIO ===========
-
-/*
- * Externalización de fichero de configuración. Podrás seleccionar las
- * configuraciones que más te gusten.
- */
-
-#include "config.h"
-
-//======= FIN VARIABLES CONFIGURABLES POR EL USUARIO ===================
-
 I2CScanner i2cScanner;
 Adafruit_MCP4725 dac;
-ConfigContainer cnf;
+ConfigContainer cnf; // Variables configurables para customizar el sistema.
 
 //======= PINES ========================================================
 
