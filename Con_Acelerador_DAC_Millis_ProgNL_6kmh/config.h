@@ -31,7 +31,7 @@ struct ConfigContainer {
 
 	// (True) si se desea activar la posibilidad de acelerar desde
 	// parado a 6 km/h arrancando con el freno pulsado.
-	boolean ayuda_salida_activa = true;
+	boolean ayuda_arranque_activa = true;
 
 	// Tiempo en ms que tarda en iniciarse la ayuda al arranque.
 	unsigned int retardo_ayuda_arranque = 600;
@@ -72,16 +72,11 @@ struct ConfigContainer {
 	// 33 * 140 = 4620 ms.
 	byte pulsos_liberar_crucero_con_freno = 36;
 
-	// False --> Mantiene valor que tenía el crucero antes de entrar a
-	// la asistencia de 6km/h.
-	// True -->  En esta situación anula el valor de crucero al
-	// incrementar y soltar acelerador.
-	boolean liberar_crucero_con_acelerador = true;
-
-	// Tiempo necesario para ejecutar el procedimiento de cancelar
-	// crucero por acelerador. Hay que acelerar y soltar el acelerador sin
-	// pedalear dentro de los segundos definidos en esta variable.
-	unsigned int tiempo_anula_crucero_acelerador = 150;
+	// Tiempo en ms necesario para ejecutar el procedimiento de cancelar
+	// crucero por acelerador. Hay que acelerar y soltar el acelerador
+	// dentro de los milisegundos definidos en esta variable.
+	// De 0 a n. // 0 deshabilita.
+	unsigned int tiempo_liberar_crucero_con_acelerador = 150;
 
 
 	// -------------- PROGRESIVOS
