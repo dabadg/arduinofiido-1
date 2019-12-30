@@ -24,8 +24,9 @@ struct ConfigContainer {
 
 	// -------------- PEDALEO
 
-	// Número de interrupciones para activar pedaleo (valores 2,3...)
-	byte interrupciones_activacion_pedaleo = 2;
+	// Aumentar para hacer que el sensor PAS sea más lento pero más
+	// tolerante frente a cambios de velocidad. De 0 a ...
+	int tolerancia_pas = 3;
 
 	// -------------- ASISTENCIA 6 KM/H
 
