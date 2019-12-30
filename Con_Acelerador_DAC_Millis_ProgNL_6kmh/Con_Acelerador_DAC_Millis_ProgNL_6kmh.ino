@@ -175,16 +175,25 @@ volatile int estadoFreno;
 
 //======= VARIABLES PARA CÁLCULOS ======================================
 
-// Valores mínimos y máximos del acelerador leídos por el pin A0.
-// Al inicializar, lee el valor real (a0_valor_reposo).
-// 0 --> 1023 = 0 --> 5V.
+/* Valores del acelerador en escala de 4.3 voltios.
+ * 0 --> 1023 = 0 --> 4.3v.
+ * 209 --> 0.88v.
+ * 238 --> 1.00v.
+ * 440 --> 1.85v.
+ * 809 --> 3.40v.
+ * 842 --> 3.54v.
+ */
 
-int a0_valor_reposo = 196;		// 0.96
-const int a0_valor_corte = 236;		// 1.15
-const int a0_valor_minimo = 330;	// 1.62
-const int a0_valor_6kmh = 440;		// 2.16
-int a0_valor_maximo = 808;		// 3.95
-const int a0_valor_LIMITE = 832;	// 4.06
+// Valores de reposo y límite tomados de la lectura real del acelerador
+// en el inicio, alimentando a 4.3 voltios. A partir de 0_valor_alto,
+// no corre más la bici.
+
+int a0_valor_reposo = 209;
+//const int a0_valor_corte = 238;
+const int a0_valor_minimo = 330;
+const int a0_valor_6kmh = 440;
+const int a0_valor_alto = 809;
+int a0_valor_limite = 842;
 
 // Contadores de paro, aceleración y auto_progresivo.
 int contador_retardo_aceleracion = 0;
@@ -337,11 +346,11 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
 	// Para corregir el valor por el real obtenido de la lectura.
-	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_maximo)
-		a0_valor_maximo = constrain(cl_acelerador, a0_valor_maximo, a0_valor_LIMITE);
+	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_alto)
+		a0_valor_limite = constrain(cl_acelerador, a0_valor_alto, a0_valor_limite);
 
 	if (nivelar) {
-		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
+		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_limite);
 	}
 
 	return cl_acelerador;
@@ -367,7 +376,8 @@ boolean validaMinAcelerador(byte nmuestras) {
 	l_acelerador_reposo = (int) l_acelerador_reposo / nmuestras;
 
 	// No queremos que la tolerancia supere el [a0_valor_corte].
-	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
+	// Rango aceptable de 0.79 a 0.96 v.
+	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 20)) {
 		// Si queremos actualizar la variable de valor reposo con los valores reales tomados por el acelerador.
 		if (cnf.recalcular_rango_min_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
@@ -571,7 +581,7 @@ void anulaCruceroAcelerador() {
 	// desde reposo hasta velocidad mínima y vuelta a reposo.
 	if (crucero_fijado && cnf.tiempo_liberar_crucero_con_acelerador > 0){
 		// Inicia en valor reposo.
-		if(comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 30)) {
+		if(comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 20)) {
 			boolean unlock = false;
 			// Espera a detectar interacción con el acelerador.
 			unsigned long timer_liberar_crucero = millis();
@@ -592,7 +602,7 @@ void anulaCruceroAcelerador() {
 				while ((unsigned long)(millis() - timer_liberar_crucero) < cnf.tiempo_liberar_crucero_con_acelerador) {
 					delay(1);
 					// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-					if (comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 30)) {
+					if (comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 20)) {
 						anulaCrucero();
 						break;
 					}
@@ -656,7 +666,6 @@ void ayudaArranque() {
 }
 
 void setup() {
-
 //	// Inicia serial.
 //	if (cnf.habilitar_consola) {
 //		Serial.begin(19200);
@@ -770,7 +779,7 @@ void loop() {
 							bkp_contador_retardo_aceleracion = cnf.retardo_aceleracion;
 						}
 
-						contador_retardo_aceleracion = (int) estadoFreno * bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow (contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_maximo;
+						contador_retardo_aceleracion = (int) estadoFreno * bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow (contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_limite;
 					}
 
 					auto_progresivo = false;
