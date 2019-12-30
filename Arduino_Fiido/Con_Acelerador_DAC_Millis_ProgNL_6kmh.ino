@@ -4,7 +4,7 @@
 #include "Tones.h"
 #include "config.h"
 
-const char* version = "Custom d0s1s";
+const char* version = "Custom d0s1s v1.0";
 
 /*
                      Versión Con Acelerador y DAC
@@ -20,7 +20,7 @@ PRINCIPALES NOVEDADES:
  * Ajuste a la normativa de las Pedelec.
 ------------------------------------------------------------------------
 CÓDIGO FUENTE:
- * https://github.com/d0s1s/arduinofiido
+ * https://github.com/d0s1s/arduinofiido/custom-d0s1s
 ------------------------------------------------------------------------
 SELECCIÓN DE MODOS EN EL ARRANQUE:
  * Al encender la bici se pueden seleccionar distintos modos jugando con
@@ -139,6 +139,10 @@ const byte MODO_PLOTTER = 20;
  * 809 --> 3.40v.
  * 842 --> 3.54v.
  */
+
+// Valores de reposo y límite tomados de la lectura real del acelerador
+// en el inicio, alimentando a 4.3 voltios.
+
 int a0_valor_reposo = 209;
 const int a0_valor_corte = 238;
 const int a0_valor_minimo = 330;
