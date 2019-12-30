@@ -218,6 +218,8 @@ volatile int tiempo_pas_activado = 0;
 volatile int tiempo_pas_desactivado = 0;
 // Cuántos valores erróneos consecutivos da el PAS.
 volatile int fallo_pas = 0;
+// Cadencia.
+//volatile int cadencia = 0; 
 
 //======= FUNCIONES ====================================================
 
@@ -242,18 +244,20 @@ void pedal() {
 		return;
 
 	// Lectura del Sensor PAS.
-    boolean estado_pas = digitalRead(pin_pedal);
+	boolean estado_pas = digitalRead(pin_pedal);
 
 	// Tomamos medidas.
-    if (estado_pas) {
+	if (estado_pas) {
 		// Medimos señal baja.
-        tiempo_pas_desactivado = millis() - ultimo_evento_pas;
+		tiempo_pas_desactivado = millis() - ultimo_evento_pas;
 	} else {
 		// Medimos señal alta.
 		tiempo_pas_activado = millis() - ultimo_evento_pas;
 	}
 
-    ultimo_evento_pas = millis();
+	ultimo_evento_pas = millis();
+	// La división entre 6 corresponde al número de imanes (6 en la Fiido).
+	//cadencia = (60000/6) / (tiempo_pas_activado + tiempo_pas_desactivado);
 	fallo_pas = fallo_pas + 1;
 
 	// Dividimos las señales altas entre las bajas.
@@ -591,6 +595,8 @@ void loop() {
 			// Si el sensor PAS no cambia en más de 0.5 segundos, no estamos pedaleando.
 			pedaleo = false;
 		}
+		
+		//cadencia = cadencia * pedaleo;
 
 		// Control para el incremento de contadores.
 		if (flag_modo_asistencia >= MODO_CRUCERO) {
