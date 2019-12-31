@@ -171,20 +171,28 @@ const byte MODO_PLOTTER = 20;
 //======= FRENO ========================================================
 const int NOACCIONADO = HIGH;
 const int ACCIONADO = LOW;
-volatile int estadoFreno;
+int estadoFreno;
 
 //======= VARIABLES PARA CÁLCULOS ======================================
 
-// Valores mínimos y máximos del acelerador leídos por el pin A0.
-// Al inicializar, lee el valor real (a0_valor_reposo).
-// 0 --> 1023 = 0 --> 5V.
+/* Valores del acelerador en escala de 4.3 voltios.
+ * 0 --> 1023 = 0 --> 4.3v.
+ * 209 --> 0.88v.
+ * 238 --> 1.00v.
+ * 440 --> 1.85v.
+ * 809 --> 3.40v.
+ * 842 --> 3.54v.
+ */
 
-int a0_valor_reposo = 196;		// 0.96
-const int a0_valor_corte = 236;		// 1.15
-const int a0_valor_minimo = 330;	// 1.62
-const int a0_valor_6kmh = 440;		// 2.16
-int a0_valor_maximo = 808;		// 3.95
-const int a0_valor_LIMITE = 832;	// 4.06
+// Valores de reposo y límite tomados de la lectura real del acelerador
+// en el inicio, alimentando a 4.3 voltios. A partir de 0_valor_alto,
+// no corre más la bici.
+
+int a0_valor_reposo = 209;
+const int a0_valor_minimo = 330;
+const int a0_valor_6kmh = 440;
+const int a0_valor_alto = 809;
+int a0_valor_limite = 842;
 
 // Contadores de paro, aceleración y auto_progresivo.
 int contador_retardo_aceleracion = 0;
@@ -217,7 +225,7 @@ boolean crucero_fijado = false;
 
 // Controles de tiempo.
 const unsigned long tiempo_act = 500;
-unsigned long loop_ultima_ejecucion_millis;
+unsigned long control_contadores;
 unsigned long crucero_fijado_millis;
 unsigned long establece_crucero_ultima_ejecucion_millis;
 unsigned long anula_crucero_con_freno_ultima_ejecucion_millis;
@@ -236,14 +244,16 @@ const int limite_tono_pulsos_fijar_crucero = 14;
 
 // Flag de activación de asistencia 6km/h y crucero, al arrancar con el
 // freno pulsado.
-volatile byte flag_modo_asistencia = MODO_ACELERADOR;
+byte flag_modo_asistencia = MODO_ACELERADOR;
+
+// Constantes para la detección del pedaleo.
+const double pas_factor_min = 0.05;
+const double pas_factor_max = 1.50;
 
 //======= Variables de interrupción ====================================
 
-// Variable donde se suman los pulsos del sensor PAS.
-volatile byte p_pulsos = 0;
-// Variables para la detección del pedaleo.
-volatile byte a_pulsos = 0;
+
+// Variable para la detección del pedaleo.
 volatile boolean pedaleo = false;
 
 //======= FUNCIONES ====================================================
@@ -275,15 +285,53 @@ void ejecutar_bloqueo_loop (int contador_bloqueo_sistema) {
 
 // --------- Pedal
 
-void pedal() {
-	// Pulsos por [tiempo_act - 500 ms] .
-	p_pulsos++;
+// Último tiempo de cambio de estado del sensor PAS.
+volatile unsigned long ultimo_evento_pas = millis();
+// Señales altas del PAS (Determina dirección de pedaleo).
+volatile int tiempo_pas_activado = 0;
+// Señales bajas del PAS (Determina dirección de pedaleo).
+volatile int tiempo_pas_desactivado = 0;
+// Cuántos valores erróneos consecutivos da el PAS.
+volatile int fallo_pas = 0;
 
-	// Activamos pedaleo por interrupciones.
-	if (++a_pulsos >= cnf.interrupciones_activacion_pedaleo) {
-		pedaleo = true;
-		a_pulsos = 0;
+void pedal() {
+	if (ultimo_evento_pas > (unsigned long)(millis() - 10))
+		return;
+
+	// Lectura del Sensor PAS.
+    boolean estado_pas = digitalRead(pin_pedal);
+
+	// Tomamos medidas.
+    if (estado_pas) {
+		// Medimos señal baja.
+        tiempo_pas_desactivado = millis() - ultimo_evento_pas;
+	} else {
+		// Medimos señal alta.
+		tiempo_pas_activado = millis() - ultimo_evento_pas;
 	}
+
+    ultimo_evento_pas = millis();
+	fallo_pas = fallo_pas + 1;
+
+	// Dividimos las señales altas entre las bajas.
+	double pas_factor = (double) tiempo_pas_activado / (double) tiempo_pas_desactivado;
+
+	// Comprobamos el resultados con un factor de tolerancia máximo y mínimo para la activación de pedaleo.
+	if ((pas_factor > pas_factor_min) && (pas_factor < pas_factor_max)) {
+		// Activamos pedaleo.
+		pedaleo = true;
+		// Reiniciamos variable.
+		fallo_pas = 0;
+	}
+
+	// Debug del PAS.
+	/*if (cnf.habilitar_consola) {
+		Serial.print(tiempo_pas_activado);
+		Serial.print(" ");
+		Serial.print(tiempo_pas_desactivado);
+		Serial.print(" ");
+		Serial.println("");
+	}*/
 }
 
 // --------- Acelerador
@@ -299,11 +347,11 @@ int leeAcelerador(byte nmuestras, boolean nivelar) {
 	cl_acelerador = (int) cl_acelerador / nmuestras;
 
 	// Para corregir el valor por el real obtenido de la lectura.
-	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_maximo)
-		a0_valor_maximo = constrain(cl_acelerador, a0_valor_maximo, a0_valor_LIMITE);
+	if (cnf.recalcular_rango_max_acelerador && cl_acelerador > a0_valor_alto)
+		a0_valor_limite = constrain(cl_acelerador, a0_valor_alto, a0_valor_limite);
 
 	if (nivelar) {
-		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_maximo);
+		cl_acelerador = constrain(cl_acelerador, a0_valor_reposo, a0_valor_limite);
 	}
 
 	return cl_acelerador;
@@ -329,7 +377,8 @@ boolean validaMinAcelerador(byte nmuestras) {
 	l_acelerador_reposo = (int) l_acelerador_reposo / nmuestras;
 
 	// No queremos que la tolerancia supere el [a0_valor_corte].
-	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 30)) {
+	// Rango aceptable de 0.79 a 0.96 v.
+	if (comparaConTolerancia(l_acelerador_reposo, a0_valor_reposo, 20)) {
 		// Si queremos actualizar la variable de valor reposo con los valores reales tomados por el acelerador.
 		if (cnf.recalcular_rango_min_acelerador) {
 			a0_valor_reposo = l_acelerador_reposo;
@@ -370,13 +419,10 @@ void testSensoresPlotter(unsigned long tiempoMs) {
 		delay(100);
 		Serial.print(leeAcelerador(3, false)); // Acelerador.
 		Serial.print("\t");
-		Serial.print(p_pulsos * 10); // Incremento de pulsos pedaleo.
-		Serial.print("\t");
-		Serial.print(p_pulsos > 0 ? 50 : 5); // Incremento de pulsos pedaleo.
+		Serial.print(digitalRead(pin_pedal) ? 500 : 250);
 		Serial.print("\t");
 		Serial.print(digitalRead(pin_freno) ? 250 : 500); // Frenando si/no.
 		Serial.println("");
-		p_pulsos = 0;
 	}
 
 	// Nunca va a llegar a este punto si no se produce algún error, ya que el anterior while es bloqueante.
@@ -536,7 +582,7 @@ void anulaCruceroAcelerador() {
 	// desde reposo hasta velocidad mínima y vuelta a reposo.
 	if (crucero_fijado && cnf.tiempo_liberar_crucero_con_acelerador > 0){
 		// Inicia en valor reposo.
-		if(comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 30)) {
+		if(comparaConTolerancia(leeAcelerador(10), a0_valor_reposo, 20)) {
 			boolean unlock = false;
 			// Espera a detectar interacción con el acelerador.
 			unsigned long timer_liberar_crucero = millis();
@@ -557,7 +603,7 @@ void anulaCruceroAcelerador() {
 				while ((unsigned long)(millis() - timer_liberar_crucero) < cnf.tiempo_liberar_crucero_con_acelerador) {
 					delay(1);
 					// Cancelamos el crucero si existía, en caso de no pedalear y haber soltado el acelerador.
-					if (comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 30)) {
+					if (comparaConTolerancia(leeAcelerador(30), a0_valor_reposo, 20)) {
 						anulaCrucero();
 						break;
 					}
@@ -620,8 +666,25 @@ void ayudaArranque() {
 	ayuda_arranque_ultima_ejecucion = millis();
 }
 
-void setup() {
+// Gestión interrupción del pulso de freno
+const byte pulsosFrenoDevounceThreshold = 150;
+long pulsosFrenoDevounceTime = 0;
 
+volatile int pulsos_freno;
+unsigned long  tiempoInicioDeteccionPulsosFreno = 0;
+void pulsosFreno(){
+	if (millis() - pulsosFrenoDevounceTime > pulsosFrenoDevounceThreshold){
+		pulsos_freno++;
+
+		// Cuando se detecta el primer pulso de freno se activa el tiempo para detectar pulsos.
+		if (pulsos_freno == 1)
+			tiempoInicioDeteccionPulsosFreno = millis();
+
+		pulsosFrenoDevounceTime = millis();
+	}
+}
+
+void setup() {
 //	// Inicia serial.
 //	if (cnf.habilitar_consola) {
 //		Serial.begin(19200);
@@ -651,6 +714,9 @@ void setup() {
 
 		// Interrupción pedal.
 		attachInterrupt(digitalPinToInterrupt(pin_pedal), pedal, CHANGE);
+		// Interrupción freno.
+		// detachInterrupt(pin_freno); // Se puede desconectar la gestión de interrupciones para que no se ejecute mientras se procesa el loop.
+		attachInterrupt(digitalPinToInterrupt(pin_freno), pulsosFreno, FALLING);
 
 		// Seleccionamos el modo de funcionamiento.
 		seleccionaModo();
@@ -669,10 +735,7 @@ void setup() {
 				fac_b = (1.0 / cnf.retardo_aceleracion - 1.0) / (pow ((cnf.retardo_inicio_progresivo - 1.0), fac_c) - pow (1.0, fac_c));
 				fac_a = 1.0 - pow (1.0, fac_c) * fac_b;
 			}
-
-			// Estabiliza número de interrupciones para activar / desactivar pedaleo.
-			cnf.interrupciones_activacion_pedaleo = constrain(cnf.interrupciones_activacion_pedaleo, 2, 4);
-			
+	
 			// Estabiliza pulsos_fijar_crucero.
 			cnf.pulsos_fijar_crucero = constrain(cnf.pulsos_fijar_crucero, 2, 40);
 			
@@ -695,59 +758,50 @@ void setup() {
 }
 
 void loop() {
-
 	if (a0_valor_reposo == 0) {
-
 		// Si a0_valor_reposo está forzado a 0 significa que ha habido un error en la inicialización del acelerador o que no se ha detectado.
 		SOS_TONE(pin_piezo);
 		ejecutar_bloqueo_loop(0);
-
 	} else {
-
 		// Si el DAC es detectado.
 		if (i2cScanner.isDacDetected()) {
-
+			// Reposo al nivel de aceleración.
 			int nivel_aceleracion = a0_valor_reposo;
 
-			// Esperamos [tiempo_act - 500 ms] para ejecutar.
-			if ((unsigned long)(millis() - loop_ultima_ejecucion_millis) > tiempo_act) {
-
-				// Desactivamos pedaleo por cadencia.
-				if (p_pulsos < cnf.interrupciones_activacion_pedaleo) {
-					pedaleo = false;
-				}
-				p_pulsos = 0;
-				
-				if (flag_modo_asistencia >= MODO_CRUCERO)
-					actualizacion_contadores = true;
-
-				loop_ultima_ejecucion_millis = millis();
+			// Esperamos 500 ms para verificar la desactivación del pedaleo.
+			if (((unsigned long)(millis() - ultimo_evento_pas) > 500) || (fallo_pas > cnf.tolerancia_pas)) {
+				// Si el sensor PAS no cambia en más de 0.5 segundos, no estamos pedaleando.
+				pedaleo = false;
 			}
 
-			// Toma medidas de los sensores en cada loop
+			// Control para el incremento de contadores.
+			if (flag_modo_asistencia >= MODO_CRUCERO) {
+				// Esperamos [tiempo_act] para ejecutar.
+				if (((unsigned long)(millis() - control_contadores) > tiempo_act)) {
+					actualizacion_contadores = true;
+					control_contadores = millis();
+				}
+			}
+
+			// Toma medidas de los sensores en cada loop.
 			estadoFreno = digitalRead(pin_freno);
 			v_acelerador = leeAcelerador(30);
 
 			// Si el freno está pulsado en este loop.
-			if (estadoFreno == ACCIONADO){
-
-				pedaleo = false;
+			if (estadoFreno == ACCIONADO) {
 				contador_retardo_inicio_progresivo = cnf.retardo_inicio_progresivo;
 				contador_retardo_aceleracion = 0;
 				bkp_contador_retardo_aceleracion = 0;
-
 			// Si el freno no está pulsado en este loop.
 			} else {
-
 				// Si se pedalea.
 				if (pedaleo) {
-
 					if (auto_progresivo && contador_retardo_inicio_progresivo < cnf.retardo_inicio_progresivo) {
 						if (bkp_contador_retardo_aceleracion > cnf.retardo_aceleracion) {
 							bkp_contador_retardo_aceleracion = cnf.retardo_aceleracion;
 						}
 
-						contador_retardo_aceleracion = (int) estadoFreno * bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow (contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_maximo;
+						contador_retardo_aceleracion = (int) estadoFreno * bkp_contador_retardo_aceleracion * (fac_a + fac_b * pow (contador_retardo_inicio_progresivo, fac_c)) * v_crucero / a0_valor_limite;
 					}
 
 					auto_progresivo = false;
@@ -758,7 +812,6 @@ void loop() {
 					}
 
 					if (flag_modo_asistencia >= MODO_CRUCERO) {
-
 						estableceNivelCrucero(v_acelerador);
 
 						// Si el crucero está fijado.
@@ -778,13 +831,10 @@ void loop() {
 					} else {
 						nivel_aceleracion = v_acelerador;
 					}
-
 				// Si no se pedalea.
 				} else {
-
 					if (flag_modo_asistencia == MODO_CRUCERO6KMH && v_acelerador > a0_valor_minimo)
 						ayudaArranque();
-
 
 					if (actualizacion_contadores)
 						contador_retardo_inicio_progresivo++;
@@ -797,7 +847,6 @@ void loop() {
 					}
 
 					contador_retardo_aceleracion = 0;
-
 				}
 
 			}
@@ -808,16 +857,15 @@ void loop() {
 				nivel_aceleracion_prev = nivel_aceleracion;
 			}
 
-
 			if (flag_modo_asistencia >= MODO_CRUCERO) {
 				if (cnf.pulsos_liberar_crucero_con_freno > 0)
 					anulaCruceroConFreno();
+
 				anulaCruceroAcelerador();
 
 				// Reinicio de variable.
 				actualizacion_contadores = false;
 			}
-
 		}
 	}
 }
